@@ -7,7 +7,7 @@
   const {
     camera, canvas, phones, hitboxes, track,
     SPACING, SLIDER_BOUNDS, APPS, DEFAULT_CAMERA_POS, animate, bokehPass,
-    IS_MOBILE,
+    IS_MOBILE, SCREEN_FOCUS_Z,
   } = window.Scene;
 
   /* ═══════════════════════════════════════════════════════════
@@ -394,7 +394,7 @@
     // Réaffiche les téléphones voisins
     phones.forEach((p) => { if (p !== group) fadePhoneGroup(p, 1, 0.6); });
 
-    if (bokehPass) gsap.to(bokehPass.uniforms.focus, { value: DEFAULT_CAMERA_POS.z, duration: 1, ease: 'power3.inOut' }); // plan net revient à la distance de la vue carrousel (suit z mobile/desktop)
+    if (bokehPass) gsap.to(bokehPass.uniforms.focus, { value: SCREEN_FOCUS_Z, duration: 1, ease: 'power3.inOut' }); // plan net revient exactement sur l'écran (pas la coque) pour rester net
     gsap.to(camera.position, {
       x: DEFAULT_CAMERA_POS.x,
       y: DEFAULT_CAMERA_POS.y,

@@ -1271,8 +1271,16 @@ window.Scene = (function () {
   const BASE_MAXBLUR = 0.008;
   const MOBILE_BLUR_BOOST = 1.3;
   const blurMult = IS_MOBILE ? MOBILE_BLUR_BOOST : 1;
+  // L'écran (texture) de chaque téléphone est légèrement en saillie de la
+  // coque (screenMesh.position.z = 0.05 dans createPhone), donc physiquement
+  // un peu plus proche de la caméra que le reste du téléphone. Caler le
+  // plan net DOF exactement sur cette distance-là (plutôt que sur la coque)
+  // garantit que le texte de l'écran — le plus sensible au flou — reste net,
+  // quitte à ce que les bords de la coque soient dans une profondeur de
+  // champ légèrement moins précise (imperceptible sur la coque unie).
+  const SCREEN_FOCUS_Z = DEFAULT_CAMERA_POS.z - 0.05;
   const bokehPass = new THREE.BokehPass(scene, camera, {
-    focus: DEFAULT_CAMERA_POS.z, // suit la distance caméra réelle (6.4 mobile / 8 desktop) — sinon le téléphone actif sortirait lui-même du plan net sur mobile
+    focus: SCREEN_FOCUS_Z, // suit la distance caméra réelle (6.4 mobile / 8 desktop) — sinon le téléphone actif sortirait lui-même du plan net sur mobile
     aperture: BASE_APERTURE * blurMult,
     maxblur: BASE_MAXBLUR * blurMult,
     width: window.innerWidth * dpr,
@@ -1378,6 +1386,7 @@ window.Scene = (function () {
     loadingManager, DEFAULT_CAMERA_POS, animate,
     bokehPass, // exposé pour ajuster `focus` quand main.js zoome sur un projet (sinon le téléphone actif sortirait lui-même du plan net)
     IS_MOBILE, // exposé pour activer le snap au swipe (main.js), uniquement sur mobile
+    SCREEN_FOCUS_Z, // exposé pour que main.js revienne exactement sur ce plan net (écran net) après fermeture d'un projet, au lieu de la distance caméra brute
   };
 
 })();
