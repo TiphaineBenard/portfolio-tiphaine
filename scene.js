@@ -820,7 +820,7 @@ window.Scene = (function () {
 
       // 5. Sous-titre — secteur client plutôt que "PWA SUR MESURE" répété
       // à l'identique sur les 4 cartes (aucune valeur différenciante).
-      const subtitle = (sector || 'PWA SUR MESURE').toUpperCase();
+      const subtitle = (sector || 'SUR MESURE').toUpperCase();
       ctx.fillStyle = 'rgba(255,255,255,0.6)';
       ctx.font = '600 22px Inter, sans-serif';
       ctx.textAlign = 'center';
