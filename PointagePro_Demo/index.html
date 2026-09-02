@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PointagePro">
+<meta name="theme-color" content="#0f1f38">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>PointagePro</title>
+<style>
+:root {
+  --navy: #0f1f38;
+  --navy-mid: #1a3155;
+  --navy-light: #243d69;
+  --accent: #3b82f6;
+  --accent-light: #60a5fa;
+  --orange: #f97316;
+  --orange-light: #fb923c;
+  --green: #22c55e;
+  --red: #ef4444;
+  --bg: #f0f4f8;
+  --bg-card: #ffffff;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --border: #e2e8f0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif; background: var(--bg); color: var(--text); }
+
+/* ── SCREENS ── */
+.screen { position: absolute; inset: 0; display: none; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* ── LOGIN ── */
+#screen-login {
+  background: linear-gradient(160deg, var(--navy) 0%, var(--navy-mid) 50%, #1e3a5f 100%);
+  align-items: center; justify-content: center; padding: 24px;
+}
+.login-logo { width: 72px; height: 72px; background: rgba(255,255,255,0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.15); }
+.login-logo svg { width: 36px; height: 36px; fill: white; }
+.login-title { color: white; font-size: 26px; font-weight: 700; text-align: center; margin-bottom: 6px; letter-spacing: -0.5px; }
+.login-sub { color: rgba(255,255,255,0.55); font-size: 14px; text-align: center; margin-bottom: 36px; }
+.login-card { background: rgba(255,255,255,0.07); border-radius: var(--radius); padding: 28px 24px; width: 100%; max-width: 360px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); }
+.login-card label { color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.login-card select, .login-card input { width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-sm); padding: 13px 14px; color: white; font-size: 15px; margin-bottom: 16px; appearance: none; -webkit-appearance: none; outline: none; }
+.login-card select option { color: #000; background: #fff; }
+.login-card input::placeholder { color: rgba(255,255,255,0.35); }
+.login-card input:focus, .login-card select:focus { border-color: var(--accent-light); background: rgba(255,255,255,0.15); }
+.btn-login { width: 100%; background: var(--accent); border: none; border-radius: var(--radius-sm); padding: 14px; color: white; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 4px; transition: transform 0.1s, opacity 0.1s; }
+.btn-login:active { transform: scale(0.97); opacity: 0.85; }
+.login-error { color: #fca5a5; font-size: 13px; text-align: center; margin-top: 10px; display: none; }
+.role-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+.role-tab { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-sm); padding: 10px 8px; color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 500; text-align: center; cursor: pointer; transition: all 0.15s; }
+.role-tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+/* ── TOP BAR ── */
+.topbar { background: var(--navy); padding-top: calc(var(--safe-top) + 14px); padding-bottom: 14px; padding-left: 20px; padding-right: 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.topbar-title { color: white; font-size: 17px; font-weight: 600; }
+.topbar-sub { color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 1px; }
+.topbar-btn { background: rgba(255,255,255,0.1); border: none; border-radius: 8px; padding: 7px 12px; color: rgba(255,255,255,0.8); font-size: 13px; cursor: pointer; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav { background: var(--bg-card); border-top: 1px solid var(--border); display: flex; padding-bottom: var(--safe-bottom); flex-shrink: 0; }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 4px 8px; cursor: pointer; transition: color 0.15s; color: var(--text-light); border: none; background: none; }
+.nav-item.active { color: var(--accent); }
+.nav-item svg { width: 22px; height: 22px; margin-bottom: 3px; }
+.nav-item span { font-size: 10px; font-weight: 500; }
+
+/* ── SCROLL AREA ── */
+.scroll-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 16px calc(8px + var(--safe-bottom)); }
+
+/* ── CARDS ── */
+.card { background: var(--bg-card); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); }
+.card-header { font-size: 11px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+.card-header svg { width: 14px; height: 14px; opacity: 0.6; }
+
+/* ── FORM ELEMENTS ── */
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+.field label { font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 5px; font-weight: 500; }
+.field select, .field input[type="time"], .field input[type="date"], .field input[type="number"], .field input[type="password"] {
+  width: 100%; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  padding: 11px 13px; font-size: 15px; color: var(--text); appearance: none; -webkit-appearance: none; outline: none;
+  transition: border-color 0.15s;
+}
+.field select:focus, .field input:focus { border-color: var(--accent); }
+.field input[type="time"] { font-variant-numeric: tabular-nums; }
+
+/* ── TIME GRID ── */
+.time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.time-cell { background: var(--bg); border-radius: var(--radius-sm); padding: 10px 12px; }
+.time-cell-label { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px; }
+.time-cell input { width: 100%; border: none; background: transparent; font-size: 17px; font-weight: 600; color: var(--text); padding: 0; outline: none; font-variant-numeric: tabular-nums; }
+
+/* ── TOGGLE ── */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+.toggle-row label { font-size: 15px; color: var(--text); }
+.toggle { position: relative; width: 48px; height: 28px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 99px; transition: background 0.2s; cursor: pointer; }
+.toggle-slider:before { content: ''; position: absolute; width: 22px; height: 22px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.toggle input:checked + .toggle-slider { background: var(--accent); }
+.toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+/* ── VEHICLE CHIPS ── */
+.chip-area { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; min-height: 32px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; background: var(--navy); color: white; border-radius: 99px; padding: 5px 10px 5px 12px; font-size: 12px; font-weight: 600; }
+.chip-remove { background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 18px; height: 18px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1; padding: 0; }
+
+/* ── BUTTONS ── */
+.btn-primary { width: 100%; background: var(--accent); border: none; border-radius: var(--radius-sm); padding: 15px; color: white; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.1s, opacity 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-primary:active { transform: scale(0.97); opacity: 0.85; }
+.btn-primary.orange { background: var(--orange); }
+.btn-sm { background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 9px 16px; font-size: 13px; font-weight: 500; color: var(--text); cursor: pointer; }
+
+/* ── BADGES ── */
+.badge { display: inline-block; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+.badge-blue { background: #dbeafe; color: #1e40af; }
+.badge-orange { background: #ffedd5; color: #9a3412; }
+.badge-green { background: #dcfce7; color: #15803d; }
+
+/* ── SUMMARY CARDS ── */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.stat-card { background: var(--navy); border-radius: var(--radius-sm); padding: 14px; }
+.stat-val { font-size: 24px; font-weight: 700; color: white; }
+.stat-lbl { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+.stat-card.accent { background: var(--accent); }
+.stat-card.orange { background: var(--orange); }
+.stat-card.green { background: #15803d; }
+
+/* ── LIST ROWS ── */
+.list-row { display: flex; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--border); gap: 12px; }
+.list-row:last-child { border-bottom: none; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.avatar-blue { background: #dbeafe; color: #1d4ed8; }
+.avatar-orange { background: #ffedd5; color: #c2410c; }
+.list-info { flex: 1; min-width: 0; }
+.list-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.list-detail { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.list-right { text-align: right; flex-shrink: 0; }
+.list-hours { font-size: 15px; font-weight: 700; color: var(--navy); }
+.list-sub { font-size: 11px; color: var(--text-muted); }
+
+/* ── ALERT ── */
+.alert { border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13px; margin-top: 10px; display: flex; align-items: center; gap: 8px; }
+.alert-success { background: #dcfce7; color: #15803d; }
+.alert-info { background: #dbeafe; color: #1d4ed8; }
+.alert-warning { background: #ffedd5; color: #9a3412; }
+
+/* ── SECTION TITLE ── */
+.section-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; letter-spacing: -0.5px; }
+.section-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 18px; }
+
+/* ── TABS ── */
+.tabs { display: flex; background: var(--bg); border-radius: var(--radius-sm); padding: 3px; margin-bottom: 16px; }
+.tab { flex: 1; text-align: center; padding: 8px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; border-radius: 7px; transition: all 0.15s; }
+.tab.active { background: white; color: var(--text); box-shadow: var(--shadow); }
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+/* ── ASTREINTE COUNTER ── */
+.counter-row { display: flex; align-items: center; gap: 14px; }
+.counter-btn { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg); font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text); flex-shrink: 0; }
+.counter-val { font-size: 28px; font-weight: 700; min-width: 30px; text-align: center; }
+
+/* ── MONTH PICKER ── */
+.month-nav { display: flex; align-items: center; justify-content: space-between; background: var(--navy); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 14px; }
+.month-nav-btn { background: rgba(255,255,255,0.1); border: none; border-radius: 6px; width: 32px; height: 32px; color: white; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.month-nav span { color: white; font-size: 16px; font-weight: 600; }
+
+/* ── GESTURE FEEDBACK ── */
+.press-effect { transition: transform 0.12s, opacity 0.12s; }
+.press-effect:active { transform: scale(0.97); opacity: 0.8; }
+
+/* ── SPINNER ── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { width: 20px; height: 20px; border: 2.5px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 0; }
+
+@media print {
+  body > * { display: none !important; }
+  #print-zone { display: block !important; }
+}
+#print-zone { display: none; }
+.fiche-table { width:100%; border-collapse:collapse; font-size:12px; }
+.fiche-table th { background:#064e3b; color:white; padding:6px 8px; text-align:center; font-size:10px; letter-spacing:.4px; }
+.fiche-table td { padding:5px 8px; border-bottom:1px solid #e2e8f0; text-align:center; }
+.fiche-table tr.weekend td { background:#f1f5f9; color:#64748b; }
+.fiche-table tr.ferie td { background:#fef9c3; font-weight:600; }
+.fiche-table tr.dimanche td { background:#fce7f3; font-weight:600; }
+.fiche-table tr.total-row td { background:#0f172a; color:white; font-weight:700; font-size:12px; }
+.fiche-table td.heures { font-variant-numeric:tabular-nums; font-weight:600; }
+.fiche-header { background:#064e3b; color:white; padding:14px 16px; border-radius:var(--radius) var(--radius) 0 0; margin-bottom:0; }
+.fiche-footer { background:#f8fafc; border:1px solid var(--border); border-radius:0 0 var(--radius) var(--radius); padding:12px 16px; display:flex; gap:20px; flex-wrap:wrap; }
+.fiche-badge { background:white; border:1.5px solid var(--border); border-radius:8px; padding:8px 14px; font-size:13px; }
+.fiche-badge span { font-weight:700; font-size:16px; color:#064e3b; display:block; }
+.demo-banner{position:fixed;top:0;left:0;right:0;z-index:9999;background:#f97316;color:#fff;text-align:center;font-size:12px;font-weight:600;padding:4px 8px;letter-spacing:.4px}
+body{padding-top:24px!important}
+</style>
+</head>
+<body>
+<div class="demo-banner">🎯 VERSION DÉMO — Gestionnaire : admin / 0000 — Tous les employés : PIN 0000
+  &nbsp;|&nbsp;
+  <button id="btn-reset-demo" style="background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.4);color:inherit;font:inherit;font-weight:600;padding:2px 10px;border-radius:12px;cursor:pointer;">↺ Réinitialiser la démo</button>
+</div>
+<script>
+  document.getElementById('btn-reset-demo').addEventListener('click', function () {
+    if (confirm('Réinitialiser cette démo et repartir de zéro ?')) {
+      sessionStorage.clear();
+      location.reload();
+    }
+  });
+</script>
+
+<!-- ══ LOGIN ══ -->
+<div class="screen active" id="screen-login">
+  <div style="width:100%; max-width:400px; padding:24px;">
+    <div class="login-logo">
+      <svg viewBox="0 0 24 24"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8zM5.5 16a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm13 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>
+    </div>
+    <div class="login-title">PointagePro</div>
+    <div class="login-sub">Gestion des heures chauffeurs</div>
+    <div class="login-card">
+      <div class="role-tabs">
+        <div class="role-tab active" id="rtab-chauffeur" onclick="selectRole('chauffeur')">
+          🚚 Chauffeur
+        </div>
+        <div class="role-tab" id="rtab-gestionnaire" onclick="selectRole('gestionnaire')">
+          📊 Gestionnaire
+        </div>
+      </div>
+      <div id="login-chauffeur-fields">
+        <label>Mon nom</label>
+        <select id="login-nom">
+          <option value="">— Sélectionner —</option>
+          <optgroup label="Chauffeurs Transport" id="login-opt-transport">
+            <option value="Martin Sophie|transport">Martin Sophie</option>
+            <option value="Dupont Jean|transport">Dupont Jean</option>
+            <option value="Bernard Thomas|transport">Bernard Thomas</option>
+            <option value="Petit Marie|transport">Petit Marie</option>
+            <option value="Laurent Nicolas|transport">Laurent Nicolas</option>
+            <option value="Moreau Lucas|transport">Moreau Lucas</option>
+          </optgroup>
+          <optgroup label="Chauffeurs Dépannage" id="login-opt-depannage">
+            <option value="Lefebvre Emma|depannage">Lefebvre Emma</option>
+            <option value="Garcia Julien|depannage">Garcia Julien</option>
+            <option value="Roux Camille|depannage">Roux Camille</option>
+            <option value="Leroy Antoine|depannage">Leroy Antoine</option>
+            <option value="Simon Inès|depannage">Simon Inès</option>
+            <option value="Morel Paul|depannage">Morel Paul</option>
+          </optgroup>
+        </select>
+        <label>Code PIN</label>
+        <input type="password" id="login-pin" placeholder="• • • •" maxlength="4" inputmode="numeric" onkeypress="if(event.key==='Enter')doLogin()">
+      </div>
+      <div id="login-gestionnaire-fields" style="display:none;">
+        <label>Identifiant</label>
+        <input type="text" id="login-gest-id" placeholder="Identifiant gestionnaire" onkeypress="if(event.key==='Enter')doLogin()">
+        <label>Mot de passe</label>
+        <input type="password" id="login-gest-pw" placeholder="Mot de passe" onkeypress="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn-login" onclick="doLogin()">Se connecter</button>
+      <div class="login-error" id="login-error">Identifiants incorrects</div>
+      <div style="color:rgba(255,255,255,0.35); font-size:11px; text-align:center; margin-top:14px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP CHAUFFEUR TRANSPORT ══ -->
+<div class="screen" id="screen-transport">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="t-topbar-name">Chauffeur Transport</div>
+      <div class="topbar-sub" id="t-topbar-date">—</div>
+    </div>
+    <button class="topbar-btn" onclick="logout()">Déco.</button>
+  </div>
+  <div class="scroll-area" id="t-scroll">
+
+    <div class="section-title">Mon pointage</div>
+    <div class="section-sub" id="t-ref-horaire">Lun–Jeu 8h–12h / 14h–18h</div>
+
+    <div class="card">
+      <div class="card-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+        Date de travail
+      </div>
+      <div class="field">
+        <input type="date" id="t-date">
+      </div>
+    </div>
+
+    <div class="card" id="t-repos-card" style="border:1.5px solid var(--accent);">
+      <div class="toggle-row">
+        <label for="t-repos" style="font-size:15px; font-weight:600;">🛌 Jour de repos</label>
+        <label class="toggle">
+          <input type="checkbox" id="t-repos" onchange="toggleReposT()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div id="t-repos-alert" class="alert alert-info" style="display:none; margin-top:10px;">
+        🛌 Journée de repos enregistrée
+      </div>
+    </div>
+
+    <div id="t-work-section">
+    <div class="card">
+      <div class="card-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8l5 3-5 3V8z"/></svg>
+        Véhicules utilisés
+      </div>
+      <div class="field">
+        <label>Ajouter un véhicule</label>
+        <select id="t-veh-select" onchange="addVeh('t')">
+          <option value="">— Sélectionner —</option>
+        </select>
+      </div>
+      <div class="chip-area" id="t-veh-chips"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Mes horaires
+      </div>
+      <div class="time-grid">
+        <div class="time-cell">
+          <div class="time-cell-label">🟢 Départ</div>
+          <input type="time" id="t-dep" value="08:00" oninput="calcT()">
+        </div>
+        <div class="time-cell">
+          <div class="time-cell-label">☕ Début pause</div>
+          <input type="time" id="t-pd" value="12:00" oninput="calcT()">
+        </div>
+        <div class="time-cell">
+          <div class="time-cell-label">▶️ Fin pause</div>
+          <input type="time" id="t-pf" value="14:00" oninput="calcT()">
+        </div>
+        <div class="time-cell">
+          <div class="time-cell-label">🔴 Fin journée</div>
+          <input type="time" id="t-fin" value="18:00" oninput="calcT()">
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div style="display:flex; gap:10px;">
+        <div style="flex:1; text-align:center;">
+          <div style="font-size:11px; color:var(--text-muted); margin-bottom:3px;">Heures travaillées</div>
+          <div style="font-size:20px; font-weight:700;" id="t-calc-total">—</div>
+        </div>
+        <div style="width:1px; background:var(--border);"></div>
+        <div style="flex:1; text-align:center;">
+          <div style="font-size:11px; color:var(--text-muted); margin-bottom:3px;">Heures supp.</div>
+          <div style="font-size:20px; font-weight:700;" id="t-calc-supp" style="color:var(--green);">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">🍽️ Panier repas &amp; découche</div>
+      <div class="toggle-row">
+        <label for="t-panier">Repas hors domicile / entreprise</label>
+        <label class="toggle">
+          <input type="checkbox" id="t-panier" onchange="togglePanier()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div id="t-panier-alert" class="alert alert-success" style="display:none; margin-top:10px;">
+        ✅ Panier repas accordé pour cette journée
+      </div>
+      <div class="divider" style="margin:12px 0;"></div>
+      <div class="toggle-row">
+        <div>
+          <div style="font-size:15px; color:var(--text);">🌙 Découche</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Nuit passée hors domicile</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="t-decouche" onchange="toggleDecouche()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div id="t-decouche-alert" class="alert alert-info" style="display:none; margin-top:10px;">
+        🌙 Découche enregistrée pour cette journée
+      </div>
+    </div>
+
+        <div class="card">
+      <div class="card-header">📝 Déroulement de journée</div>
+      <div class="field">
+        <textarea id="t-deroulement" rows="4" placeholder="Décrivez les tâches effectuées durant la journée…" style="width:100%; background:var(--bg-card); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; font-size:14px; color:var(--text-main); font-family:inherit; resize:vertical; outline:none; box-sizing:border-box;"></textarea>
+      </div>
+    </div>
+
+    </div><!-- /t-work-section -->
+    <button class="btn-primary press-effect" onclick="saveT()" style="margin-top:4px; margin-bottom:8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Enregistrer ma journée
+    </button>
+    <div id="t-saved" class="alert alert-success" style="display:none;">✅ Journée enregistrée !</div>
+
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="tNav('pointage',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Pointage</span>
+    </button>
+    <button class="nav-item" onclick="tNav('historique',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      <span>Historique</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══ APP CHAUFFEUR DÉPANNAGE ══ -->
+<div class="screen" id="screen-depannage">
+  <div class="topbar" style="background: #7c2d12;">
+    <div>
+      <div class="topbar-title" id="d-topbar-name">Chauffeur Dépannage</div>
+      <div class="topbar-sub" id="d-topbar-date">—</div>
+    </div>
+    <button class="topbar-btn" onclick="logout()">Déco.</button>
+  </div>
+  <div class="scroll-area" id="d-scroll">
+
+    <div class="section-title">Mon pointage</div>
+    <div class="section-sub">Lun–Jeu 8h–12h / 14h–18h &nbsp;|&nbsp; Ven 8h–12h / 14h–17h</div>
+
+    <div class="card">
+      <div class="card-header">📅 Date de travail</div>
+      <div class="field">
+        <input type="date" id="d-date" onchange="checkDimanche()">
+      </div>
+    </div>
+
+    <div class="card" id="d-repos-card" style="border:1.5px solid #f97316;">
+      <div class="toggle-row">
+        <label for="d-repos" style="font-size:15px; font-weight:600;">🛌 Jour de repos</label>
+        <label class="toggle">
+          <input type="checkbox" id="d-repos" onchange="toggleRepos()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div id="d-repos-alert" class="alert" style="display:none; margin-top:10px; background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; border-radius:var(--radius-sm); padding:10px 12px; font-size:13px;">
+        🛌 Journée de repos enregistrée
+      </div>
+    </div>
+
+    <div id="d-work-section">
+    <div class="card">
+      <div class="card-header">🚐 Véhicules utilisés</div>
+      <div class="field">
+        <label>Ajouter un véhicule</label>
+        <select id="d-veh-select" onchange="addVeh('d')">
+          <option value="">— Sélectionner —</option>
+        </select>
+      </div>
+      <div class="chip-area" id="d-veh-chips"></div>
+    </div>
+
+    <div class="card" id="d-horaires-card">
+      <div class="card-header">⏱️ Mes horaires</div>
+      <div class="time-grid">
+        <div class="time-cell">
+          <div class="time-cell-label">🟢 Départ</div>
+          <input type="time" id="d-dep" value="08:00" oninput="calcD()">
+        </div>
+        <div class="time-cell">
+          <div class="time-cell-label">☕ Début pause</div>
+          <input type="time" id="d-pd" value="12:00" oninput="calcD()">
+        </div>
+        <div class="time-cell">
+          <div class="time-cell-label">▶️ Fin pause</div>
+          <input type="time" id="d-pf" value="14:00" oninput="calcD()">
+        </div>
+        <div class="time-cell">
+          <div class="time-cell-label">🔴 Fin journée</div>
+          <input type="time" id="d-fin" value="18:00" oninput="calcD()">
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div style="text-align:center;">
+        <div style="font-size:11px; color:var(--text-muted); margin-bottom:3px;">Heures travaillées</div>
+        <div style="font-size:24px; font-weight:700;" id="d-calc-total">—</div>
+      </div>
+    </div>
+
+
+        <div class="card" id="d-panier-card" style="display:none;">
+      <div class="card-header">🍽️ Panier repas</div>
+      <div class="toggle-row">
+        <label for="d-panier">Repas hors domicile / entreprise</label>
+        <label class="toggle">
+          <input type="checkbox" id="d-panier" onchange="togglePanierD()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div id="d-panier-alert" class="alert alert-success" style="display:none; margin-top:10px;">
+        ✅ Panier repas accordé pour cette journée
+      </div>
+    </div>
+
+    <div class="card" id="d-dimanche-card" style="display:none;">
+      <div class="card-header">🌙 Dimanche — Interventions uniquement</div>
+      <div style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Pas d'horaires fixes — saisissez le nombre de dépannages effectués.</div>
+      <div class="field">
+        <label>Nombre de dépannages</label>
+        <div class="counter-row">
+          <button class="counter-btn" onclick="changeDimCount(-1)">−</button>
+          <div class="counter-val" id="d-dim-count-val">0</div>
+          <button class="counter-btn" onclick="changeDimCount(1)">+</button>
+          <div style="font-size:13px; color:var(--text-muted);" id="d-dim-count-label">— dépannages</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div style="text-align:center;">
+        <div style="font-size:11px; color:var(--text-muted); margin-bottom:3px;">Heures comptabilisées</div>
+        <div style="font-size:24px; font-weight:700;" id="d-dim-total">0h</div>
+      </div>
+    </div>
+
+    <div class="card" id="d-hors-horaires-card">
+      <div class="card-header">⏰ Interventions hors horaires</div>
+      <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border);">
+        <div style="width:36px; height:36px; border-radius:10px; background:#eff6ff; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🌅</div>
+        <div style="flex:1;">
+          <div style="font-size:14px; font-weight:600; color:var(--text);">Avant de partir</div>
+          <div style="font-size:11px; color:var(--text-muted);">Interventions avant la prise de service</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="counter-btn" style="width:30px;height:30px;font-size:16px;" onclick="changeHH('avant',-1)">−</button>
+          <div style="font-size:20px; font-weight:700; min-width:22px; text-align:center;" id="d-hh-avant">0</div>
+          <button class="counter-btn" style="width:30px;height:30px;font-size:16px;" onclick="changeHH('avant',1)">+</button>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border);">
+        <div style="width:36px; height:36px; border-radius:10px; background:#fff7ed; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">☕</div>
+        <div style="flex:1;">
+          <div style="font-size:14px; font-weight:600; color:var(--text);">Pendant la pause</div>
+          <div style="font-size:11px; color:var(--text-muted);">Interventions durant la coupure repas</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="counter-btn" style="width:30px;height:30px;font-size:16px;" onclick="changeHH('pause',-1)">−</button>
+          <div style="font-size:20px; font-weight:700; min-width:22px; text-align:center;" id="d-hh-pause">0</div>
+          <button class="counter-btn" style="width:30px;height:30px;font-size:16px;" onclick="changeHH('pause',1)">+</button>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; padding:10px 0;">
+        <div style="width:36px; height:36px; border-radius:10px; background:#f0fdf4; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🌆</div>
+        <div style="flex:1;">
+          <div style="font-size:14px; font-weight:600; color:var(--text);">Après la journée</div>
+          <div style="font-size:11px; color:var(--text-muted);">Interventions après la fin de service</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="counter-btn" style="width:30px;height:30px;font-size:16px;" onclick="changeHH('apres',-1)">−</button>
+          <div style="font-size:20px; font-weight:700; min-width:22px; text-align:center;" id="d-hh-apres">0</div>
+          <button class="counter-btn" style="width:30px;height:30px;font-size:16px;" onclick="changeHH('apres',1)">+</button>
+        </div>
+      </div>
+      <div id="d-hh-total-row" style="display:none; margin-top:12px; padding:10px 14px; background:#eff6ff; border-radius:var(--radius-sm);">
+        <span style="font-size:13px; color:var(--accent); font-weight:600;">⏱️ Total : <span id="d-hh-total">0</span>h supplémentaire(s)</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">📝 Déroulement de journée</div>
+      <div class="field">
+        <textarea id="d-deroulement" rows="4" placeholder="Décrivez les tâches effectuées durant la journée…" style="width:100%; background:var(--bg-card); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; font-size:14px; color:var(--text-main); font-family:inherit; resize:vertical; outline:none; box-sizing:border-box;"></textarea>
+      </div>
+    </div>
+
+    </div><!-- /d-work-section -->
+    <button class="btn-primary orange press-effect" onclick="saveD()" style="margin-top:4px; margin-bottom:8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Enregistrer ma journée
+    </button>
+    <div id="d-saved" class="alert alert-success" style="display:none;">✅ Journée enregistrée !</div>
+
+  </div>
+  <div class="bottom-nav" style="border-top-color: #fed7aa;">
+    <button class="nav-item active" style="--accent: #f97316;" onclick="dNav('pointage',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Pointage</span>
+    </button>
+    <button class="nav-item" onclick="dNav('historique',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      <span>Historique</span>
+    </button>
+  </div>
+</div>
+
+
+<!-- ══ OVERLAY FICHES ══ -->
+<div id="overlay-fiches" style="display:none; position:fixed; inset:0; background:#f0f4f8; z-index:100; flex-direction:column; overflow:hidden;">
+  <div class="topbar" style="background:#064e3b;">
+    <div>
+      <div class="topbar-title">📋 Fiches récapitulatives</div>
+      <div class="topbar-sub" id="fiche-month-label">—</div>
+    </div>
+    <button class="topbar-btn" onclick="closeFiches()">✕ Fermer</button>
+  </div>
+  <div style="flex:1; overflow-y:auto; padding:16px;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
+      <div>
+        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Catégorie</div>
+        <select id="fiche-categorie" onchange="renderFicheList()" style="width:100%; padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:white; font-size:14px;">
+          <option value="transport">🚚 Transport</option>
+          <option value="depannage">🔧 Dépannage</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Salarié</div>
+        <select id="fiche-employe" style="width:100%; padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:white; font-size:14px;"></select>
+      </div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
+      <button onclick="imprimerFiche()" style="background:#064e3b; color:white; border:none; border-radius:var(--radius-sm); padding:12px; font-size:14px; font-weight:600; cursor:pointer;">
+        🖨️ Cette fiche
+      </button>
+      <button onclick="imprimerToutesFiches()" style="background:#1d4ed8; color:white; border:none; border-radius:var(--radius-sm); padding:12px; font-size:14px; font-weight:600; cursor:pointer;">
+        🖨️ Toutes les fiches
+      </button>
+    </div>
+    <div id="fiche-preview"></div>
+  </div>
+</div>
+
+<!-- ══ APP GESTIONNAIRE ══ -->
+<div class="screen" id="screen-gestionnaire">
+  <div class="topbar" style="background: #064e3b;">
+    <div>
+      <div class="topbar-title">Tableau de bord</div>
+      <div class="topbar-sub">Gestionnaire</div>
+    </div>
+    <button class="topbar-btn" onclick="logout()">Déco.</button>
+  </div>
+  <div class="scroll-area">
+
+    <div id="g-loading" style="display:none; align-items:center; justify-content:center; gap:10px; padding:20px; color:var(--text-muted); font-size:14px;">
+      <div class="spinner"></div> Chargement des données…
+    </div>
+    <div class="month-nav" id="g-month-nav">
+      <button class="month-nav-btn" onclick="changeMonth(-1)">‹</button>
+      <span id="g-month-label">Juin 2025</span>
+      <button class="month-nav-btn" onclick="changeMonth(1)">›</button>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="gTab('transport', this)">🚚 Transport</div>
+      <div class="tab" onclick="gTab('depannage', this)">🔧 Dépannage</div>
+      <div class="tab" onclick="gTab('config', this)">⚙️ Config</div>
+      <div class="tab" onclick="gTab('salaries', this)">👥 Salariés</div>
+    </div>
+
+    <!-- Transport view -->
+    <div id="g-transport-view">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-val">8</div><div class="stat-lbl">Chauffeurs</div></div>
+        <div class="stat-card accent"><div class="stat-val">1 178h</div><div class="stat-lbl">Heures total</div></div>
+        <div class="stat-card"><div class="stat-val">14</div><div class="stat-lbl">Paniers repas</div></div>
+        <div class="stat-card"><div class="stat-val">3h 30</div><div class="stat-lbl">Heures supp. moy.</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">Récapitulatif chauffeurs transport</div>
+        <div id="g-t-list"></div>
+      </div>
+    </div>
+
+    <!-- Dépannage view -->
+    <div id="g-depannage-view" style="display:none;">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-val">9</div><div class="stat-lbl">Chauffeurs</div></div>
+        <div class="stat-card orange"><div class="stat-val">12</div><div class="stat-lbl">Astreintes</div></div>
+        <div class="stat-card green"><div class="stat-val">1 800 €</div><div class="stat-lbl">Primes astreinte</div></div>
+        <div class="stat-card"><div class="stat-val">34</div><div class="stat-lbl">Interventions</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">Récapitulatif chauffeurs dépannage</div>
+        <div id="g-d-list"></div>
+      </div>
+    </div>
+
+    <!-- Config view -->
+    <div id="g-config-view" style="display:none; padding-top:4px;">
+
+      <!-- Horaires de référence -->
+      <div class="card">
+        <div class="card-header">📅 Horaires contractuels</div>
+        <div class="field" style="margin-bottom:12px;">
+          <label>Salarié</label>
+          <select id="cfg-emp" onchange="renderHorairesGrid()" style="width:100%; padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:white; font-size:14px;">
+            <optgroup label="🚚 Transport" id="cfg-emp-transport"></optgroup>
+            <optgroup label="🔧 Dépannage" id="cfg-emp-depannage"></optgroup>
+          </select>
+        </div>
+        <div id="cfg-horaires-grid" style="margin-bottom:12px;"></div>
+        <button onclick="saveHorairesRef()" style="width:100%; background:#064e3b; color:white; border:none; border-radius:var(--radius-sm); padding:11px; font-size:14px; font-weight:600; cursor:pointer;">💾 Enregistrer les horaires</button>
+        <div id="cfg-save-msg" style="display:none; text-align:center; color:#16a34a; font-size:13px; margin-top:8px;">✅ Horaires enregistrés</div>
+      </div>
+
+      <!-- Correction de pointages -->
+      <div class="card">
+        <div class="card-header">✏️ Corriger des pointages</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+          <select id="cfg-pts-cat" onchange="initCfgPtsEmp(); renderPointagesList();" style="padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:white; font-size:13px;">
+            <option value="transport">🚚 Transport</option>
+            <option value="depannage">🔧 Dépannage</option>
+          </select>
+          <select id="cfg-pts-emp" onchange="renderPointagesList()" style="padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:white; font-size:13px;"></select>
+        </div>
+        <div id="cfg-pts-list"></div>
+      </div>
+
+    </div>
+
+
+    <!-- Salariés view -->
+    <div id="g-salaries-view" style="display:none; padding-top:4px;">
+      <div class="card" style="margin-bottom:8px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div class="card-header" style="margin-bottom:0;">👥 Gestion des salariés</div>
+          <button onclick="openSalModal(null,null)" style="background:#064e3b;color:white;border:none;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;">➕ Ajouter</button>
+        </div>
+      </div>
+      <div style="display:flex; gap:4px; margin-bottom:8px;">
+        <button id="sal-tab-t" onclick="salTab('transport',this)" style="flex:1;padding:8px;border:1.5px solid #064e3b;border-radius:8px;background:#064e3b;color:white;font-size:13px;font-weight:600;cursor:pointer;">🚚 Transport (<span id="sal-count-t">0</span>)</button>
+        <button id="sal-tab-d" onclick="salTab('depannage',this)" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;">🔧 Dépannage (<span id="sal-count-d">0</span>)</button>
+      </div>
+      <div class="card" id="sal-list-container">
+        <div id="sal-list"></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="bottom-nav" style="border-top-color: #a7f3d0;">
+    <button class="nav-item active" style="color: #059669;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-item" onclick="openFiches()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>Fiches</span>
+    </button>
+  </div>
+</div>
+
+<script>
+/* ── DATA ── */
+const VEHICLES = ['DM-001-AB','DM-002-AB','DM-003-AB','DM-004-AB','DM-005-AB','DM-006-AB','DM-007-AB','DM-008-AB','DM-009-AB','DM-010-AB','DM-011-AB','DM-012-AB','DM-013-AB','DM-014-AB','DM-015-AB'];
+
+// PINs globaux (mis à jour depuis Firestore config/salaries)
+window.GLOBAL_PINS = {"Martin Sophie":"0000","Dupont Jean":"0000","Bernard Thomas":"0000","Petit Marie":"0000","Laurent Nicolas":"0000","Moreau Lucas":"0000","Lefebvre Emma":"0000","Garcia Julien":"0000","Roux Camille":"0000","Leroy Antoine":"0000","Simon Inès":"0000","Morel Paul":"0000"};
+window.PANIER_DEP_EMPLOYEES = ['Morel Paul'];
+const TRANSPORT_NAMES = ['Martin Sophie','Dupont Jean','Bernard Thomas','Petit Marie','Laurent Nicolas','Moreau Lucas'];
+const DEPANNAGE_NAMES = ['Lefebvre Emma','Garcia Julien','Roux Camille','Leroy Antoine','Simon Inès','Morel Paul'];
+// Horaires de référence individuels (minutes/jour, 0=dim … 6=sam)
+const HORAIRES_REF = {
+  'Leroy Antoine': {0:0,1:420,2:420,3:420,4:420,5:180,6:0},
+  'Morel Paul':    {0:0,1:540,2:540,3:540,4:540,5:540,6:0},
+};
+const DEFAULT_REF = {0:0,1:480,2:480,3:480,4:480,5:420,6:0};
+function getRefMinutes(nom,dow){const h=HORAIRES_REF[nom]||DEFAULT_REF;return h[dow]??0;}
+
+// Horaires à pré-remplir dans le formulaire (dep, pd=début pause, pf=fin pause, fin)
+const HORAIRES_TIMES = {
+  'Leroy Antoine': {1:{dep:'09:00',pd:'12:00',pf:'14:00',fin:'18:00'},2:{dep:'09:00',pd:'12:00',pf:'14:00',fin:'18:00'},3:{dep:'09:00',pd:'12:00',pf:'14:00',fin:'18:00'},4:{dep:'09:00',pd:'12:00',pf:'14:00',fin:'18:00'},5:{dep:'09:00',pd:'12:00',pf:'12:00',fin:'12:00'}},
+  'Morel Paul':   {1:{dep:'08:00',pd:'12:00',pf:'12:00',fin:'17:00'},2:{dep:'08:00',pd:'12:00',pf:'12:00',fin:'17:00'},3:{dep:'08:00',pd:'12:00',pf:'12:00',fin:'17:00'},4:{dep:'08:00',pd:'12:00',pf:'12:00',fin:'17:00'},5:{dep:'08:00',pd:'12:00',pf:'12:00',fin:'17:00'}},
+};
+const DEFAULT_TIMES = {
+  1:{dep:'08:00',pd:'12:00',pf:'14:00',fin:'18:00'},
+  2:{dep:'08:00',pd:'12:00',pf:'14:00',fin:'18:00'},
+  3:{dep:'08:00',pd:'12:00',pf:'14:00',fin:'18:00'},
+  4:{dep:'08:00',pd:'12:00',pf:'14:00',fin:'18:00'},
+  5:{dep:'08:00',pd:'12:00',pf:'14:00',fin:'17:00'},
+};
+function getDefaultTimes(nom,dow){
+  const h=HORAIRES_TIMES[nom];
+  if(h&&h[dow])return h[dow];
+  return DEFAULT_TIMES[dow]||null;
+}
+function fillTimes(prefix,t){
+  if(!t)return;
+  document.getElementById(prefix+'-dep').value=t.dep;
+  document.getElementById(prefix+'-pd').value=t.pd;
+  document.getElementById(prefix+'-pf').value=t.pf;
+  document.getElementById(prefix+'-fin').value=t.fin;
+}
+function restoreVehs(prefix, vehs){
+  selectedVehs[prefix]=vehs||[];
+  renderChips(prefix);
+}
+function restoreTransportEntry(e){
+  document.getElementById('t-repos').checked=!!e.isRepos;
+  document.getElementById('t-repos-alert').style.display=e.isRepos?'block':'none';
+  document.getElementById('t-work-section').style.display=e.isRepos?'none':'block';
+  if(!e.isRepos){
+    document.getElementById('t-dep').value=e.depart||'';
+    document.getElementById('t-pd').value=e.pauseDebut||'';
+    document.getElementById('t-pf').value=e.pauseFin||'';
+    document.getElementById('t-fin').value=e.fin||'';
+    document.getElementById('t-panier').checked=!!e.panier;
+    document.getElementById('t-decouche').checked=!!e.decouche;
+    document.getElementById('t-deroulement').value=e.deroulement||'';
+    togglePanier(); toggleDecouche();
+    restoreVehs('t', e.vehicules);
+    calcT();
+  }
+}
+function restoreDepannageEntry(e, isOff){
+  document.getElementById('d-repos').checked=!!e.isRepos;
+  document.getElementById('d-repos-alert').style.display=e.isRepos?'block':'none';
+  document.getElementById('d-work-section').style.display=e.isRepos?'none':'block';
+  document.getElementById('d-deroulement').value=e.deroulement||'';
+  restoreVehs('d', e.vehicules);
+  if(e.isRepos)return;
+  if(e.isDimOuFerie){
+    dimInterventions=e.interventions||0;
+    document.getElementById('d-dim-count-val').textContent=dimInterventions;
+    document.getElementById('d-dim-count-label').textContent=dimInterventions+' dépannage'+(dimInterventions>1?'s':'');
+    document.getElementById('d-dim-total').textContent=dimInterventions+'h';
+  } else {
+    document.getElementById('d-dep').value=e.depart||'';
+    document.getElementById('d-pd').value=e.pauseDebut||'';
+    document.getElementById('d-pf').value=e.pauseFin||'';
+    document.getElementById('d-fin').value=e.fin||'';
+    hhCounts.avant=e.horsHorairesAvant||0;
+    hhCounts.pause=e.horsHorairesPause||0;
+    hhCounts.apres=e.horsHorairesApres||0;
+    ['avant','pause','apres'].forEach(s=>document.getElementById('d-hh-'+s).textContent=hhCounts[s]);
+    const tot=hhCounts.avant+hhCounts.pause+hhCounts.apres;
+    const row=document.getElementById('d-hh-total-row');
+    row.style.display=tot>0?'block':'none';
+    if(tot>0)document.getElementById('d-hh-total').textContent=tot;
+    if(document.getElementById('d-panier'))document.getElementById('d-panier').checked=!!e.panier;
+    calcD();
+  }
+}
+const dbCache={transport:[],depannage:[]};
+function loadPointages(type){return dbCache[type]||[];}
+function savePointage(type,entry){
+  const all=dbCache[type];
+  const idx=all.findIndex(e=>e.nom===entry.nom&&e.date===entry.date);
+  if(idx>=0)all[idx]=entry;else all.push(entry);
+  if(window.__db){
+    window.__db.collection('pointages_'+type)
+      .where('nom','==',entry.nom).where('date','==',entry.date).get()
+      .then(q=>{q.forEach(d=>d.ref.delete());return window.__db.collection('pointages_'+type).add(Object.assign({},entry));})
+      .catch(e=>console.error('Firestore save error:',e));
+  }
+}
+function reloadGestionnaire(){
+  const loading=document.getElementById('g-loading');
+  if(loading)loading.style.display='flex';
+  if(!window.__db){renderGLists();if(loading)loading.style.display='none';return;}
+  Promise.all([
+    window.__db.collection('pointages_transport').get(),
+    window.__db.collection('pointages_depannage').get(),
+    window.__db.collection('config').doc('horaires').get(),
+    window.__db.collection('config').doc('salaries').get()
+  ]).then(([tS,dS,hDoc,salDoc])=>{
+    dbCache.transport=tS.docs.map(d=>d.data());
+    dbCache.depannage=dS.docs.map(d=>d.data());
+    if(hDoc.exists){
+      window.customHoraires=hDoc.data();
+      Object.keys(window.customHoraires).forEach(nom=>{HORAIRES_REF[nom]=window.customHoraires[nom];});
+    }
+    if(salDoc.exists){
+      applyEmployeConfig(salDoc.data());
+    } else {
+      // Première connexion : sauvegarder la config par défaut
+      const def=buildDefaultSalariesConfig();
+      window.__db.collection('config').doc('salaries').set(def).catch(e=>console.error('Init salaries:',e));
+    }
+    renderGLists();
+    if(loading)loading.style.display='none';
+  }).catch(err=>{console.error('Firestore load:',err);renderGLists();if(loading)loading.style.display='none';});
+}
+function filterByMonth(entries,month){const y=month.getFullYear(),m=month.getMonth();return entries.filter(e=>{const d=new Date(e.date+'T12:00:00');return d.getFullYear()===y&&d.getMonth()===m;});}
+
+/* ── STATE ── */
+let currentUser = null, currentRole = null, loginRole = 'chauffeur';
+const selectedVehs = {t:[], d:[]};
+let currentMonth = new Date();
+
+/* ── LOGIN ── */
+function selectRole(r) {
+  loginRole = r;
+  document.getElementById('rtab-chauffeur').classList.toggle('active', r==='chauffeur');
+  document.getElementById('rtab-gestionnaire').classList.toggle('active', r==='gestionnaire');
+  document.getElementById('login-chauffeur-fields').style.display = r==='chauffeur' ? 'block' : 'none';
+  document.getElementById('login-gestionnaire-fields').style.display = r==='gestionnaire' ? 'block' : 'none';
+}
+function doLogin() {
+  document.getElementById('login-error').style.display = 'none';
+  if (loginRole === 'gestionnaire') {
+    const id = document.getElementById('login-gest-id').value;
+    const pw = document.getElementById('login-gest-pw').value;
+    if (id === 'admin' && pw === '0000') { enterGestionnaire(); return; }
+    document.getElementById('login-error').style.display = 'block';
+    return;
+  }
+  const sel = document.getElementById('login-nom').value;
+  const pin = document.getElementById('login-pin').value;
+  if (!sel || pin !== (window.GLOBAL_PINS[sel.split('|')[0]]||'__')) { document.getElementById('login-error').style.display = 'block'; return; }
+  const [nom, type] = sel.split('|');
+  currentUser = nom; currentRole = type;
+  if (type === 'transport') enterTransport(nom);
+  else enterDepannage(nom);
+}
+
+/* ── SCREENS ── */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function logout() {
+  currentUser = null; currentRole = null;
+  document.getElementById('login-nom').value = '';
+  document.getElementById('login-pin').value = '';
+  document.getElementById('login-gest-id').value = '';
+  document.getElementById('login-gest-pw').value = '';
+  document.getElementById('t-deroulement').value = '';
+  document.getElementById('t-repos').checked=false;
+  document.getElementById('t-repos-alert').style.display='none';
+  document.getElementById('t-work-section').style.display='block';
+  document.getElementById('t-decouche').checked = false;
+  document.getElementById('t-decouche-alert').style.display = 'none';
+  document.getElementById('d-deroulement').value = '';
+  document.getElementById('d-repos').checked=false;
+  document.getElementById('d-repos-alert').style.display='none';
+  document.getElementById('d-work-section').style.display='block';
+  hhCounts.avant=0; hhCounts.pause=0; hhCounts.apres=0;
+  ['avant','pause','apres'].forEach(s=>document.getElementById('d-hh-'+s).textContent='0');
+  document.getElementById('d-hh-total-row').style.display='none';
+  dimInterventions=0;
+  showScreen('screen-login');
+}
+
+/* ── TRANSPORT ── */
+function enterTransport(nom) {
+  const today = new Date();
+  document.getElementById('t-topbar-name').textContent = nom;
+  document.getElementById('t-date').value = today.toISOString().split('T')[0];
+  const dow = today.getDay();
+  document.getElementById('t-ref-horaire').textContent = dow === 5
+    ? 'Référence : Vendredi 8h–12h / 14h–17h (= 7h/jour)'
+    : 'Référence : Lun–Jeu 8h–12h / 14h–18h (= 8h/jour)';
+  document.getElementById('t-topbar-date').textContent = today.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+  updateDateLabel();
+  showScreen('screen-transport');
+  calcT();
+}
+function enterDepannage(nom) {
+  const today = new Date();
+  document.getElementById('d-topbar-name').textContent = nom;
+  document.getElementById('d-date').value = today.toISOString().split('T')[0];
+  document.getElementById('d-topbar-date').textContent = today.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('d-panier-card').style.display = window.PANIER_DEP_EMPLOYEES.includes(nom)?'block':'none';
+  document.getElementById('d-panier').checked = false;
+  document.getElementById('d-panier-alert').style.display = 'none';
+  document.getElementById('d-repos').checked=false;
+  document.getElementById('d-repos-alert').style.display='none';
+  document.getElementById('d-work-section').style.display='block';
+  hhCounts.avant=0; hhCounts.pause=0; hhCounts.apres=0;
+  ['avant','pause','apres'].forEach(s=>document.getElementById('d-hh-'+s).textContent='0');
+  document.getElementById('d-hh-total-row').style.display='none';
+  dimInterventions=0;
+  checkDimanche();
+  showScreen('screen-depannage');
+  calcD();
+}
+function togglePanierD(){const cb=document.getElementById('d-panier');document.getElementById('d-panier-alert').style.display=cb.checked?'flex':'none';}
+function toggleRepos(){
+  const checked=document.getElementById('d-repos').checked;
+  document.getElementById('d-repos-alert').style.display=checked?'block':'none';
+  document.getElementById('d-work-section').style.display=checked?'none':'block';
+}
+function updateDateLabel() {
+  const dateVal = document.getElementById('t-date').value;
+  const d = new Date(dateVal);
+  if (isNaN(d)) return;
+  const dow = d.getDay();
+  document.getElementById('t-ref-horaire').textContent = dow === 5
+    ? 'Référence vendredi : 8h–12h / 14h–17h (7h)'
+    : 'Référence lun–jeu : 8h–12h / 14h–18h (8h)';
+  const existing = dbCache.transport.find(e => e.nom===currentUser && e.date===dateVal);
+  if (existing) {
+    restoreTransportEntry(existing);
+  } else {
+    document.getElementById('t-repos').checked=false;
+    document.getElementById('t-repos-alert').style.display='none';
+    document.getElementById('t-work-section').style.display='block';
+    fillTimes('t', getDefaultTimes(currentUser, dow));
+    document.getElementById('t-panier').checked=false; togglePanier();
+    document.getElementById('t-decouche').checked=false; toggleDecouche();
+    document.getElementById('t-deroulement').value='';
+    restoreVehs('t',[]);
+    calcT();
+  }
+}
+
+/* ── VEHICLES ── */
+function initVehs() {
+  ['t-veh-select','d-veh-select'].forEach(id => {
+    const s = document.getElementById(id);
+    VEHICLES.forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; s.appendChild(o); });
+  });
+}
+function addVeh(p) {
+  const s = document.getElementById(p+'-veh-select');
+  const v = s.value; if (!v || selectedVehs[p].includes(v)) { s.value=''; return; }
+  selectedVehs[p].push(v); renderChips(p); s.value='';
+}
+function removeVeh(p, v) { selectedVehs[p] = selectedVehs[p].filter(x=>x!==v); renderChips(p); }
+function renderChips(p) {
+  const c = document.getElementById(p+'-veh-chips'); c.innerHTML='';
+  selectedVehs[p].forEach(v => {
+    const chip = document.createElement('div'); chip.className='chip';
+    chip.innerHTML = '🚐 '+v+' <button class="chip-remove" onclick="removeVeh(\''+p+'\',\''+v+'\')">×</button>';
+    c.appendChild(chip);
+  });
+}
+
+/* ── TIME CALC ── */
+function toMin(t) { if(!t) return 0; const [h,m]=t.split(':').map(Number); return h*60+m; }
+function fmtH(m) { const h=Math.floor(Math.abs(m)/60), mn=Math.abs(m)%60; return h+'h'+(mn?String(mn).padStart(2,'0'):''); }
+function calcT() {
+  const w = (toMin(document.getElementById('t-pd').value) - toMin(document.getElementById('t-dep').value))
+           +(toMin(document.getElementById('t-fin').value) - toMin(document.getElementById('t-pf').value));
+  if (w<=0) return;
+  const d = new Date(document.getElementById('t-date').value);
+  const ref = d.getDay()===5 ? 420 : 480;
+  const supp = w - ref;
+  document.getElementById('t-calc-total').textContent = fmtH(w);
+  const suppEl = document.getElementById('t-calc-supp');
+  suppEl.textContent = supp>0 ? '+'+fmtH(supp) : '0h';
+  suppEl.style.color = supp>0 ? 'var(--green)' : 'var(--text-muted)';
+}
+function calcD() {
+  const w = (toMin(document.getElementById('d-pd').value) - toMin(document.getElementById('d-dep').value))
+           +(toMin(document.getElementById('d-fin').value) - toMin(document.getElementById('d-pf').value));
+  if (w<=0) return;
+  document.getElementById('d-calc-total').textContent = fmtH(w);
+}
+
+
+/* ── JOURS FÉRIÉS ── */
+function getJoursFeries(year){
+  const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25);
+  const g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4;
+  const l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451);
+  const mo=Math.floor((h+l-7*m+114)/31),day=((h+l-7*m+114)%31)+1;
+  const paques=new Date(year,mo-1,day);
+  const add=(d,n)=>{const r=new Date(d);r.setDate(r.getDate()+n);return r;};
+  const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  return new Set([`${year}-01-01`,fmt(add(paques,1)),`${year}-05-01`,`${year}-05-08`,
+    fmt(add(paques,39)),fmt(add(paques,50)),`${year}-07-14`,`${year}-08-15`,`${year}-11-01`,`${year}-11-11`,`${year}-12-25`]);
+}
+function checkDimanche(){
+  const val=document.getElementById('d-date').value; if(!val)return;
+  const date=new Date(val+'T12:00:00'),dow=date.getDay(),feries=getJoursFeries(date.getFullYear());
+  const isMichelSamedi = currentUser==='Leroy Antoine' && dow===6;
+  const isOff=!isMichelSamedi&&(dow===0||dow===6||feries.has(val));
+  document.getElementById('d-horaires-card').style.display=isOff?'none':'block';
+  document.getElementById('d-hors-horaires-card').style.display=isOff?'none':'block';
+  document.getElementById('d-dimanche-card').style.display=isOff?'block':'none';
+  const t=document.querySelector('#d-dimanche-card .card-header');
+  if(dow===6)t.textContent='🌅 Samedi — Interventions uniquement';
+  else if(dow===0)t.textContent='🌙 Dimanche — Interventions uniquement';
+  else t.textContent='🎉 Jour férié — Interventions uniquement';
+  const existing=dbCache.depannage.find(e=>e.nom===currentUser&&e.date===val);
+  if(existing){
+    restoreDepannageEntry(existing, isOff);
+  } else {
+    document.getElementById('d-repos').checked=false;
+    document.getElementById('d-repos-alert').style.display='none';
+    document.getElementById('d-work-section').style.display='block';
+    dimInterventions=0;
+    document.getElementById('d-dim-count-val').textContent=0;
+    document.getElementById('d-dim-count-label').textContent='— dépannages';
+    document.getElementById('d-dim-total').textContent='0h';
+    hhCounts.avant=0;hhCounts.pause=0;hhCounts.apres=0;
+    ['avant','pause','apres'].forEach(s=>document.getElementById('d-hh-'+s).textContent='0');
+    document.getElementById('d-hh-total-row').style.display='none';
+    document.getElementById('d-deroulement').value='';
+    restoreVehs('d',[]);
+    if(!isOff){ fillTimes('d', getDefaultTimes(currentUser, dow)); calcD(); }
+  }
+}
+let dimInterventions=0;
+function changeDimCount(delta){
+  dimInterventions=Math.max(0,dimInterventions+delta);
+  document.getElementById('d-dim-count-val').textContent=dimInterventions;
+  document.getElementById('d-dim-count-label').textContent=dimInterventions+' dépannage'+(dimInterventions>1?'s':'');
+  document.getElementById('d-dim-total').textContent=dimInterventions+'h';
+}
+const hhCounts={avant:0,pause:0,apres:0};
+function changeHH(slot,delta){
+  hhCounts[slot]=Math.max(0,hhCounts[slot]+delta);
+  document.getElementById('d-hh-'+slot).textContent=hhCounts[slot];
+  const total=hhCounts.avant+hhCounts.pause+hhCounts.apres;
+  const row=document.getElementById('d-hh-total-row');
+  row.style.display=total>0?'block':'none';
+  if(total>0)document.getElementById('d-hh-total').textContent=total;
+}
+
+/* ── TOGGLES ── */
+function togglePanier(){const cb=document.getElementById('t-panier');document.getElementById('t-panier-alert').style.display=cb.checked?'flex':'none';}
+function toggleDecouche(){const cb=document.getElementById('t-decouche');document.getElementById('t-decouche-alert').style.display=cb.checked?'flex':'none';}
+function toggleReposT(){
+  const checked=document.getElementById('t-repos').checked;
+  document.getElementById('t-repos-alert').style.display=checked?'block':'none';
+  document.getElementById('t-work-section').style.display=checked?'none':'block';
+}
+
+/* ── SAVE ── */
+function saveT() {
+  const date=document.getElementById('t-date').value;
+  if(!date){alert('Veuillez saisir une date.');return;}
+  if(document.getElementById('t-repos').checked){
+    savePointage('transport',{nom:currentUser,date,isRepos:true,minutes:0,minutesSupp:0});
+    const el=document.getElementById('t-saved');
+    el.style.display='flex'; el.textContent='🛌 Repos enregistré pour '+currentUser+' !';
+    setTimeout(()=>el.style.display='none',3000);
+    return;
+  }
+  const dep=document.getElementById('t-dep').value,pd=document.getElementById('t-pd').value,
+        pf=document.getElementById('t-pf').value,fin=document.getElementById('t-fin').value;
+  const w=(toMin(pd)-toMin(dep))+(toMin(fin)-toMin(pf));
+  const dow=new Date(date+'T12:00:00').getDay();
+  const supp=Math.max(0,w-(dow===5?420:480));
+  savePointage('transport',{nom:currentUser,date,depart:dep,pauseDebut:pd,pauseFin:pf,fin,
+    vehicules:[...selectedVehs.t],panier:document.getElementById('t-panier').checked,
+    decouche:document.getElementById('t-decouche').checked,
+    deroulement:document.getElementById('t-deroulement').value.trim(),minutes:w,minutesSupp:supp});
+  const el=document.getElementById('t-saved');
+  el.style.display='flex'; el.textContent='✅ Journée enregistrée pour '+currentUser+' !';
+  setTimeout(()=>el.style.display='none',3000);
+}
+function saveD() {
+  const date=document.getElementById('d-date').value;
+  if(!date){alert('Veuillez saisir une date.');return;}
+  if(document.getElementById('d-repos').checked){
+    savePointage('depannage',{nom:currentUser,date,isRepos:true,minutes:0});
+    const el=document.getElementById('d-saved');
+    el.style.display='flex'; el.textContent='🛌 Repos enregistré pour '+currentUser+' !';
+    setTimeout(()=>el.style.display='none',3000);
+    return;
+  }
+  const isDimOuFerie=document.getElementById('d-dimanche-card').style.display!=='none';
+  let entry;
+  if(isDimOuFerie){
+    entry={nom:currentUser,date,isDimOuFerie:true,interventions:dimInterventions,
+      minutes:dimInterventions*60,vehicules:[...selectedVehs.d],
+      deroulement:document.getElementById('d-deroulement').value.trim()};
+  } else {
+    const dep=document.getElementById('d-dep').value,pd=document.getElementById('d-pd').value,
+          pf=document.getElementById('d-pf').value,fin=document.getElementById('d-fin').value;
+    const w=(toMin(pd)-toMin(dep))+(toMin(fin)-toMin(pf));
+    const dowD=new Date(date+'T12:00:00').getDay();
+    const refD=getRefMinutes(currentUser,dowD);
+    const suppD=refD>0?Math.max(0,w-refD):0;
+    entry={nom:currentUser,date,isDimOuFerie:false,depart:dep,pauseDebut:pd,pauseFin:pf,fin,
+      vehicules:[...selectedVehs.d],minutes:w,minutesSupp:suppD,
+      horsHorairesAvant:hhCounts.avant,horsHorairesPause:hhCounts.pause,horsHorairesApres:hhCounts.apres,
+      horsHorairesTotal:hhCounts.avant+hhCounts.pause+hhCounts.apres,
+      panier:document.getElementById('d-panier').checked,
+      deroulement:document.getElementById('d-deroulement').value.trim()};
+  }
+  savePointage('depannage',entry);
+  const el=document.getElementById('d-saved');
+  el.style.display='flex'; el.textContent='✅ Journée enregistrée pour '+currentUser+' !';
+  setTimeout(()=>el.style.display='none',3000);
+}
+
+/* ── NAV ── */
+function tNav(page, btn) {
+  document.querySelectorAll('#screen-transport .nav-item').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function dNav(page, btn) {
+  document.querySelectorAll('#screen-depannage .nav-item').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* ══════════════════════════════════════════════════════════
+   GESTION DES SALARIÉS
+   ══════════════════════════════════════════════════════════ */
+
+const SAL_DAYS = [
+  {dow:1,label:'Lundi'},{dow:2,label:'Mardi'},{dow:3,label:'Mercredi'},
+  {dow:4,label:'Jeudi'},{dow:5,label:'Vendredi'},{dow:6,label:'Samedi'},{dow:0,label:'Dimanche'}
+];
+let salCurrentCat = 'transport';
+let salEditMode = null;
+let salListCat = 'transport';
+
+function updateLoginDropdown(){
+  const tOpt=document.getElementById('login-opt-transport');
+  const dOpt=document.getElementById('login-opt-depannage');
+  if(tOpt) tOpt.innerHTML=TRANSPORT_NAMES.map(n=>`<option value="${n}|transport">${n}</option>`).join('');
+  if(dOpt) dOpt.innerHTML=DEPANNAGE_NAMES.map(n=>`<option value="${n}|depannage">${n}</option>`).join('');
+}
+
+function buildDefaultSalariesConfig(){
+  function emp(nom, cat){
+    const pin=window.GLOBAL_PINS[nom]||'0000';
+    const panier=(cat==='transport')||window.PANIER_DEP_EMPLOYEES.includes(nom);
+    const ht=HORAIRES_TIMES[nom]||DEFAULT_TIMES;
+    const times={};
+    SAL_DAYS.forEach(({dow})=>{
+      const t=ht[dow];
+      if(t) times[dow]={dep:t.dep||'08:00',pd:t.pd||'12:00',pf:t.pf||'14:00',fin:t.fin||'18:00'};
+    });
+    return {nom, pin, panier, times};
+  }
+  return {
+    transport: TRANSPORT_NAMES.map(n=>emp(n,'transport')),
+    depannage: DEPANNAGE_NAMES.map(n=>emp(n,'depannage'))
+  };
+}
+
+function applyEmployeConfig(config){
+  TRANSPORT_NAMES.length=0;
+  (config.transport||[]).forEach(e=>TRANSPORT_NAMES.push(e.nom));
+  DEPANNAGE_NAMES.length=0;
+  (config.depannage||[]).forEach(e=>DEPANNAGE_NAMES.push(e.nom));
+  window.PANIER_DEP_EMPLOYEES = ['Morel Paul'];
+  const allEmps=[...(config.transport||[]),...(config.depannage||[])];
+  const depNoms=(config.depannage||[]).map(e=>e.nom);
+  allEmps.forEach(e=>{
+    window.GLOBAL_PINS[e.nom]=e.pin;
+    if(e.times){
+      const ht={};
+      Object.keys(e.times).forEach(dow=>{
+        const d=e.times[dow];
+        ht[parseInt(dow)]={dep:d.dep,pd:d.pd||'12:00',pf:d.pf||'14:00',fin:d.fin};
+      });
+      HORAIRES_TIMES[e.nom]=ht;
+      const ref={0:0,1:0,2:0,3:0,4:0,5:0,6:0};
+      SAL_DAYS.forEach(({dow})=>{
+        const t=ht[dow];
+        if(t) ref[dow]=salCalcMinutes(t.dep,t.pd||'12:00',t.pf||'14:00',t.fin);
+      });
+      HORAIRES_REF[e.nom]=ref;
+    }
+    if(e.panier && depNoms.includes(e.nom)) window.PANIER_DEP_EMPLOYEES.push(e.nom);
+  });
+  updateLoginDropdown();
+  const cfgCat=document.getElementById('cfg-pts-cat');
+  if(cfgCat) initCfgPtsEmp();
+}
+
+function salCalcMinutes(dep, pd, pf, fin){
+  function tm(s){const[h,m]=s.split(':').map(Number);return h*60+m;}
+  return Math.max(0,(tm(pd)-tm(dep))) + Math.max(0,(tm(fin)-tm(pf)));
+}
+function salFormatMin(m){
+  if(!m) return '—';
+  const h=Math.floor(m/60), mn=m%60;
+  return mn ? h+'h'+String(mn).padStart(2,'0') : h+'h';
+}
+
+function initSalariesTab(){
+  salListCat='transport';
+  document.getElementById('sal-tab-t').style.background='#064e3b';
+  document.getElementById('sal-tab-t').style.color='white';
+  document.getElementById('sal-tab-t').style.borderColor='#064e3b';
+  document.getElementById('sal-tab-d').style.background='var(--bg)';
+  document.getElementById('sal-tab-d').style.color='var(--text)';
+  document.getElementById('sal-tab-d').style.borderColor='var(--border)';
+  renderSalList();
+}
+
+function salTab(cat, btn){
+  salListCat=cat;
+  document.getElementById('sal-tab-t').style.background=cat==='transport'?'#064e3b':'var(--bg)';
+  document.getElementById('sal-tab-t').style.color=cat==='transport'?'white':'var(--text)';
+  document.getElementById('sal-tab-t').style.borderColor=cat==='transport'?'#064e3b':'var(--border)';
+  document.getElementById('sal-tab-d').style.background=cat==='depannage'?'#064e3b':'var(--bg)';
+  document.getElementById('sal-tab-d').style.color=cat==='depannage'?'white':'var(--text)';
+  document.getElementById('sal-tab-d').style.borderColor=cat==='depannage'?'#064e3b':'var(--border)';
+  renderSalList();
+}
+
+function renderSalList(){
+  const names=salListCat==='transport'?TRANSPORT_NAMES:DEPANNAGE_NAMES;
+  document.getElementById('sal-count-t').textContent=TRANSPORT_NAMES.length;
+  document.getElementById('sal-count-d').textContent=DEPANNAGE_NAMES.length;
+  const el=document.getElementById('sal-list');
+  if(!names.length){
+    el.innerHTML='<div style="text-align:center;color:var(--text-muted);padding:24px;font-size:14px;">Aucun salarié</div>';
+    return;
+  }
+  el.innerHTML=names.map(nom=>{
+    const pin=window.GLOBAL_PINS[nom]||'????';
+    const panier=(salListCat==='transport')||window.PANIER_DEP_EMPLOYEES.includes(nom);
+    const init=nom.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    const nomEsc=nom.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="width:38px;height:38px;border-radius:50%;background:#064e3b;color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">${init}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:600;">${nom}</div>
+        <div style="font-size:12px;color:var(--text-muted);">PIN : ${pin}${panier?' · \ud83e\udd6a Panier':''}</div>
+      </div>
+      <button onclick="openSalModal('${salListCat}','${nomEsc}')" style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;">✏️</button>
+    </div>`;
+  }).join('');
+}
+
+function openSalModal(cat, nom){
+  salEditMode = nom ? {cat, nomOriginal:nom} : null;
+  const modal=document.getElementById('sal-modal');
+  modal.style.display='flex';
+  if(nom){
+    document.getElementById('sal-modal-title').textContent='Modifier le salarié';
+    document.getElementById('sal-nom').value=nom;
+    document.getElementById('sal-nom').disabled=false;
+    setSalCat(cat);
+    document.getElementById('sal-pin').value=window.GLOBAL_PINS[nom]||'';
+    document.getElementById('sal-panier').checked=window.PANIER_DEP_EMPLOYEES.includes(nom);
+    document.getElementById('sal-delete-row').style.display='block';
+    buildSalDaysGrid(HORAIRES_TIMES[nom]||{});
+  } else {
+    document.getElementById('sal-modal-title').textContent='Nouveau salarié';
+    document.getElementById('sal-nom').value='';
+    document.getElementById('sal-nom').disabled=false;
+    setSalCat('transport');
+    document.getElementById('sal-pin').value='';
+    document.getElementById('sal-panier').checked=false;
+    document.getElementById('sal-delete-row').style.display='none';
+    buildSalDaysGrid({});
+  }
+}
+
+function closeSalModal(){
+  document.getElementById('sal-modal').style.display='none';
+}
+
+function setSalCat(cat){
+  salCurrentCat=cat;
+  const a='#064e3b', aw='white', i='var(--bg)', ic='var(--text)';
+  document.getElementById('sal-cat-t').style.background=cat==='transport'?a:i;
+  document.getElementById('sal-cat-t').style.color=cat==='transport'?aw:ic;
+  document.getElementById('sal-cat-t').style.borderColor=cat==='transport'?'#064e3b':'var(--border)';
+  document.getElementById('sal-cat-d').style.background=cat==='depannage'?a:i;
+  document.getElementById('sal-cat-d').style.color=cat==='depannage'?aw:ic;
+  document.getElementById('sal-cat-d').style.borderColor=cat==='depannage'?'#064e3b':'var(--border)';
+  document.getElementById('sal-panier-field').style.display=cat==='depannage'?'block':'none';
+}
+
+function salGenPin(){
+  document.getElementById('sal-pin').value=String(Math.floor(1000+Math.random()*9000));
+}
+
+function buildSalDaysGrid(horairesTimes){
+  const grid=document.getElementById('sal-days-grid');
+  const rows=SAL_DAYS.map(({dow,label})=>{
+    const t=horairesTimes[dow]||null;
+    const repos=!t;
+    const dep=t?t.dep:'08:00';
+    const fin=t?t.fin:'18:00';
+    const noPause=t?(t.pd===t.pf):false;
+    return `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <div style="width:72px;font-weight:600;flex-shrink:0;">${label}</div>
+      <label style="display:flex;align-items:center;gap:3px;font-size:12px;color:var(--text-muted);cursor:pointer;flex-shrink:0;">
+        <input type="checkbox" id="sal-repos-${dow}" ${repos?'checked':''} onchange="salToggleRepos(${dow})" style="accent-color:#064e3b;"> Repos
+      </label>
+      <div id="sal-times-${dow}" style="display:flex;align-items:center;gap:4px;flex:1;${repos?'visibility:hidden':''}">
+        <input type="time" id="sal-dep-${dow}" value="${dep}" oninput="salUpdateCalc(${dow})" style="flex:1;min-width:0;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;">
+        <span style="color:var(--text-muted);">→</span>
+        <input type="time" id="sal-fin-${dow}" value="${fin}" oninput="salUpdateCalc(${dow})" style="flex:1;min-width:0;padding:4px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;">
+        <label style="display:flex;align-items:center;gap:2px;font-size:11px;color:var(--text-muted);cursor:pointer;flex-shrink:0;" title="Sans pause déjeuner">
+          <input type="checkbox" id="sal-np-${dow}" ${noPause?'checked':''} onchange="salUpdateCalc(${dow})" style="accent-color:#064e3b;"> np
+        </label>
+        <span id="sal-calc-${dow}" style="font-size:11px;color:#064e3b;font-weight:600;white-space:nowrap;min-width:28px;text-align:right;"></span>
+      </div>
+    </div>`;
+  });
+  grid.innerHTML=rows.join('');
+  SAL_DAYS.forEach(({dow})=>{
+    if(!document.getElementById('sal-repos-'+dow).checked) salUpdateCalc(dow);
+  });
+}
+
+function salToggleRepos(dow){
+  const repos=document.getElementById('sal-repos-'+dow).checked;
+  document.getElementById('sal-times-'+dow).style.visibility=repos?'hidden':'';
+  if(!repos) salUpdateCalc(dow);
+}
+
+function salUpdateCalc(dow){
+  const dep=document.getElementById('sal-dep-'+dow).value||'08:00';
+  const fin=document.getElementById('sal-fin-'+dow).value||'18:00';
+  const noPause=document.getElementById('sal-np-'+dow).checked;
+  const min=salCalcMinutes(dep,'12:00',noPause?'12:00':'14:00',fin);
+  document.getElementById('sal-calc-'+dow).textContent=salFormatMin(min);
+}
+
+function saveSalarie(){
+  const nom=document.getElementById('sal-nom').value.trim();
+  const pin=document.getElementById('sal-pin').value.trim();
+  if(!nom){alert('Veuillez saisir le nom du salarié.');return;}
+  if(!/^\d{4}$/.test(pin)){alert('Le code PIN doit être 4 chiffres.');return;}
+  const cat=salCurrentCat;
+  const panier=cat==='depannage'?document.getElementById('sal-panier').checked:true;
+  const times={};
+  SAL_DAYS.forEach(({dow})=>{
+    const repos=document.getElementById('sal-repos-'+dow).checked;
+    if(!repos){
+      const dep=document.getElementById('sal-dep-'+dow).value||'08:00';
+      const fin=document.getElementById('sal-fin-'+dow).value||'18:00';
+      const noPause=document.getElementById('sal-np-'+dow).checked;
+      times[dow]={dep, pd:'12:00', pf:noPause?'12:00':'14:00', fin};
+    }
+  });
+  const nomOriginal=salEditMode?salEditMode.nomOriginal:null;
+  const catOriginal=salEditMode?salEditMode.cat:cat;
+  let tList=[...TRANSPORT_NAMES];
+  let dList=[...DEPANNAGE_NAMES];
+  if(nomOriginal){
+    if(catOriginal==='transport') tList=tList.filter(n=>n!==nomOriginal);
+    else dList=dList.filter(n=>n!==nomOriginal);
+    delete window.GLOBAL_PINS[nomOriginal];
+    delete HORAIRES_TIMES[nomOriginal];
+    delete HORAIRES_REF[nomOriginal];
+    const idx=window.PANIER_DEP_EMPLOYEES.indexOf(nomOriginal);
+    if(idx>=0) window.PANIER_DEP_EMPLOYEES.splice(idx,1);
+  }
+  if(cat==='transport'){ if(!tList.includes(nom)) tList.push(nom); }
+  else { if(!dList.includes(nom)) dList.push(nom); }
+  window.GLOBAL_PINS[nom]=pin;
+  const htNew={};
+  Object.keys(times).forEach(dow=>{htNew[parseInt(dow)]=times[dow];});
+  HORAIRES_TIMES[nom]=htNew;
+  const ref={0:0,1:0,2:0,3:0,4:0,5:0,6:0};
+  SAL_DAYS.forEach(({dow})=>{
+    const t=htNew[dow];
+    if(t) ref[dow]=salCalcMinutes(t.dep,t.pd||'12:00',t.pf||'14:00',t.fin);
+  });
+  HORAIRES_REF[nom]=ref;
+  if(panier && cat==='depannage' && !window.PANIER_DEP_EMPLOYEES.includes(nom)) window.PANIER_DEP_EMPLOYEES.push(nom);
+  TRANSPORT_NAMES.length=0; tList.forEach(n=>TRANSPORT_NAMES.push(n));
+  DEPANNAGE_NAMES.length=0; dList.forEach(n=>DEPANNAGE_NAMES.push(n));
+  updateLoginDropdown();
+  function makeEmp(n, c){
+    const ht=HORAIRES_TIMES[n]||{};
+    const tm={};
+    Object.keys(ht).forEach(d=>{tm[d]=ht[d];});
+    return {nom:n, pin:window.GLOBAL_PINS[n]||'0000',
+            panier:(c==='transport')||window.PANIER_DEP_EMPLOYEES.includes(n), times:tm};
+  }
+  const newConfig={
+    transport: TRANSPORT_NAMES.map(n=>makeEmp(n,'transport')),
+    depannage: DEPANNAGE_NAMES.map(n=>makeEmp(n,'depannage'))
+  };
+  if(window.__db){
+    window.__db.collection('config').doc('salaries').set(newConfig)
+      .then(()=>console.log('Salariés sauvegardés'))
+      .catch(e=>console.error('Erreur sauvegarde:',e));
+  }
+  closeSalModal();
+  renderSalList();
+  renderGLists();
+}
+
+function confirmDeleteSalarie(){
+  const nom=salEditMode?salEditMode.nomOriginal:'';
+  if(!nom) return;
+  if(!confirm('Supprimer '+nom+' ?\nSes pointages existants seront conservés.')) return;
+  deleteSalarie(salEditMode.cat, nom);
+}
+
+function deleteSalarie(cat, nom){
+  const arr=cat==='transport'?TRANSPORT_NAMES:DEPANNAGE_NAMES;
+  const idx=arr.indexOf(nom);
+  if(idx>=0) arr.splice(idx,1);
+  delete window.GLOBAL_PINS[nom];
+  delete HORAIRES_TIMES[nom];
+  delete HORAIRES_REF[nom];
+  const pi=window.PANIER_DEP_EMPLOYEES.indexOf(nom);
+  if(pi>=0) window.PANIER_DEP_EMPLOYEES.splice(pi,1);
+  updateLoginDropdown();
+  function makeEmp(n, c){
+    const ht=HORAIRES_TIMES[n]||{};
+    const tm={};
+    Object.keys(ht).forEach(d=>{tm[d]=ht[d];});
+    return {nom:n, pin:window.GLOBAL_PINS[n]||'0000',
+            panier:(c==='transport')||window.PANIER_DEP_EMPLOYEES.includes(n), times:tm};
+  }
+  const newConfig={
+    transport: TRANSPORT_NAMES.map(n=>makeEmp(n,'transport')),
+    depannage: DEPANNAGE_NAMES.map(n=>makeEmp(n,'depannage'))
+  };
+  if(window.__db){
+    window.__db.collection('config').doc('salaries').set(newConfig)
+      .catch(e=>console.error('Erreur suppression:',e));
+  }
+  closeSalModal();
+  renderSalList();
+  renderGLists();
+}
+
+/* ── GESTIONNAIRE ── */
+function enterGestionnaire() {
+  updateMonthLabel();
+  showScreen('screen-gestionnaire');
+  reloadGestionnaire();
+}
+function gTab(tab, btn) {
+  document.querySelectorAll('#screen-gestionnaire .tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('g-transport-view').style.display = tab==='transport' ? 'block' : 'none';
+  document.getElementById('g-depannage-view').style.display = tab==='depannage' ? 'block' : 'none';
+  document.getElementById('g-config-view').style.display = tab==='config' ? 'block' : 'none';
+  document.getElementById('g-salaries-view').style.display = tab==='salaries' ? 'block' : 'none';
+  if (tab==='config') initConfigTab();
+  if (tab==='salaries') initSalariesTab();
+}
+function initials(n) { return n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase(); }
+
+/* ── CONFIG TAB ── */
+const DAYS_CONFIG = [{dow:1,label:'Lundi'},{dow:2,label:'Mardi'},{dow:3,label:'Mercredi'},
+  {dow:4,label:'Jeudi'},{dow:5,label:'Vendredi'},{dow:6,label:'Samedi'},{dow:0,label:'Dimanche'}];
+
+function openGererPointages(cat, nom) {
+  // Switcher vers l'onglet Config et pré-sélectionner l'employé
+  document.querySelectorAll('#screen-gestionnaire .tab').forEach(b=>b.classList.remove('active'));
+  const tabs = document.querySelectorAll('#screen-gestionnaire .tab');
+  tabs[2].classList.add('active');
+  document.getElementById('g-transport-view').style.display='none';
+  document.getElementById('g-depannage-view').style.display='none';
+  document.getElementById('g-salaries-view').style.display='none';
+  document.getElementById('g-config-view').style.display='block';
+  initConfigTab();
+  // Pré-sélectionner catégorie et employé
+  document.getElementById('cfg-pts-cat').value = cat;
+  initCfgPtsEmp();
+  document.getElementById('cfg-pts-emp').value = nom;
+  renderPointagesList();
+  // Scroll vers la section correction
+  setTimeout(()=>{
+    const el=document.getElementById('cfg-pts-list');
+    if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  },100);
+}
+function initConfigTab() {
+  const tOpt = document.getElementById('cfg-emp-transport');
+  const dOpt = document.getElementById('cfg-emp-depannage');
+  if (!tOpt.children.length) {
+    TRANSPORT_NAMES.forEach(n => { const o=document.createElement('option'); o.value=n; o.textContent=n; tOpt.appendChild(o); });
+    DEPANNAGE_NAMES.forEach(n => { const o=document.createElement('option'); o.value=n; o.textContent=n; dOpt.appendChild(o); });
+  }
+  renderHorairesGrid();
+  initCfgPtsEmp();
+  renderPointagesList();
+}
+function renderHorairesGrid() {
+  const nom = document.getElementById('cfg-emp').value;
+  if (!nom) return;
+  const ref = (window.customHoraires && window.customHoraires[nom]) || HORAIRES_REF[nom] || DEFAULT_REF;
+  document.getElementById('cfg-horaires-grid').innerHTML = DAYS_CONFIG.map(d => {
+    const h = (ref[d.dow]||0)/60;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:14px;color:var(--text);width:100px;">${d.label}</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="number" id="cfg-h-${d.dow}" value="${h}" min="0" max="12" step="0.5"
+          style="width:72px;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:15px;font-weight:600;text-align:center;background:var(--bg);">
+        <span style="font-size:13px;color:var(--text-muted);">h/jour</span>
+        ${h===0?'<span style="font-size:11px;color:#f97316;font-weight:600;">REPOS</span>':''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function saveHorairesRef() {
+  const nom = document.getElementById('cfg-emp').value;
+  if (!nom) return;
+  const h = {};
+  DAYS_CONFIG.forEach(d => {
+    const val = parseFloat(document.getElementById('cfg-h-'+d.dow)?.value || 0);
+    h[d.dow] = Math.round(val * 60);
+  });
+  if (!window.customHoraires) window.customHoraires = {};
+  window.customHoraires[nom] = h;
+  HORAIRES_REF[nom] = h;
+  const msg = document.getElementById('cfg-save-msg');
+  if (window.__db) {
+    const data = {}; data[nom] = h;
+    window.__db.collection('config').doc('horaires').set(data, {merge:true})
+      .then(() => { msg.style.display='block'; setTimeout(()=>msg.style.display='none',2500); })
+      .catch(e => { alert('Erreur sauvegarde: '+e.message); });
+  } else { msg.style.display='block'; setTimeout(()=>msg.style.display='none',2500); }
+}
+function initCfgPtsEmp() {
+  const cat = document.getElementById('cfg-pts-cat').value;
+  const names = cat==='transport' ? TRANSPORT_NAMES : DEPANNAGE_NAMES;
+  const sel = document.getElementById('cfg-pts-emp');
+  sel.innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join('');
+}
+function renderPointagesList() {
+  const cat = document.getElementById('cfg-pts-cat').value;
+  const nom = document.getElementById('cfg-pts-emp').value;
+  if (!nom) return;
+  const entries = filterByMonth(loadPointages(cat), currentMonth)
+    .filter(e => e.nom===nom)
+    .sort((a,b) => a.date.localeCompare(b.date));
+  const container = document.getElementById('cfg-pts-list');
+  if (!entries.length) {
+    container.innerHTML='<div style="text-align:center;color:var(--text-muted);padding:16px;font-size:13px;">Aucun pointage ce mois-ci</div>';
+    return;
+  }
+  container.innerHTML = entries.map(e => {
+    const d = new Date(e.date+'T12:00:00');
+    const dayStr = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'][d.getDay()];
+    const dateStr = `${dayStr} ${d.getDate()}/${d.getMonth()+1}`;
+    let detail = e.isRepos ? '🛌 Repos' : e.isDimOuFerie ? `🔧 ${e.interventions||0} interv.` : fmtH(e.minutes||0);
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:14px;font-weight:600;">${dateStr}</div>
+        <div style="font-size:12px;color:var(--text-muted);">${detail}</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button onclick="openEditModal('${cat}','${nom}','${e.date}')"
+          style="background:#eff6ff;color:#1d4ed8;border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;">✏️ Modifier</button>
+        <button onclick="deletePointage('${cat}','${nom}','${e.date}')"
+          style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function deletePointage(type, nom, date) {
+  if (!confirm('Supprimer le pointage du '+date+' pour '+nom+' ?')) return;
+  dbCache[type] = dbCache[type].filter(e => !(e.nom===nom && e.date===date));
+  if (window.__db) {
+    window.__db.collection('pointages_'+type).where('nom','==',nom).where('date','==',date).get()
+      .then(q => { q.forEach(d => d.ref.delete()); })
+      .catch(e => console.error(e));
+  }
+  renderPointagesList();
+  renderGLists();
+}
+
+let editCtx = null;
+function openEditModal(type, nom, date) {
+  const entry = dbCache[type].find(e => e.nom===nom && e.date===date);
+  if (!entry) return;
+  editCtx = {type, nom, date, entry};
+  const d = new Date(date+'T12:00:00');
+  const dayLabel = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'][d.getDay()];
+  document.getElementById('edit-modal-title').textContent = nom+' — '+dayLabel+' '+d.getDate()+'/'+(d.getMonth()+1);
+  let body = '';
+  if (entry.isRepos) {
+    body = '<div style="text-align:center;color:#f97316;font-size:15px;padding:20px;">🛌 Journée de repos — rien à modifier</div>';
+  } else if (entry.isDimOuFerie) {
+    body = `<div class="field"><label>Nombre d'interventions (1 interv. = 1h)</label>
+      <input type="number" id="edit-interventions" value="${entry.interventions||0}" min="0" max="20"
+        style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:18px;font-weight:700;text-align:center;background:var(--bg);">
+    </div>`;
+  } else {
+    const tg = (id,val,lbl) => `<div class="time-cell"><div class="time-cell-label">${lbl}</div>
+      <input type="time" id="edit-${id}" value="${val||''}" style="width:100%;border:none;background:transparent;font-size:17px;font-weight:600;color:var(--text);padding:0;outline:none;font-variant-numeric:tabular-nums;"></div>`;
+    body = `<div class="time-grid" style="margin-bottom:14px;">
+      ${tg('dep',entry.depart,'🟢 Départ')}${tg('pd',entry.pauseDebut,'☕ Début pause')}
+      ${tg('pf',entry.pauseFin,'▶️ Fin pause')}${tg('fin',entry.fin,'🔴 Fin journée')}
+    </div>`;
+    if (type==='depannage') {
+      body += `<div class="card" style="margin-bottom:0;background:var(--bg);">
+        <div class="card-header" style="margin-bottom:8px;">⏰ Interventions hors horaires</div>
+        ${['avant','pause','apres'].map((s,i)=>{
+          const labels=['🌅 Avant départ','☕ Pendant pause','🌆 Après journée'];
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;">
+            <span style="font-size:13px;">${labels[i]}</span>
+            <input type="number" id="edit-hh-${s}" value="${entry['horsHoraires'+s.charAt(0).toUpperCase()+s.slice(1)]||0}" min="0" max="10"
+              style="width:60px;padding:6px;border:1.5px solid var(--border);border-radius:6px;font-size:15px;font-weight:700;text-align:center;background:white;">
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+  }
+  document.getElementById('edit-modal-body').innerHTML = body;
+  document.getElementById('edit-modal').style.display = 'flex';
+}
+function closeEditModal() {
+  document.getElementById('edit-modal').style.display = 'none';
+  editCtx = null;
+}
+function saveEditedPointage() {
+  if (!editCtx) return;
+  const {type, nom, date, entry} = editCtx;
+  let updated = Object.assign({}, entry);
+  if (entry.isRepos) { closeEditModal(); return; }
+  if (entry.isDimOuFerie) {
+    const n = parseInt(document.getElementById('edit-interventions').value)||0;
+    updated.interventions = n; updated.minutes = n*60;
+  } else {
+    updated.depart = document.getElementById('edit-dep').value;
+    updated.pauseDebut = document.getElementById('edit-pd').value;
+    updated.pauseFin = document.getElementById('edit-pf').value;
+    updated.fin = document.getElementById('edit-fin').value;
+    const w = (toMin(updated.pauseDebut)-toMin(updated.depart))+(toMin(updated.fin)-toMin(updated.pauseFin));
+    updated.minutes = w > 0 ? w : entry.minutes;
+    if (type==='transport') {
+      const dow = new Date(date+'T12:00:00').getDay();
+      updated.minutesSupp = Math.max(0, updated.minutes - (dow===5?420:480));
+    } else {
+      const avant = parseInt(document.getElementById('edit-hh-avant')?.value)||0;
+      const pause = parseInt(document.getElementById('edit-hh-pause')?.value)||0;
+      const apres = parseInt(document.getElementById('edit-hh-apres')?.value)||0;
+      updated.horsHorairesAvant=avant; updated.horsHorairesPause=pause; updated.horsHorairesApres=apres;
+      updated.horsHorairesTotal=avant+pause+apres;
+      const dow=new Date(date+'T12:00:00').getDay();
+      const ref=getRefMinutes(nom,dow);
+      updated.minutesSupp=ref>0?Math.max(0,updated.minutes-ref):0;
+    }
+  }
+  savePointage(type, updated);
+  closeEditModal();
+  renderPointagesList();
+  renderGLists();
+}
+function renderGLists(){
+  const tE=filterByMonth(loadPointages('transport'),currentMonth);
+  const dE=filterByMonth(loadPointages('depannage'),currentMonth);
+  let totP=0,totS=0,totMT=0;
+  const tMap={};TRANSPORT_NAMES.forEach(n=>tMap[n]={jours:0,minutes:0,supp:0,paniers:0,decouches:0});
+  tE.forEach(e=>{if(!tMap[e.nom])tMap[e.nom]={jours:0,minutes:0,supp:0,paniers:0,decouches:0};
+    tMap[e.nom].jours++;tMap[e.nom].minutes+=(e.minutes||0);tMap[e.nom].supp+=(e.minutesSupp||0);
+    if(e.panier)tMap[e.nom].paniers++;if(e.decouche)tMap[e.nom].decouches++;});
+  const tl=document.getElementById('g-t-list');
+  const tRows=TRANSPORT_NAMES.map(name=>{const e=tMap[name];if(e.jours===0)return '';
+    totP+=e.paniers;totS+=e.supp;totMT+=e.minutes;const s=e.supp>0?'+'+fmtH(e.supp):'0h';
+    const dec=e.decouches>0?` · ${e.decouches} découche${e.decouches>1?'s':''}`:'';
+    return `<div class="list-row" style="cursor:pointer;" onclick="openGererPointages('transport','${name}')">
+      <div class="avatar avatar-blue">${initials(name)}</div>
+      <div class="list-info"><div class="list-name">${name}</div>
+      <div class="list-detail">${e.jours} jour${e.jours>1?'s':''} · ${e.paniers} panier${e.paniers>1?'s':''} repas${dec}</div></div>
+      <div class="list-right" style="align-items:flex-end;gap:4px;">
+        <div class="list-hours">${fmtH(e.minutes)}</div>
+        <div class="list-sub" style="color:${e.supp>0?'var(--green)':'var(--text-muted)'}">supp. ${s}</div>
+        <div style="font-size:11px;color:var(--accent);font-weight:600;margin-top:2px;">✏️ Gérer</div>
+      </div></div>`;
+  }).join('');
+  tl.innerHTML=tRows||'<div style="text-align:center;color:var(--text-muted);padding:20px;font-size:14px;">Aucun pointage enregistré ce mois-ci</div>';
+  document.querySelector('#g-transport-view .stat-grid').innerHTML=`
+    <div class="stat-card"><div class="stat-val">${new Set(tE.map(e=>e.nom)).size}</div><div class="stat-lbl">Chauffeurs actifs</div></div>
+    <div class="stat-card accent"><div class="stat-val">${fmtH(totMT)}</div><div class="stat-lbl">Heures total</div></div>
+    <div class="stat-card"><div class="stat-val">${totP}</div><div class="stat-lbl">Paniers repas</div></div>
+    <div class="stat-card"><div class="stat-val">${totS>0?fmtH(totS):'0h'}</div><div class="stat-lbl">Heures supp. total</div></div>`;
+  let totA=0,totI=0,totMD=0;
+  const dMap={};DEPANNAGE_NAMES.forEach(n=>dMap[n]={jours:0,minutes:0,interventions:0});
+  dE.forEach(e=>{if(!dMap[e.nom])dMap[e.nom]={jours:0,minutes:0,interventions:0};
+    dMap[e.nom].jours++;dMap[e.nom].minutes+=(e.minutes||0);
+    if(e.isDimOuFerie){dMap[e.nom].interventions+=(e.interventions||0);}
+    else{dMap[e.nom].interventions+=(e.horsHorairesTotal||0);}});
+  const dl=document.getElementById('g-d-list');
+  const dRows=DEPANNAGE_NAMES.map(name=>{const e=dMap[name];if(e.jours===0)return '';
+    totI+=e.interventions;totMD+=e.minutes;
+    return `<div class="list-row" style="cursor:pointer;" onclick="openGererPointages('depannage','${name}')">
+      <div class="avatar avatar-orange">${initials(name)}</div>
+      <div class="list-info"><div class="list-name">${name}</div>
+      <div class="list-detail">${e.jours} jour${e.jours>1?'s':''} · ${e.interventions} intervention${e.interventions>1?'s':''}</div></div>
+      <div class="list-right" style="align-items:flex-end;gap:4px;">
+        <div class="list-hours">${fmtH(e.minutes)}</div>
+        <div class="list-sub" style="color:var(--text-muted)">${fmtH(e.interventions*60)} hors horaires</div>
+        <div style="font-size:11px;color:var(--accent);font-weight:600;margin-top:2px;">✏️ Gérer</div>
+      </div></div>`;
+  }).join('');
+  dl.innerHTML=dRows||'<div style="text-align:center;color:var(--text-muted);padding:20px;font-size:14px;">Aucun pointage enregistré ce mois-ci</div>';
+  document.querySelector('#g-depannage-view .stat-grid').innerHTML=`
+    <div class="stat-card"><div class="stat-val">${new Set(dE.map(e=>e.nom)).size}</div><div class="stat-lbl">Chauffeurs actifs</div></div>
+    <div class="stat-card orange"><div class="stat-val">${fmtH(totMD)}</div><div class="stat-lbl">Heures total</div></div>
+    <div class="stat-card green"><div class="stat-val">${totI}</div><div class="stat-lbl">Interventions hors h.</div></div>
+    <div class="stat-card"><div class="stat-val">${fmtH(totI*60)}</div><div class="stat-lbl">Heures supplémentaires</div></div>`;
+}
+
+/* ══ FICHES ══ */
+function openFiches() {
+  document.getElementById('overlay-fiches').style.display = 'flex';
+  document.getElementById('fiche-month-label').textContent =
+    ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'][currentMonth.getMonth()] + ' ' + currentMonth.getFullYear();
+  if(window.__db){
+    Promise.all([
+      window.__db.collection('pointages_transport').get(),
+      window.__db.collection('pointages_depannage').get()
+    ]).then(([tS,dS])=>{
+      dbCache.transport=tS.docs.map(d=>d.data());
+      dbCache.depannage=dS.docs.map(d=>d.data());
+      renderFicheList();
+    }).catch(()=>renderFicheList());
+  } else { renderFicheList(); }
+}
+function closeFiches() { document.getElementById('overlay-fiches').style.display = 'none'; }
+
+function renderFicheList() {
+  const cat = document.getElementById('fiche-categorie').value;
+  const names = cat === 'transport' ? TRANSPORT_NAMES : DEPANNAGE_NAMES;
+  const sel = document.getElementById('fiche-employe');
+  sel.innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join('');
+  renderFichePreview();
+  sel.onchange = renderFichePreview;
+}
+
+function renderFichePreview() {
+  const cat = document.getElementById('fiche-categorie').value;
+  const nom = document.getElementById('fiche-employe').value;
+  document.getElementById('fiche-preview').innerHTML = buildFicheHTML(cat, nom, currentMonth);
+}
+
+function buildFicheHTML(cat, nom, month) {
+  const entries = filterByMonth(loadPointages(cat), month);
+  const empEntries = entries.filter(e => e.nom === nom);
+  const entryMap = {};
+  empEntries.forEach(e => { entryMap[e.date] = e; });
+
+  const y = month.getFullYear(), m = month.getMonth();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const DAYS_FR = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const feries = getJoursFeries(y);
+
+  let totNormal=0, totFerie=0, totDim=0, totInter=0, totSupp=0, totDecouche=0, totPanier=0;
+
+  let rows = '';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow = new Date(dateStr+'T12:00:00').getDay(); // 0=dim, 6=sam
+    const isFerie = feries.has(dateStr);
+    const isSun = dow === 0;
+    const isSat = dow === 6;
+    const isOff = isSun || isSat || isFerie;
+
+    const e = entryMap[dateStr];
+    let hNorm='', hFerie='', hDim='', hInter='', hSupp='', hTotal='', decStr='', panStr='';
+    let rowClass = '';
+
+    if (isFerie) rowClass = 'ferie';
+    else if (isSun) rowClass = 'dimanche';
+    else if (isSat) rowClass = 'weekend';
+
+    if (e) {
+      if (e.isRepos) {
+        rows += `<tr class="${rowClass}"><td style="text-align:left">${dayLabel}</td><td style="font-weight:600">${d}</td>
+          <td colspan="7" style="color:var(--accent);font-style:italic;text-align:center;">🛌 Repos</td></tr>`;
+        continue;
+      }
+      if (cat === 'transport') {
+        const mins = e.minutes || 0;
+        const supp = e.minutesSupp || 0;
+        const norm = mins - supp;
+        if (isFerie) { hFerie = fmtH(mins); totFerie += mins; }
+        else if (isSun) { hDim = fmtH(mins); totDim += mins; }
+        else { hNorm = fmtH(norm); hSupp = supp > 0 ? '+'+fmtH(supp) : ''; totNormal += norm; totSupp += supp; }
+        hTotal = fmtH(mins);
+        if (e.decouche) { decStr = '🌙'; totDecouche++; }
+        if (e.panier) { panStr = '🍽️'; totPanier++; }
+      } else {
+        const mins = e.minutes || 0;
+        const inter = (e.horsHorairesTotal || 0) * 60;
+        if (e.isDimOuFerie) {
+          if (isFerie) { hFerie = fmtH(mins); totFerie += mins; }
+          else { hDim = fmtH(mins); totDim += mins; }
+        } else {
+          const dSupp = e.minutesSupp !== undefined ? e.minutesSupp : Math.max(0, mins - getRefMinutes(e.nom, dow));
+          const dNorm = mins - dSupp;
+          hNorm = fmtH(dNorm); totNormal += dNorm;
+          if (dSupp > 0) { hSupp = '+'+fmtH(dSupp); totSupp += dSupp; }
+          if (inter > 0) { hInter = fmtH(inter); totInter += inter; }
+        }
+        hTotal = fmtH(mins + inter);
+        if (e.panier) { panStr = '🍽️'; totPanier++; }
+      }
+    }
+
+    const dayLabel = DAYS_FR[dow];
+    // Jour de repos
+    if (e && e.isRepos) {
+      rows += `<tr class="${rowClass}"><td style="text-align:left">${dayLabel}</td><td style="font-weight:600">${d}</td>
+        <td colspan="7" style="color:#f97316;font-style:italic;text-align:center;">🛌 Repos</td></tr>`;
+      continue;
+    }
+    rows += `<tr class="${rowClass}">
+      <td style="text-align:left; font-weight:${isOff?'600':'400'}; color:${isOff?'#64748b':'inherit'}">${dayLabel}</td>
+      <td style="font-weight:600">${d}</td>
+      <td class="heures">${hNorm}</td>
+      <td class="heures" style="color:#f97316">${hSupp}</td>
+      <td class="heures" style="color:#d97706">${hFerie}</td>
+      <td class="heures" style="color:#9333ea">${hDim}</td>
+      <td class="heures" style="color:#0369a1">${hInter}</td>
+      <td class="heures" style="font-weight:700">${hTotal}</td>
+      <td>${decStr}${panStr}</td>
+    </tr>`;
+  }
+
+  const totalGeneral = totNormal + totFerie + totDim + totInter + totSupp;
+  const isTransport = cat === 'transport';
+  const moisLabel = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'][m];
+
+  let footerBadges = `
+    <div class="fiche-badge">Heures normales<span>${fmtH(totNormal)}</span></div>
+    <div class="fiche-badge">Heures supp.<span>${totSupp>0?'+'+fmtH(totSupp):'0h'}</span></div>
+    <div class="fiche-badge">Jours fériés<span>${fmtH(totFerie)}</span></div>
+    <div class="fiche-badge">Dimanches<span>${fmtH(totDim)}</span></div>`;
+  if (!isTransport) footerBadges += `<div class="fiche-badge">Interventions hors h.<span>${fmtH(totInter)}</span></div>`;
+  footerBadges += `<div class="fiche-badge" style="border-color:#064e3b;"><strong>Total général</strong><span style="color:#064e3b">${fmtH(totalGeneral)}</span></div>`;
+  if (isTransport) footerBadges += `<div class="fiche-badge">🌙 Découches<span>${totDecouche}</span></div>`;
+  footerBadges += `<div class="fiche-badge" style="${totPanier>0?'border-color:#22c55e;':''}">🍽️ Paniers repas<span style="color:${totPanier>0?'#16a34a':'#94a3b8'}">${totPanier}</span></div>`;
+
+  return `<div style="border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-md);">
+    <div class="fiche-header">
+      <div style="font-size:16px; font-weight:700;">${nom}</div>
+      <div style="font-size:12px; opacity:.7; margin-top:2px;">${isTransport?'🚚 Transport':'🔧 Dépannage'} · ${moisLabel} ${y}</div>
+    </div>
+    <div style="overflow-x:auto;">
+    <table class="fiche-table">
+      <thead><tr>
+        <th style="text-align:left">Jour</th><th>Date</th>
+        <th>H. normales</th><th>H. supp.</th>
+        <th>Jours fériés</th><th>Dimanches</th>
+        <th>Interventions</th><th>Total</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr class="total-row">
+        <td colspan="2" style="text-align:left">TOTAUX</td>
+        <td>${fmtH(totNormal)}</td>
+        <td>${totSupp>0?'+'+fmtH(totSupp):'—'}</td>
+        <td>${fmtH(totFerie)}</td>
+        <td>${fmtH(totDim)}</td>
+        <td>${fmtH(totInter)}</td>
+        <td>${fmtH(totalGeneral)}</td>
+        <td></td>
+      </tr></tfoot>
+    </table>
+    </div>
+    <div class="fiche-footer">${footerBadges}</div>
+  </div>`;
+}
+
+function imprimerFiche() {
+  const cat = document.getElementById('fiche-categorie').value;
+  const nom = document.getElementById('fiche-employe').value;
+  const html = buildFicheHTML(cat, nom, currentMonth);
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Fiche ${nom}</title>
+    <style>
+      body{font-family:-apple-system,sans-serif;padding:20px;color:#0f172a;}
+      .fiche-table{width:100%;border-collapse:collapse;font-size:11px;}
+      .fiche-table th{background:#064e3b;color:white;padding:5px 7px;text-align:center;font-size:9px;}
+      .fiche-table td{padding:4px 7px;border-bottom:1px solid #e2e8f0;text-align:center;}
+      tr.weekend td{background:#f1f5f9;color:#64748b;}
+      tr.ferie td{background:#fef9c3;font-weight:600;}
+      tr.dimanche td{background:#fce7f3;font-weight:600;}
+      tr.total-row td{background:#0f172a;color:white;font-weight:700;}
+      .fiche-header{background:#064e3b;color:white;padding:12px 16px;border-radius:8px 8px 0 0;}
+      .fiche-footer{background:#f8fafc;border:1px solid #e2e8f0;padding:10px 14px;display:flex;gap:12px;flex-wrap:wrap;border-radius:0 0 8px 8px;}
+      .fiche-badge{background:white;border:1.5px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:12px;}
+      .fiche-badge span{font-weight:700;font-size:14px;color:#064e3b;display:block;}
+    </style>
+  </head><body>${html}</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(()=>win.print(), 300);
+}
+function imprimerToutesFiches() {
+  const PRINT_CSS = `
+    body{font-family:-apple-system,sans-serif;padding:20px;color:#0f172a;}
+    .fiche-table{width:100%;border-collapse:collapse;font-size:11px;}
+    .fiche-table th{background:#064e3b;color:white;padding:5px 7px;text-align:center;font-size:9px;}
+    .fiche-table td{padding:4px 7px;border-bottom:1px solid #e2e8f0;text-align:center;}
+    tr.weekend td{background:#f1f5f9;color:#64748b;}
+    tr.ferie td{background:#fef9c3;font-weight:600;}
+    tr.dimanche td{background:#fce7f3;font-weight:600;}
+    tr.total-row td{background:#0f172a;color:white;font-weight:700;}
+    .fiche-header{background:#064e3b;color:white;padding:12px 16px;border-radius:8px 8px 0 0;}
+    .fiche-footer{background:#f8fafc;border:1px solid #e2e8f0;padding:10px 14px;display:flex;gap:12px;flex-wrap:wrap;border-radius:0 0 8px 8px;}
+    .fiche-badge{background:white;border:1.5px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:12px;}
+    .fiche-badge span{font-weight:700;font-size:14px;color:#064e3b;display:block;}
+    .page-break{page-break-after:always;}
+  `;
+  const allEntries = [
+    ...TRANSPORT_NAMES.map(n => ({cat:'transport', nom:n})),
+    ...DEPANNAGE_NAMES.map(n => ({cat:'depannage', nom:n}))
+  ];
+  const pages = allEntries.map((e, i) => {
+    const html = buildFicheHTML(e.cat, e.nom, currentMonth);
+    const isLast = i === allEntries.length - 1;
+    return `<div class="${isLast ? '' : 'page-break'}">${html}</div>`;
+  }).join('\n');
+  const win = window.open('', '_blank');
+  const moisLabel = document.getElementById('fiche-month-label').textContent;
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Toutes les fiches — ${moisLabel}</title>
+    <style>${PRINT_CSS}</style>
+  </head><body>${pages}</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(()=>win.print(), 400);
+}
+const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+function changeMonth(d) { currentMonth.setMonth(currentMonth.getMonth()+d); updateMonthLabel(); reloadGestionnaire(); }
+function updateMonthLabel() { document.getElementById('g-month-label').textContent = MONTHS[currentMonth.getMonth()]+' '+currentMonth.getFullYear(); }
+
+/* ── SERVICE WORKER ── */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+
+/* ── INIT ── */
+initVehs();
+document.getElementById('t-date').addEventListener('change', ()=>{ updateDateLabel(); calcT(); });
+document.getElementById('t-date').value = new Date().toISOString().split('T')[0];
+document.getElementById('d-date').value = new Date().toISOString().split('T')[0];
+</script>
+<!-- Modal édition pointage -->
+<div id="edit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:flex-end; justify-content:center;">
+  <div style="background:var(--bg-card); border-radius:var(--radius) var(--radius) 0 0; padding:20px; width:100%; max-width:480px; max-height:85vh; overflow-y:auto;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+      <div style="font-size:16px; font-weight:700;" id="edit-modal-title">Modifier le pointage</div>
+      <button onclick="closeEditModal()" style="background:var(--bg); border:none; border-radius:8px; padding:6px 10px; font-size:18px; cursor:pointer;">✕</button>
+    </div>
+    <div id="edit-modal-body"></div>
+    <div style="display:flex; gap:8px; margin-top:16px;">
+      <button onclick="closeEditModal()" style="flex:1; background:var(--bg); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:12px; font-size:14px; font-weight:600; cursor:pointer;">Annuler</button>
+      <button onclick="saveEditedPointage()" style="flex:2; background:#064e3b; color:white; border:none; border-radius:var(--radius-sm); padding:12px; font-size:14px; font-weight:600; cursor:pointer;">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+<!-- Modal salarié -->
+<div id="sal-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:300; align-items:flex-end; justify-content:center;">
+  <div style="background:var(--bg-card); border-radius:var(--radius) var(--radius) 0 0; padding:20px; width:100%; max-width:480px; max-height:92vh; overflow-y:auto;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+      <div style="font-size:16px; font-weight:700;" id="sal-modal-title">Nouveau salarié</div>
+      <button onclick="closeSalModal()" style="background:var(--bg); border:none; border-radius:8px; padding:6px 10px; font-size:18px; cursor:pointer;">✕</button>
+    </div>
+    <!-- Nom -->
+    <div class="field" style="margin-bottom:12px;">
+      <label style="font-size:13px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:4px;">Nom complet</label>
+      <input type="text" id="sal-nom" placeholder="Prénom Nom" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:14px;box-sizing:border-box;">
+    </div>
+    <!-- Catégorie -->
+    <div class="field" style="margin-bottom:12px;">
+      <label style="font-size:13px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:6px;">Catégorie</label>
+      <div style="display:flex; gap:8px;">
+        <button id="sal-cat-t" onclick="setSalCat('transport')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;">🚚 Transport</button>
+        <button id="sal-cat-d" onclick="setSalCat('depannage')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;">🔧 Dépannage</button>
+      </div>
+    </div>
+    <!-- PIN -->
+    <div class="field" style="margin-bottom:12px;">
+      <label style="font-size:13px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:4px;">Code PIN (4 chiffres)</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="sal-pin" maxlength="4" inputmode="numeric" placeholder="0000" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:18px;letter-spacing:6px;text-align:center;font-weight:700;box-sizing:border-box;">
+        <button onclick="salGenPin()" style="padding:10px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:18px;cursor:pointer;" title="Générer un PIN aléatoire">🎲</button>
+      </div>
+    </div>
+    <!-- Panier (dépannage seulement) -->
+    <div class="field" id="sal-panier-field" style="display:none; margin-bottom:12px;">
+      <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px;">
+        <input type="checkbox" id="sal-panier" style="width:18px;height:18px;accent-color:#064e3b;"> Panier repas
+      </label>
+    </div>
+    <!-- Horaires -->
+    <div class="field" style="margin-bottom:12px;">
+      <label style="font-size:13px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:8px;">Horaires de référence</label>
+      <div id="sal-days-grid"></div>
+    </div>
+    <!-- Boutons -->
+    <div style="display:flex; gap:8px; margin-top:16px;">
+      <button onclick="closeSalModal()" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:14px;font-weight:600;cursor:pointer;">Annuler</button>
+      <button onclick="saveSalarie()" style="flex:2;background:#064e3b;color:white;border:none;border-radius:var(--radius-sm);padding:12px;font-size:14px;font-weight:600;cursor:pointer;">💾 Enregistrer</button>
+    </div>
+    <div id="sal-delete-row" style="display:none; margin-top:8px;">
+      <button onclick="confirmDeleteSalarie()" style="width:100%;background:#fee2e2;color:#991b1b;border:none;border-radius:var(--radius-sm);padding:12px;font-size:14px;font-weight:600;cursor:pointer;">🗑️ Supprimer ce salarié</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PointagePro DÉMO — Stockage sessionStorage (remplace Firebase) ──
+(function() {
+  const LS = 'ppdemo_';
+  function getCol(name) { try { return JSON.parse(sessionStorage.getItem(LS+name)||'[]'); } catch(e) { return []; } }
+  function setCol(name, data) { sessionStorage.setItem(LS+name, JSON.stringify(data)); }
+  function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+  function makeQ(name, filters) {
+    return {
+      where(f,op,v) { return makeQ(name,[...filters,{f,v}]); },
+      get() {
+        let col=getCol(name);
+        filters.forEach(({f,v})=>{ col=col.filter(d=>d[f]===v); });
+        const docs=col.map(dd=>({
+          data:()=>{ const {__id,...r}=dd; return r; },
+          ref:{ delete(){ let c=getCol(name); c=c.filter(d=>d.__id!==dd.__id); setCol(name,c); return Promise.resolve(); } }
+        }));
+        return Promise.resolve({docs,forEach(fn){docs.forEach(fn);}});
+      }
+    };
+  }
+  function makeDoc(col,id) {
+    return {
+      get() {
+        const c=getCol(col), found=c.find(d=>d.__id===id);
+        if(found){ const {__id,...r}=found; return Promise.resolve({exists:true,data:()=>r}); }
+        return Promise.resolve({exists:false,data:()=>null});
+      },
+      set(data,opts={}) {
+        const c=getCol(col), idx=c.findIndex(d=>d.__id===id);
+        if(idx>=0){ c[idx]=opts.merge?{...c[idx],...data,__id:id}:{...data,__id:id}; }
+        else { c.push({...data,__id:id}); }
+        setCol(col,c); return Promise.resolve();
+      }
+    };
+  }
+  window.__db = {
+    collection(name) {
+      return {
+        where(f,op,v) { return makeQ(name,[{f,v}]); },
+        get() { return makeQ(name,[]).get(); },
+        add(data) { const c=getCol(name),id=uid(); c.push({...data,__id:id}); setCol(name,c); return Promise.resolve({id}); },
+        doc(id) { return makeDoc(name,id); }
+      };
+    }
+  };
+  console.log('%c\u25B6 PointagePro D\u00C9MO — stockage sessionStorage actif','color:#3b82f6;font-weight:bold');
+})();
+</script>
+</body>
+</html>

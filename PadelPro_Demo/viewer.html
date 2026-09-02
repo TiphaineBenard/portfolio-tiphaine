@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0d1f12">
+<title>Planning Tournoi — PadelPro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#16a34a;
+  --green-light:#22c55e;
+  --green-glow:rgba(22,163,74,0.25);
+  --amber:#f59e0b;
+  --blue:#0ea5e9;
+  --bg:#070f0a;
+  --bg2:#0d1a10;
+  --bg3:#111f14;
+  --border:rgba(22,163,74,0.18);
+  --text:rgba(255,255,255,0.92);
+  --muted:rgba(255,255,255,0.45);
+  --faint:rgba(255,255,255,0.22);
+}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;min-height:100dvh;overflow-x:hidden}
+
+/* ── Header ── */
+.hdr{
+  background:linear-gradient(135deg,#0a1c0d 0%,#0d2412 100%);
+  padding:18px 28px;
+  display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 20px rgba(0,0,0,0.5);
+}
+.hdr-brand{display:flex;align-items:center;gap:14px}
+.hdr-logo{width:40px;height:40px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 0 16px var(--green-glow)}
+.hdr-info h1{font-size:1.25rem;font-weight:900;letter-spacing:-0.02em}
+.hdr-info .sub{font-size:0.75rem;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:8px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green-light);animation:blink 1.2s ease-in-out infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--green-light)}50%{opacity:0.3;box-shadow:none}}
+.clock{font-size:1.8rem;font-weight:900;color:white;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;text-shadow:0 0 20px var(--green-glow)}
+
+/* ── Tabs ── */
+.tabs{
+  display:flex;gap:0;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;
+}
+.tab{
+  flex:none;padding:14px 20px;border:none;background:none;
+  color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;
+  border-bottom:2px solid transparent;transition:.15s;white-space:nowrap;
+}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--green-light);border-bottom-color:var(--green-light)}
+
+/* ── Content ── */
+.content{padding:20px;max-width:960px;margin:0 auto}
+
+/* ── LIVE section: match en cours ── */
+.live-section{margin-bottom:24px}
+.live-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--green-light);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.live-card{
+  background:linear-gradient(135deg,rgba(22,163,74,0.12),rgba(22,163,74,0.06));
+  border:1.5px solid var(--green);
+  border-radius:14px;padding:16px;position:relative;overflow:hidden;
+  animation:glow-pulse 2s ease-in-out infinite;
+}
+@keyframes glow-pulse{
+  0%,100%{box-shadow:0 0 16px rgba(22,163,74,0.2)}
+  50%{box-shadow:0 0 28px rgba(22,163,74,0.4)}
+}
+.live-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--green);color:white;
+  font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  padding:3px 10px;border-radius:999px;margin-bottom:12px;
+}
+.live-court{font-size:11px;color:var(--muted);margin-bottom:10px}
+.live-team{font-size:1.05rem;font-weight:800;line-height:1.3}
+.live-vs{font-size:10px;color:var(--faint);margin:3px 0;text-transform:uppercase;letter-spacing:1px}
+.live-score{font-size:1.5rem;font-weight:900;color:var(--amber);margin-top:8px;font-variant-numeric:tabular-nums}
+
+/* ── Match cards ── */
+.match-card{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 16px;border-radius:12px;margin-bottom:8px;
+  border-left:3px solid transparent;
+  transition:.15s;
+}
+.match-card.pending{background:rgba(14,165,233,0.07);border-left-color:var(--blue)}
+.match-card.running{background:rgba(245,158,11,0.1);border-left-color:var(--amber)}
+.match-card.finished{background:rgba(255,255,255,0.03);border-left-color:rgba(22,163,74,0.4);opacity:0.75}
+.time-badge{font-size:0.95rem;font-weight:800;color:var(--blue);min-width:56px;text-align:center;font-variant-numeric:tabular-nums}
+.court-badge{font-size:11px;color:var(--faint);min-width:52px;text-align:center}
+.teams-col{flex:1}
+.team-name{font-size:0.88rem;font-weight:600}
+.team-name.winner{color:var(--green-light);font-weight:800}
+.team-name.loser{color:var(--faint)}
+.vs-sep{font-size:10px;color:var(--faint);margin:2px 0;text-transform:uppercase;letter-spacing:0.5px}
+.score-col{font-size:1rem;font-weight:800;color:var(--green-light);white-space:nowrap}
+.running-chip{
+  font-size:10px;background:rgba(245,158,11,0.2);color:var(--amber);
+  padding:2px 9px;border-radius:999px;font-weight:700;white-space:nowrap;
+}
+.time-group{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:1.5px;margin:18px 0 8px;padding:0 4px}
+
+/* ── Classement ── */
+.pool-hdr{
+  padding:7px 14px;border-radius:8px;
+  font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;
+  margin:18px 0 8px;
+}
+.stat-row{
+  display:flex;align-items:center;
+  padding:11px 14px;background:var(--bg3);border-radius:10px;margin-bottom:6px;
+}
+.rank{font-size:1rem;min-width:26px}
+.team-nm{font-weight:600;font-size:0.88rem;flex:1;margin:0 10px}
+.stat-vals{display:flex;gap:14px}
+.stat-v{text-align:center;min-width:28px}
+.stat-vl{font-size:10px;color:var(--faint);margin-bottom:2px}
+.stat-vv{font-size:0.9rem;font-weight:800}
+
+/* ── Empty / Error ── */
+.empty{text-align:center;padding:56px 20px;color:var(--faint)}
+.empty-icon{font-size:2.8rem;margin-bottom:14px}
+.sec{display:none}.sec.active{display:block}
+.error-wrap{text-align:center;padding:80px 24px}
+.refresh-bar{
+  background:rgba(14,165,233,0.08);border:1px solid rgba(14,165,233,0.2);
+  border-radius:10px;padding:10px 16px;margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-logo">🎾</div>
+    <div class="hdr-info">
+      <h1 id="t-name">Chargement…</h1>
+      <div class="sub">
+        <span class="live-dot"></span>
+        <span id="t-date"></span>
+        <span>•</span>
+        <span>Mise à jour en direct</span>
+      </div>
+    </div>
+  </div>
+  <div id="clock" class="clock"></div>
+</div>
+
+<div id="main-content">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('planning',this)">📅 Planning</button>
+    <button class="tab" onclick="showTab('scores',this)">✅ Scores</button>
+    <button class="tab" onclick="showTab('classement',this)">📊 Classement</button>
+  </div>
+  <div class="content">
+    <div class="refresh-bar">
+      <span>🔄</span>
+      <span>Rechargez la page pour actualiser les résultats.</span>
+    </div>
+    <div class="sec active" id="sec-planning"></div>
+    <div class="sec" id="sec-scores"></div>
+    <div class="sec" id="sec-classement"></div>
+  </div>
+</div>
+
+<div id="error-content" class="error-wrap" style="display:none">
+  <div style="font-size:3rem;margin-bottom:16px">❌</div>
+  <h2 style="margin-bottom:8px">Impossible de charger le tournoi</h2>
+  <p style="color:var(--faint);font-size:14px">Le lien QR Code est invalide ou expiré.<br>Demandez un nouveau QR Code à l'organisateur.</p>
+</div>
+
+<script>
+// ── Clock ──────────────────────────────────────────────────────────
+setInterval(() => {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    String(n.getHours()).padStart(2,'0') + ':' +
+    String(n.getMinutes()).padStart(2,'0') + ':' +
+    String(n.getSeconds()).padStart(2,'0');
+}, 1000);
+
+// ── Tab switching ──────────────────────────────────────────────────
+function showTab(id, btn) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Load data: hash first, then localStorage demo fallback ─────────
+function loadData() {
+  // 1. Try URL hash (production QR Code)
+  try {
+    const hash = window.location.hash.replace('#', '');
+    if (hash) {
+      const json = decodeURIComponent(escape(atob(hash)));
+      const d = JSON.parse(json);
+      if (d && d.n) return d;
+    }
+  } catch(e) {}
+
+  // 2. Fallback: build from localStorage (demo mode)
+  try {
+    const activeId = localStorage.getItem('ppdemo_active_id');
+    if (!activeId) return null;
+    const raw = localStorage.getItem('ppdemo_tournaments');
+    if (!raw) return null;
+    const tournaments = JSON.parse(raw);
+    const t = tournaments.find(x => x.id === activeId);
+    if (!t) return null;
+    return buildCompact(t);
+  } catch(e) { return null; }
+}
+
+function buildCompact(t) {
+  const teamIndex = {};
+  const teams = {};
+  (t.teams || []).forEach((tm, i) => {
+    teamIndex[tm.id] = String(i);
+    teams[i] = tm.name || tm.id;
+  });
+  const courtIndex = {};
+  const courts = {};
+  ((t.settings && t.settings.courts) || []).forEach((c, i) => {
+    courtIndex[c.id] = String(i);
+    courts[i] = c.name || c.id;
+  });
+  const name = (t.settings && t.settings.tournament && t.settings.tournament.name) || 'Tournoi de Padel';
+  const date = (t.settings && t.settings.tournament && t.settings.tournament.date) || new Date().toISOString().slice(0,10);
+
+  return {
+    v: 1, n: name, d: date, teams, courts,
+    matches: (t.matches || []).map(m => ({
+      t: m.scheduledTime || '',
+      c: m.courtId != null ? (courtIndex[m.courtId] !== undefined ? courtIndex[m.courtId] : '') : '',
+      a: m.team1Id != null ? (teamIndex[m.team1Id] !== undefined ? teamIndex[m.team1Id] : '') : '',
+      b: m.team2Id != null ? (teamIndex[m.team2Id] !== undefined ? teamIndex[m.team2Id] : '') : '',
+      s: m.status === 'finished' ? 'f' : m.status === 'running' ? 'r' : 'p',
+      w: m.winnerId != null ? (teamIndex[m.winnerId] !== undefined ? teamIndex[m.winnerId] : '') : '',
+      sc: m.score && m.score.sets ? m.score.sets.map(s => s.team1 + '-' + s.team2).join(' ') : ''
+    })),
+    pools: (t.pools || []).map(p => ({
+      n: p.name,
+      ids: (p.teamIds || []).map(id => teamIndex[id]).filter(id => id !== undefined)
+    }))
+  };
+}
+
+// ── Render ─────────────────────────────────────────────────────────
+const D = loadData();
+
+if (!D) {
+  document.getElementById('main-content').style.display = 'none';
+  document.getElementById('error-content').style.display = '';
+} else {
+  document.getElementById('t-name').textContent = D.n || 'Tournoi de Padel';
+  const dateObj = D.d ? new Date(D.d) : null;
+  document.getElementById('t-date').textContent = dateObj
+    ? dateObj.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'})
+    : (D.d || '');
+
+  const teamName = id => (D.teams && D.teams[id]) ? D.teams[id] : (id || '?');
+  const courtName = id => (D.courts && D.courts[id]) ? D.courts[id] : (id || '—');
+
+  // ── PLANNING ──
+  const allMatches = D.matches || [];
+  const running = allMatches.filter(m => m.s === 'r');
+  const scheduled = allMatches.filter(m => m.t && m.s !== 'f').sort((a,b) => a.t > b.t ? 1 : a.t < b.t ? -1 : 0);
+
+  let planHtml = '';
+
+  // Live matches section
+  if (running.length > 0) {
+    planHtml += '<div class="live-section"><div class="live-title"><span class="live-dot"></span> En cours — ' + running.length + ' match' + (running.length > 1 ? 's' : '') + '</div>';
+    planHtml += '<div class="live-grid">';
+    running.forEach(m => {
+      planHtml += '<div class="live-card">';
+      planHtml += '<div><span class="live-badge"><span>⚡</span> Live</span></div>';
+      planHtml += '<div class="live-court">🎾 ' + courtName(m.c) + (m.t ? ' · ' + m.t : '') + '</div>';
+      planHtml += '<div class="live-team">' + esc(teamName(m.a)) + '</div>';
+      planHtml += '<div class="live-vs">vs</div>';
+      planHtml += '<div class="live-team">' + esc(teamName(m.b)) + '</div>';
+      if (m.sc) planHtml += '<div class="live-score">' + esc(m.sc) + '</div>';
+      planHtml += '</div>';
+    });
+    planHtml += '</div></div>';
+  }
+
+  // Scheduled by time
+  if (scheduled.length > 0) {
+    const byTime = {};
+    scheduled.forEach(m => {
+      const k = m.t || 'Sans heure';
+      if (!byTime[k]) byTime[k] = [];
+      byTime[k].push(m);
+    });
+    Object.keys(byTime).sort().forEach(time => {
+      planHtml += '<div class="time-group">⏰ ' + esc(time) + '</div>';
+      byTime[time].forEach(m => {
+        const cls = m.s === 'r' ? 'running' : 'pending';
+        planHtml += '<div class="match-card ' + cls + '">';
+        planHtml += '<div class="time-badge">' + esc(time) + '</div>';
+        planHtml += '<div class="court-badge">' + esc(courtName(m.c)) + '</div>';
+        planHtml += '<div class="teams-col">';
+        planHtml += '<div class="team-name">' + esc(teamName(m.a)) + '</div>';
+        planHtml += '<div class="vs-sep">vs</div>';
+        planHtml += '<div class="team-name">' + esc(teamName(m.b)) + '</div>';
+        planHtml += '</div>';
+        if (m.s === 'r') planHtml += '<span class="running-chip">⚡ En cours</span>';
+        planHtml += '</div>';
+      });
+    });
+  }
+
+  if (!planHtml) planHtml = '<div class="empty"><div class="empty-icon">📅</div>Aucun match planifié</div>';
+  document.getElementById('sec-planning').innerHTML = planHtml;
+
+  // ── SCORES ──
+  const finished = allMatches.filter(m => m.s === 'f').sort((a,b) => b.t > a.t ? 1 : b.t < a.t ? -1 : 0);
+  let scoreHtml = '';
+  if (finished.length === 0) {
+    scoreHtml = '<div class="empty"><div class="empty-icon">🎾</div>Aucun match terminé pour l\'instant</div>';
+  } else {
+    finished.forEach(m => {
+      const t1cls = m.w && m.w === m.a ? 'winner' : (m.w ? 'loser' : '');
+      const t2cls = m.w && m.w === m.b ? 'winner' : (m.w ? 'loser' : '');
+      scoreHtml += '<div class="match-card finished">';
+      scoreHtml += '<div class="time-badge">' + esc(m.t || '—') + '</div>';
+      scoreHtml += '<div class="court-badge">' + esc(courtName(m.c)) + '</div>';
+      scoreHtml += '<div class="teams-col">';
+      scoreHtml += '<div class="team-name ' + t1cls + '">' + (m.w===m.a?'🏆 ':'') + esc(teamName(m.a)) + '</div>';
+      scoreHtml += '<div class="vs-sep">vs</div>';
+      scoreHtml += '<div class="team-name ' + t2cls + '">' + (m.w===m.b?'🏆 ':'') + esc(teamName(m.b)) + '</div>';
+      scoreHtml += '</div>';
+      if (m.sc) scoreHtml += '<div class="score-col">' + esc(m.sc) + '</div>';
+      scoreHtml += '</div>';
+    });
+  }
+  document.getElementById('sec-scores').innerHTML = scoreHtml;
+
+  // ── CLASSEMENT ──
+  const pools = D.pools || [];
+  let classHtml = '';
+  if (pools.length === 0) {
+    classHtml = '<div class="empty"><div class="empty-icon">📊</div>Classement non disponible</div>';
+  } else {
+    const poolColors = ['#16a34a','#0ea5e9','#8b5cf6','#f59e0b','#ec4899'];
+    pools.forEach((pool, pi) => {
+      const color = poolColors[pi % poolColors.length];
+      const stats = (pool.ids || []).map(id => {
+        let wins = 0, losses = 0, pts = 0, played = 0;
+        (D.matches || []).filter(m => m.s === 'f' && (m.a === id || m.b === id)).forEach(m => {
+          played++;
+          if (m.w === id) { wins++; pts += 3; }
+          else if (m.w) losses++;
+          else pts++;
+        });
+        return { id, name: teamName(id), wins, losses, pts, played };
+      }).sort((a,b) => b.pts - a.pts || b.wins - a.wins);
+
+      classHtml += '<div class="pool-hdr" style="background:' + color + '18;color:' + color + '">' + esc(pool.n) + '</div>';
+      const medals = ['🥇','🥈','🥉'];
+      stats.forEach((s, i) => {
+        const winPct = s.played ? Math.round(s.wins / s.played * 100) : 0;
+        classHtml += '<div class="stat-row">';
+        classHtml += '<span class="rank">' + (medals[i] || (i+1)) + '</span>';
+        classHtml += '<div class="team-nm">' + esc(s.name) + '</div>';
+        classHtml += '<div class="stat-vals">';
+        classHtml += '<div class="stat-v"><div class="stat-vl">J</div><div class="stat-vv">' + s.played + '</div></div>';
+        classHtml += '<div class="stat-v"><div class="stat-vl">V</div><div class="stat-vv" style="color:#22c55e">' + s.wins + '</div></div>';
+        classHtml += '<div class="stat-v"><div class="stat-vl">Pts</div><div class="stat-vv" style="color:#16a34a">' + s.pts + '</div></div>';
+        classHtml += '<div class="stat-v"><div class="stat-vl">Win%</div><div class="stat-vv">' + winPct + '%</div></div>';
+        classHtml += '</div></div>';
+      });
+    });
+  }
+  document.getElementById('sec-classement').innerHTML = classHtml;
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

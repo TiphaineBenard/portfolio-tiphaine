@@ -1,0 +1,241 @@
+// ============================================================
+// COUCHE D'ACCÈS AUX DONNÉES (Firebase Firestore + Auth)
+// ============================================================
+
+let db = null;
+let auth = null;
+let utilisateurCourant = { nom: null, role: ROLES.SALARIE, uid: null };
+
+function initFirebase() {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(FIREBASE_CONFIG);
+  }
+  db = firebase.firestore();
+  auth = firebase.auth();
+  return { db, auth };
+}
+
+// ------------------------------------------------------------
+// COMPTEUR DE COMMANDE (numéro unique séquentiel CMD-000001)
+// ------------------------------------------------------------
+async function genererNumeroCommande() {
+  const ref = db.collection("compteurs").doc("commandes");
+  const nouveauNumero = await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const dernier = snap.exists ? snap.data().dernier : 0;
+    const suivant = dernier + 1;
+    tx.set(ref, { dernier: suivant }, { merge: true });
+    return suivant;
+  });
+  return "CMD-" + String(nouveauNumero).padStart(6, "0");
+}
+
+// ------------------------------------------------------------
+// COMMANDES
+// ------------------------------------------------------------
+async function creerCommande(commande) {
+  const numero = await genererNumeroCommande();
+  const doc = {
+    numero,
+    client: commande.client,
+    magasinId: commande.magasinId,
+    dateRetrait: commande.dateRetrait, // format "YYYY-MM-DD"
+    periodeId: commande.periodeId || null,
+    vendeur: commande.vendeur,
+    lignes: commande.lignes, // [{produitId, nom, typeVente, quantite, prixUnitaire}]
+    instructions: commande.instructions || [],
+    remarques: commande.remarques || "",
+    statut: "en_attente",
+    imprimee: false,
+    dateImpression: null,
+    imprimePar: null,
+    creePar: utilisateurCourant.nom || commande.vendeur,
+    creeLe: firebase.firestore.FieldValue.serverTimestamp(),
+    modifieLe: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const ref = await db.collection("commandes").add(doc);
+  await ajouterAuditLog("creation_commande", `Commande ${numero} créée pour ${commande.client} (${commande.magasinId})`);
+  return { id: ref.id, numero };
+}
+
+async function modifierCommande(id, champs) {
+  champs.modifieLe = firebase.firestore.FieldValue.serverTimestamp();
+  await db.collection("commandes").doc(id).update(champs);
+  await ajouterAuditLog("modification_commande", `Commande ${id} modifiée: ${Object.keys(champs).join(", ")}`);
+}
+
+async function changerStatutCommande(id, nouveauStatut, numero) {
+  await db.collection("commandes").doc(id).update({
+    statut: nouveauStatut,
+    modifieLe: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  await ajouterAuditLog("changement_statut", `Commande ${numero || id} -> statut "${nouveauStatut}"`);
+}
+
+async function supprimerCommande(id, numero) {
+  await db.collection("commandes").doc(id).delete();
+  await ajouterAuditLog("suppression_commande", `Commande ${numero || id} supprimée`);
+}
+
+async function marquerImprimee(ids, numeros) {
+  const batch = db.batch();
+  const maintenant = firebase.firestore.FieldValue.serverTimestamp();
+  ids.forEach(id => {
+    batch.update(db.collection("commandes").doc(id), {
+      imprimee: true,
+      dateImpression: maintenant,
+      imprimePar: utilisateurCourant.nom || "Inconnu"
+    });
+  });
+  await batch.commit();
+  await ajouterAuditLog("impression", `Impression de ${ids.length} commande(s): ${(numeros || []).join(", ")}`);
+}
+
+function ecouterCommandes(callback, filtres = {}) {
+  let query = db.collection("commandes");
+  if (filtres.magasinId) query = query.where("magasinId", "==", filtres.magasinId);
+  if (filtres.dateRetrait) query = query.where("dateRetrait", "==", filtres.dateRetrait);
+  if (filtres.statut) query = query.where("statut", "==", filtres.statut);
+
+  return query.onSnapshot(snap => {
+    const commandes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    callback(commandes);
+  }, err => {
+    console.error("Erreur écoute commandes:", err);
+    callback([], err);
+  });
+}
+
+async function recupererCommandesUnique(filtres = {}) {
+  let query = db.collection("commandes");
+  if (filtres.magasinId) query = query.where("magasinId", "==", filtres.magasinId);
+  if (filtres.dateRetrait) query = query.where("dateRetrait", "==", filtres.dateRetrait);
+  if (filtres.statut) query = query.where("statut", "==", filtres.statut);
+  const snap = await query.get();
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+// ------------------------------------------------------------
+// PRODUITS / CATALOGUE (persisté en base, initialisé depuis CATALOGUE_INITIAL)
+// ------------------------------------------------------------
+async function initialiserCatalogueSiVide() {
+  const snap = await db.collection("produits").limit(1).get();
+  if (!snap.empty) return;
+  const batch = db.batch();
+  CATALOGUE_INITIAL.forEach(p => {
+    batch.set(db.collection("produits").doc(p.id), { ...p, actif: true });
+  });
+  await batch.commit();
+}
+
+async function recupererCatalogue() {
+  const snap = await db.collection("produits").get();
+  if (snap.empty) return CATALOGUE_INITIAL;
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+function ecouterCatalogue(callback) {
+  return db.collection("produits").onSnapshot(snap => {
+    callback(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  });
+}
+
+async function enregistrerProduit(produit) {
+  await db.collection("produits").doc(produit.id).set(produit, { merge: true });
+  await ajouterAuditLog("modification_produit", `Produit "${produit.nom}" enregistré`);
+}
+
+async function supprimerProduit(id, nom) {
+  await db.collection("produits").doc(id).delete();
+  await ajouterAuditLog("suppression_produit", `Produit "${nom}" supprimé`);
+}
+
+// ------------------------------------------------------------
+// PARAMÈTRES ENTREPRISE (magasins, périodes, statuts personnalisés...)
+// ------------------------------------------------------------
+async function recupererParametres() {
+  const snap = await db.collection("parametres").doc("config").get();
+  if (!snap.exists) {
+    const defaut = { magasins: MAGASINS, periodes: [], instructions: INSTRUCTIONS_PREPARATION };
+    await db.collection("parametres").doc("config").set(defaut);
+    return defaut;
+  }
+  return snap.data();
+}
+
+async function enregistrerParametres(params) {
+  await db.collection("parametres").doc("config").set(params, { merge: true });
+  await ajouterAuditLog("modification_parametres", "Paramètres entreprise modifiés");
+}
+
+function ecouterParametres(callback) {
+  return db.collection("parametres").doc("config").onSnapshot(snap => {
+    callback(snap.exists ? snap.data() : { magasins: MAGASINS, periodes: [] });
+  });
+}
+
+// ------------------------------------------------------------
+// PÉRIODES ÉVÉNEMENTIELLES
+// ------------------------------------------------------------
+async function ajouterPeriode(periode) {
+  const params = await recupererParametres();
+  const periodes = params.periodes || [];
+  const nouvelleId = "periode_" + Date.now();
+  periodes.push({ id: nouvelleId, ...periode });
+  await enregistrerParametres({ periodes });
+  return nouvelleId;
+}
+
+async function supprimerPeriode(periodeId) {
+  const params = await recupererParametres();
+  const periodes = (params.periodes || []).filter(p => p.id !== periodeId);
+  await enregistrerParametres({ periodes });
+}
+
+// ------------------------------------------------------------
+// UTILISATEURS (pour manager/admin avec compte ; salariés = libre)
+// ------------------------------------------------------------
+async function recupererProfilUtilisateur(uid) {
+  const snap = await db.collection("utilisateurs").doc(uid).get();
+  return snap.exists ? snap.data() : null;
+}
+
+async function creerProfilUtilisateur(uid, nom, role) {
+  await db.collection("utilisateurs").doc(uid).set({ nom, role, creeLe: firebase.firestore.FieldValue.serverTimestamp() });
+}
+
+async function listerUtilisateurs() {
+  const snap = await db.collection("utilisateurs").get();
+  return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+}
+
+async function modifierRoleUtilisateur(uid, role) {
+  await db.collection("utilisateurs").doc(uid).update({ role });
+  await ajouterAuditLog("modification_utilisateur", `Rôle de l'utilisateur ${uid} -> ${role}`);
+}
+
+// ------------------------------------------------------------
+// JOURNAL D'AUDIT (immuable - écriture uniquement, jamais de modif/suppression)
+// ------------------------------------------------------------
+async function ajouterAuditLog(action, description) {
+  try {
+    await db.collection("audit_log").add({
+      utilisateur: utilisateurCourant.nom || "Système",
+      role: utilisateurCourant.role || "inconnu",
+      action,
+      description,
+      horodatage: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (e) {
+    console.error("Erreur écriture audit log:", e);
+  }
+}
+
+function ecouterAuditLog(callback, limite = 200) {
+  return db.collection("audit_log")
+    .orderBy("horodatage", "desc")
+    .limit(limite)
+    .onSnapshot(snap => {
+      callback(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+}

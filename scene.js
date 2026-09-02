@@ -602,7 +602,7 @@ window.Scene = (function () {
       tag: 'Boucherie / Traiteur — Événementiel',
       desc: "Gestion complète des commandes événementielles (Noël, réveillon, mariages, banquets) pour plusieurs magasins en simultané, avec production cuisine synchronisée en temps réel.",
       features: ['Commandes multi-magasins temps réel', 'Production cuisine synchronisée', 'Étiquettes & bons de préparation', "Dashboard & journal d'audit"],
-      link: '../EventPro_Demo/index.html',
+      link: 'EventPro_Demo/index.html',
     },
     {
       name: 'Pointage Pro',
@@ -612,7 +612,7 @@ window.Scene = (function () {
       tag: 'Transport & Dépannage',
       desc: "Suivi des heures et planning hebdomadaire pour équipes terrain, avec calcul automatique des heures supplémentaires et export mensuel.",
       features: ['12 employés, planning hebdomadaire', 'Calcul automatique heures sup.', 'Export & rapports mensuels', 'Prise en main immédiate'],
-      link: '../PointagePro_Demo/index.html',
+      link: 'PointagePro_Demo/index.html',
     },
     {
       name: 'Commandes',
@@ -622,7 +622,7 @@ window.Scene = (function () {
       tag: 'Boucherie / Traiteur — 5 magasins',
       desc: "Bons de commande quotidiens pour 5 magasins boucherie, atelier de production en temps réel, feuilles d'impression par rayon.",
       features: ['Atelier temps réel (Firebase)', 'Feuilles d’impression par rayon', 'Admin produits & catégories', '5 magasins synchronisés'],
-      link: '../Commandes_Demo/index.html',
+      link: 'Commandes_Demo/index.html',
     },
     {
       name: 'PadelPro',
@@ -632,7 +632,7 @@ window.Scene = (function () {
       tag: 'Sport — Clubs de padel',
       desc: "Gestion complète de tournois de padel : joueurs, équipes, poules, tableaux, planning des terrains et classements en direct.",
       features: ['Joueurs, équipes, poules & tableaux', 'Planning terrains & scores en direct', 'Classements barème FFT 2026', 'Historique & statistiques'],
-      link: '../PadelPro_Demo/index.html',
+      link: 'PadelPro_Demo/index.html',
     },
   ];
 

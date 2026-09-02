@@ -1,0 +1,1059 @@
+/* ============================================================
+   VANBAELINGHEM — Commandes Événementielles
+   Identité : artisan boucher-traiteur. Palette tirée du métier :
+   bordeaux boucher, crème papier-boucherie, charbon ardoise,
+   cuivre pour les accents chauds (cuisine/production).
+   Conçu pour un usage terrain : gros tactile, lisible, imprimable.
+   ============================================================ */
+
+:root {
+  /* Palette */
+  --bordeaux: #7a1f2b;
+  --bordeaux-fonce: #5c1620;
+  --bordeaux-clair: #a32d3d;
+  --creme: #f7f3ec;
+  --creme-fonce: #ece4d4;
+  --charbon: #2a2624;
+  --charbon-clair: #4a4541;
+  --cuivre: #b87333;
+  --cuivre-clair: #d4955f;
+  --vert-pret: #2f7a4f;
+  --gris-ligne: #d8d0c2;
+  --blanc: #ffffff;
+
+  /* Statuts */
+  --statut-attente: #94a3b8;
+  --statut-validee: #3b82f6;
+  --statut-production: #b87333;
+  --statut-prete: #2f7a4f;
+  --statut-livree: #6366f1;
+
+  /* Typographie */
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+
+  /* Layout */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --ombre: 0 2px 8px rgba(42, 38, 36, 0.08);
+  --ombre-forte: 0 8px 24px rgba(42, 38, 36, 0.18);
+  --touche-min: 48px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--creme);
+  color: var(--charbon);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden; /* empêche le scroll horizontal de page */
+}
+
+/* Masquer la barre de défilement sur mobile (rendu app) */
+@media (max-width: 720px) {
+  html::-webkit-scrollbar { display: none; }
+  html { scrollbar-width: none; }
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0 0 0.5em 0;
+  color: var(--bordeaux-fonce);
+  letter-spacing: -0.01em;
+}
+
+a { color: var(--bordeaux); text-decoration: none; }
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+/* Focus visible accessible */
+button:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid var(--cuivre);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+/* ---------- LAYOUT GÉNÉRAL ---------- */
+#app { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+
+.entete {
+  background: var(--bordeaux);
+  color: var(--creme);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--ombre);
+}
+
+.entete .logo {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.entete .logo .souligne { color: var(--cuivre-clair); font-weight: 400; font-size: 0.85rem; }
+
+.entete .nav-utilisateur {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.9rem;
+}
+.entete .badge-role {
+  background: rgba(255,255,255,0.15);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tabs-principal {
+  display: flex;
+  gap: 2px;
+  background: var(--bordeaux-fonce);
+  padding: 0 14px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.tab-item {
+  padding: 12px 18px;
+  color: rgba(247,243,236,0.65);
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab-item:hover { color: var(--creme); }
+.tab-item.actif {
+  color: var(--creme);
+  border-bottom-color: var(--cuivre-clair);
+}
+
+main {
+  flex: 1;
+  padding: 20px;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ---------- BOUTONS ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--touche-min);
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  font-weight: 600;
+  font-size: 0.98rem;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.15s ease, background 0.15s ease;
+  user-select: none;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primaire { background: var(--bordeaux); color: var(--creme); }
+.btn-primaire:hover { background: var(--bordeaux-clair); }
+.btn-secondaire { background: var(--blanc); color: var(--bordeaux); border-color: var(--bordeaux); }
+.btn-secondaire:hover { background: var(--creme-fonce); }
+.btn-cuivre { background: var(--cuivre); color: var(--blanc); }
+.btn-cuivre:hover { background: var(--cuivre-clair); }
+.btn-vert { background: var(--vert-pret); color: var(--blanc); }
+.btn-danger { background: #b3261e; color: var(--blanc); }
+.btn-fantome { background: transparent; color: var(--charbon-clair); border-color: var(--gris-ligne); }
+.btn-fantome:hover { background: var(--creme-fonce); }
+.btn-sm { min-height: 38px; padding: 6px 14px; font-size: 0.86rem; }
+.btn-lg { min-height: 60px; padding: 14px 30px; font-size: 1.1rem; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-icone { width: var(--touche-min); padding: 0; }
+
+/* ---------- CARTES / CONTAINERS ---------- */
+.carte {
+  background: var(--blanc);
+  border-radius: var(--radius);
+  box-shadow: var(--ombre);
+  padding: 20px;
+  border: 1px solid var(--gris-ligne);
+}
+.carte-titre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+/* ---------- FORMULAIRES ---------- */
+.champ { margin-bottom: 16px; }
+.champ label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.88rem;
+  margin-bottom: 6px;
+  color: var(--charbon-clair);
+}
+.champ input, .champ select, .champ textarea {
+  width: 100%;
+  min-height: var(--touche-min);
+  padding: 10px 14px;
+  border: 2px solid var(--gris-ligne);
+  border-radius: var(--radius-sm);
+  background: var(--blanc);
+  color: var(--charbon);
+}
+.champ input:focus, .champ select:focus, .champ textarea:focus {
+  border-color: var(--bordeaux);
+  outline: none;
+}
+.champ textarea { min-height: 80px; resize: vertical; }
+.grille-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grille-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+/* ---- Titre de section mobile : caché sur desktop ---- */
+.titre-section-mobile { display: none; }
+
+/* ---- Icônes onglets : cachées sur desktop ---- */
+.tab-icone { display: none; font-size: 1.3rem; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.tab-label-court { display: none; }
+
+/* ---- Tablette (481–720px) : grille-3 en 2 colonnes ---- */
+@media (min-width: 481px) and (max-width: 720px) {
+  .grille-3 { grid-template-columns: 1fr 1fr; }
+}
+
+/* ---- Téléphone (≤ 480px) ---- */
+@media (max-width: 480px) {
+  /* grille : 1 colonne sur téléphone */
+  .grille-2, .grille-3 { grid-template-columns: 1fr; }
+
+  /* En-tête : 2 lignes */
+  .entete {
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    gap: 4px;
+  }
+  .entete .logo { font-size: 1.1rem; }
+  .entete .nav-utilisateur {
+    width: 100%;
+    gap: 8px;
+    font-size: 0.82rem;
+    justify-content: space-between;
+  }
+  #btn-deconnexion {
+    padding: 5px 10px !important;
+    font-size: 0.8rem !important;
+    min-height: 30px !important;
+  }
+
+  /* Titre de section */
+  .titre-section-mobile {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--bordeaux);
+    padding: 8px 10px 2px;
+    letter-spacing: -0.01em;
+  }
+
+  /* Contenu principal : compact + place pour la nav en bas */
+  main { padding: 6px 10px 74px; }
+
+  /* Cartes : padding réduit */
+  .carte { padding: 12px; }
+  .carte-titre { margin-bottom: 8px; }
+  .carte-titre h2 { font-size: 1.1rem; }
+
+  /* Formulaires : espacement serré */
+  .champ { margin-bottom: 7px; }
+  .champ label { margin-bottom: 2px; font-size: 0.8rem; }
+  .champ input, .champ select, .champ textarea { padding: 7px 9px; font-size: 0.88rem; min-height: 36px; }
+
+  /* Catalogue produits : compact */
+  .grille-categories { gap: 10px; }
+  .bloc-categorie h3 { font-size: 0.8rem; padding-bottom: 4px; margin-bottom: 6px; }
+  .grille-produits { gap: 5px; }
+  .carte-produit { padding: 6px 8px; gap: 6px; }
+  .carte-produit .nom-produit { font-size: 0.82rem; }
+  .carte-produit .prix-produit { font-size: 0.7rem; }
+  .stepper { gap: 3px; }
+  .stepper button { width: 28px; height: 28px; font-size: 0.9rem; border-width: 1.5px; }
+  .stepper .valeur { min-width: 16px; font-size: 0.82rem; }
+
+  /* Bouton Spécification : discret */
+  [data-specification-btn] { font-size: 0.7rem !important; padding: 2px 8px !important; min-height: auto !important; margin-top: 3px !important; }
+
+  /* Barre de recherche produits */
+  #nc-recherche { max-width: 100% !important; min-height: 34px !important; font-size: 0.82rem !important; padding: 5px 10px !important; }
+
+  /* Panier flottant compact */
+  .panier-flottant { padding: 8px 12px; }
+  .panier-flottant .montant { font-size: 1.15rem; }
+  .panier-flottant .resume { font-size: 0.78rem; }
+
+  /* Tables : compact, pas de min-width forcé (chaque contexte gère son cas) */
+  .table-wrap { max-width: 100%; overflow-x: auto; }
+  .table-wrap table { font-size: 0.78rem; }
+  .table-wrap th, .table-wrap td { padding: 5px 8px; white-space: nowrap; }
+  /* Suivi commandes en mode tableau : scroll horizontal accepté */
+  .table-commandes-suivi { min-width: 560px; font-size: 0.74rem; }
+
+  /* Boutons : taille réduite */
+  .btn { min-height: 36px; padding: 7px 14px; font-size: 0.85rem; }
+  .btn-sm { min-height: 28px; padding: 4px 9px; font-size: 0.76rem; }
+  .btn-lg { min-height: 40px; padding: 10px 18px; }
+
+  /* Filtres suivi : grille 2 colonnes */
+  .filtre-barre {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .filtre-barre select { font-size: 0.8rem; min-height: 34px; padding: 5px 6px; }
+  .filtre-barre > input[type="search"] { grid-column: 1 / -1; font-size: 0.8rem; min-height: 34px; }
+  .filtre-barre > .btn-sm { font-size: 0.76rem; }
+
+  /* Vue cartes commandes : 1 colonne serrée */
+  .grille-commandes-cartes { grid-template-columns: 1fr; gap: 8px; }
+  .carte-commande-item { padding: 10px 12px; }
+
+  /* KPI dashboard */
+  .grille-kpi { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* Panier flottant : s'arrêter au-dessus de la nav */
+  .panier-flottant { bottom: 62px; }
+
+  /* Navigation principale fixée en bas (nav uniquement, pas les sous-onglets admin) */
+  nav.tabs-principal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    padding: 0;
+    gap: 0;
+    overflow-x: hidden;
+    justify-content: space-around;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.25);
+  }
+  /* Wrapper nav : empêcher le scroll horizontal (overflow-x:auto inline est neutralisé) */
+  nav.tabs-principal > div { flex: 1; display: flex; justify-content: space-around; overflow-x: hidden !important; }
+  #btn-icone-sauvegarde { display: none; }
+
+  nav.tabs-principal .tab-item {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 1px 7px;
+    gap: 1px;
+    border-bottom: none;
+    border-top: 3px solid transparent;
+    white-space: normal;
+    min-width: 0;
+    overflow: hidden;
+  }
+  nav.tabs-principal .tab-item.actif {
+    border-bottom-color: transparent;
+    border-top-color: var(--cuivre-clair);
+  }
+  .tab-icone { display: block; font-size: 1.5rem; line-height: 1; }
+  .tab-label { display: none; }
+  nav.tabs-principal .tab-label-court { display: block; font-size: 0.6rem; margin-top: 2px; text-align: center; letter-spacing: 0; }
+
+  /* Sous-onglets admin : scroll horizontal compact */
+  div.tabs-principal {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding: 4px 6px;
+    gap: 2px;
+    margin-bottom: 12px;
+  }
+  div.tabs-principal .tab-item {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ---- ÉTIQUETTES : cacher texte explicatif long ---- */
+  .aide-desktop { display: none !important; }
+  /* Listbox produits : moins haute sur mobile */
+  #etq-produit { min-height: 90px !important; font-size: 0.85rem; }
+
+  /* ---- PRODUCTION CUISINE : compacter barre de filtres sticky ---- */
+  #pc-barre-sticky { padding: 8px 10px !important; }
+  /* Ligne sous-onglets Traiteur/Boucherie + bouton Imprimer : empiler verticalement */
+  #pc-barre-sticky > div + div { flex-direction: column !important; gap: 6px !important; }
+  #pc-barre-sticky > div + div > div.tabs-principal { width: 100%; }
+  #pc-barre-sticky > div + div > button { width: 100%; min-height: 32px !important; padding: 5px 10px !important; }
+  #pc-barre-sticky div.tabs-principal { padding: 2px 4px; margin-bottom: 0; overflow-x: auto; }
+  #pc-barre-sticky div.tabs-principal .tab-item { padding: 5px 9px; font-size: 0.78rem; }
+
+  /* ---- CLASSEUR PRÉPARATION : compacter barre sticky ---- */
+  #cl-barre-sticky { padding: 8px 10px !important; }
+  /* Bouton Effacer la date (direct enfant de .filtre-barre) : pleine largeur */
+  #cl-barre-sticky .filtre-barre > .btn { grid-column: 1 / -1; min-height: 32px !important; padding: 4px 10px !important; }
+  /* Actions (Imprimer classeur/étiquettes) : stack vertical */
+  #cl-actions { flex-direction: column !important; }
+  #cl-actions > div { flex-direction: column !important; gap: 6px !important; }
+  #cl-actions .btn { width: 100%; }
+
+  /* ---- ADMIN CATALOGUE : layout liste (flex) sans scroll horizontal ---- */
+  /* Ciblé via .table-catalogue uniquement — n'affecte PAS les autres tables admin */
+  .table-catalogue { overflow-x: hidden; border: none; border-radius: 0; }
+  .table-catalogue table { display: block; min-width: 0 !important; }
+  .table-catalogue thead { display: none !important; }
+  .table-catalogue tbody { display: block; }
+
+  /* Toutes les lignes → flex row compact */
+  .table-catalogue tr {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--gris-ligne);
+    background: var(--blanc);
+  }
+
+  /* Toutes les cellules cachées par défaut — border-bottom annulé pour éviter les traits parasites */
+  .table-catalogue td { display: none !important; padding: 2px 0 !important; border-bottom: none !important; }
+
+  /* Lignes produit : drag + nom + boutons */
+  .table-catalogue tr:not(.ap-cat-header) > td:nth-child(1) { display: flex !important; width: 20px; flex-shrink: 0; align-items: center; justify-content: center; color: var(--gris-ligne); font-size: 0.9rem; }
+  .table-catalogue tr:not(.ap-cat-header) > td:nth-child(2) { display: block !important; flex: 1; min-width: 0; font-size: 0.85rem; white-space: normal; line-height: 1.3; }
+  .table-catalogue tr:not(.ap-cat-header) > td:last-child  { display: flex !important; flex-direction: column; gap: 2px; flex-shrink: 0; }
+  .table-catalogue tr:not(.ap-cat-header) > td:last-child .btn { font-size: 0.72rem; padding: 3px 8px; min-height: 24px; }
+
+  /* Lignes catégorie : pleine largeur, aspect titre */
+  .table-catalogue tr.ap-cat-header {
+    background: var(--creme-fonce);
+    padding: 5px 8px;
+    border-top: 2px solid var(--bordeaux-pale, #e8c8cc);
+  }
+  .table-catalogue tr.ap-cat-header > td:first-child {
+    display: block !important;
+    width: 100%;
+    padding: 0 !important;
+  }
+
+  /* ---- CLASSEUR : fiches compactes sur mobile ---- */
+  .fiche-commande { padding: 12px !important; margin-bottom: 12px; }
+  .fiche-commande .fiche-entete { padding-bottom: 8px !important; margin-bottom: 10px !important; }
+  .fiche-commande .fiche-numero { font-size: 1rem !important; }
+  .fiche-commande .fiche-cases { margin-top: 12px !important; gap: 12px !important; flex-wrap: wrap; }
+  .fiche-commande .fiche-case { font-size: 0.85rem; }
+
+  /* ---- ADMIN : réduire espacements + permettre retour à la ligne dans les tableaux ---- */
+  #admin-contenu .carte { padding: 10px 12px; margin-bottom: 10px; overflow-x: hidden; }
+  #admin-contenu .carte h2 { font-size: 1rem; margin-bottom: 6px; }
+  #admin-contenu .carte h3 { font-size: 0.9rem; }
+  #admin-contenu .carte p { font-size: 0.82rem; margin-bottom: 8px; }
+  /* En-tête catalogue : titre + boutons s'enroulent sur mobile */
+  #admin-contenu .carte-titre { flex-wrap: wrap; gap: 6px; }
+  #admin-contenu .carte-titre h2 { width: 100%; }
+  #admin-contenu .carte-titre > div { display: flex; gap: 6px; flex-wrap: wrap; }
+  #ap-reinitialiser { font-size: 0.7rem !important; padding: 4px 8px !important; }
+  #ap-nouveau { font-size: 0.78rem !important; }
+  /* Tables admin (hors catalogue) : texte sur plusieurs lignes, pas de scroll */
+  #admin-contenu .table-wrap:not(.table-catalogue) { overflow-x: hidden; }
+  #admin-contenu .table-wrap:not(.table-catalogue) table { width: 100%; min-width: 0; font-size: 0.8rem; }
+  #admin-contenu .table-wrap:not(.table-catalogue) td,
+  #admin-contenu .table-wrap:not(.table-catalogue) th { white-space: normal; word-break: break-all; padding: 5px 6px; }
+  /* Noms de magasins/périodes : césure entre mots seulement, pas au milieu */
+  #admin-contenu .table-wrap:not(.table-catalogue) td:first-child { word-break: keep-all; overflow-wrap: anywhere; }
+  /* Boutons : jamais de coupure */
+  #admin-contenu .table-wrap:not(.table-catalogue) button,
+  #admin-contenu .table-wrap:not(.table-catalogue) .btn { white-space: nowrap; word-break: normal; }
+
+  /* ---- DASHBOARD : tables sans scroll horizontal ---- */
+  #ecran-dashboard .table-wrap { overflow-x: hidden; }
+  #ecran-dashboard .table-wrap table { width: 100%; min-width: 0; table-layout: fixed; }
+  #ecran-dashboard .table-wrap th,
+  #ecran-dashboard .table-wrap td { padding: 5px 6px; white-space: nowrap; }
+  /* Première colonne (nom produit/magasin/catégorie) : wrappe, prend l'espace restant */
+  #ecran-dashboard .table-wrap th:first-child,
+  #ecran-dashboard .table-wrap td:first-child { white-space: normal; word-break: break-word; width: 62%; }
+  /* Colonne Qté : centrée */
+  #ecran-dashboard .table-wrap th:nth-child(2),
+  #ecran-dashboard .table-wrap td:nth-child(2) { width: 14%; text-align: center; padding: 5px 10px; }
+  /* Colonne CA : alignée à droite */
+  #ecran-dashboard .table-wrap th:nth-child(3),
+  #ecran-dashboard .table-wrap td:nth-child(3) { width: 24%; text-align: right; }
+
+  /* ---- TABLE MAGASINS : layout carte mobile ---- */
+  #table-wrap-magasins { overflow-x: hidden; border: none; border-radius: 0; }
+  #table-wrap-magasins table, #table-wrap-magasins thead,
+  #table-wrap-magasins tbody, #table-wrap-magasins tr,
+  #table-wrap-magasins th, #table-wrap-magasins td { display: block; }
+  #table-wrap-magasins thead { display: none; }
+  #table-wrap-magasins tr {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--gris-ligne);
+    background: var(--blanc);
+  }
+  /* Nom : prend tout l'espace */
+  #table-wrap-magasins td[data-label="nom"] { flex: 1; font-weight: 600; font-size: 0.9rem; }
+  /* Identifiant : masqué */
+  #table-wrap-magasins td[data-label="id"] { display: none; }
+  /* Code + boutons : à droite */
+  #table-wrap-magasins td[data-label="code"] { flex-shrink: 0; }
+  #table-wrap-magasins td[data-label="suppr"] { flex-shrink: 0; }
+  /* Supprimer tous les traits parasites dans les tables restructurées en cards */
+  #table-wrap-magasins td,
+  #table-wrap-utilisateurs td,
+  #audit-liste td { border-bottom: none !important; }
+
+  /* ---- TABLE UTILISATEURS : layout carte mobile ---- */
+  #table-wrap-utilisateurs { overflow-x: hidden; border: none; border-radius: 0; }
+  #table-wrap-utilisateurs table, #table-wrap-utilisateurs thead,
+  #table-wrap-utilisateurs tbody, #table-wrap-utilisateurs tr,
+  #table-wrap-utilisateurs th, #table-wrap-utilisateurs td { display: block; }
+  #table-wrap-utilisateurs thead { display: none; }
+  #table-wrap-utilisateurs tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 4px 8px;
+    align-items: center;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--gris-ligne);
+    background: var(--blanc);
+  }
+  /* Nom : ligne 1 col 1, gras */
+  #table-wrap-utilisateurs td[data-label="nom"] { grid-column: 1; grid-row: 1; font-weight: 600; font-size: 0.9rem; }
+  /* Date : ligne 1 col 2, petit gris à droite */
+  #table-wrap-utilisateurs td[data-label="date"] { grid-column: 2; grid-row: 1; text-align: right; white-space: nowrap; }
+  /* Rôle : ligne 2 col 1 */
+  #table-wrap-utilisateurs td[data-label="role"] { grid-column: 1; grid-row: 2; }
+  #table-wrap-utilisateurs td[data-label="role"] select { width: 100%; }
+  /* Actions : ligne 2 col 2 */
+  #table-wrap-utilisateurs td[data-label="actions"] { grid-column: 2; grid-row: 2; display: flex; gap: 4px; align-items: center; justify-content: flex-end; }
+  #table-wrap-magasins input[data-code-magasin] { border: none !important; background: transparent; font-weight: 700; }
+  #table-wrap-magasins .btn { border: none !important; background: transparent; }
+
+  /* ---- ADMIN INSTRUCTIONS : layout 2 lignes sur mobile ---- */
+  #pg-liste-instructions > div { flex-wrap: wrap; gap: 4px !important; align-items: center; }
+  /* Icône : compact */
+  #pg-liste-instructions input[data-ins-icone] { width: 42px !important; flex-shrink: 0; }
+  /* Label : prend tout l'espace disponible sur la ligne 1 */
+  #pg-liste-instructions input[data-ins-label] { flex: 1 !important; min-width: 80px !important; }
+  /* ID : passe à la ligne 2, pleine largeur */
+  #pg-liste-instructions input[data-ins-id] { width: 100% !important; font-size: 0.78rem !important; order: 10; }
+
+  /* ---- JOURNAL D'AUDIT : layout carte mobile ---- */
+  #audit-liste .table-wrap { overflow-x: hidden; border: none; border-radius: 0; }
+  #audit-liste table, #audit-liste thead, #audit-liste tbody,
+  #audit-liste tr, #audit-liste th, #audit-liste td { display: block; }
+  #audit-liste thead { display: none; }
+  #audit-liste tr { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; padding: 8px 6px; border-bottom: 1px solid var(--gris-ligne); background: var(--blanc); }
+  #audit-liste td { padding: 0 !important; }
+  /* Horodatage : pleine largeur en haut */
+  #audit-liste td:nth-child(1) { width: 100%; font-family: var(--font-mono); font-size: 0.73rem; color: var(--charbon-clair); }
+  /* Utilisateur */
+  #audit-liste td:nth-child(2) { font-size: 0.78rem; font-weight: 600; }
+  /* Rôle : masqué */
+  #audit-liste td:nth-child(3) { display: none; }
+  /* Action badge : reste sur la même ligne que utilisateur */
+  #audit-liste td:nth-child(4) { margin-left: auto; }
+  /* Description : pleine largeur en bas */
+  #audit-liste td:nth-child(5) { width: 100%; font-size: 0.74rem; color: var(--charbon-clair); margin-top: 2px; }
+}
+
+/* ---------- BADGES / STATUTS ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--blanc);
+  white-space: nowrap;
+}
+.point { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+/* ---------- TABLEAUX ---------- */
+.table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--gris-ligne); }
+table { width: 100%; border-collapse: collapse; background: var(--blanc); }
+thead th {
+  background: var(--creme-fonce);
+  color: var(--bordeaux-fonce);
+  text-align: left;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 12px 14px;
+  border-bottom: 2px solid var(--gris-ligne);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--gris-ligne);
+  font-size: 0.93rem;
+  vertical-align: middle;
+}
+tbody tr:hover { background: var(--creme); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* ---------- CATALOGUE / GRILLE PRODUITS (saisie commande) ---------- */
+.grille-categories { display: flex; flex-direction: column; gap: 22px; }
+.bloc-categorie h3 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cuivre);
+  border-bottom: 2px solid var(--creme-fonce);
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+.grille-produits {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.carte-produit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--creme);
+  border: 2px solid var(--gris-ligne);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  transition: border-color 0.15s;
+}
+.carte-produit.actif { border-color: var(--bordeaux); background: #fdf3f0; }
+.carte-produit .nom-produit { font-weight: 600; font-size: 0.92rem; line-height: 1.25; }
+.carte-produit .prix-produit { font-size: 0.78rem; color: var(--charbon-clair); font-family: var(--font-mono); }
+.stepper { display: flex; align-items: center; gap: 6px; }
+.stepper button {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--bordeaux);
+  background: var(--blanc);
+  color: var(--bordeaux);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+.stepper button:active { transform: scale(0.92); }
+.stepper .valeur { min-width: 28px; text-align: center; font-weight: 700; font-family: var(--font-mono); }
+
+/* ---------- PANIER ---------- */
+.panier-flottant {
+  position: sticky;
+  bottom: 0;
+  background: var(--charbon);
+  color: var(--creme);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: var(--radius) var(--radius) 0 0;
+  box-shadow: var(--ombre-forte);
+  margin-top: 20px;
+}
+.panier-flottant .resume { display: flex; flex-direction: column; }
+.panier-flottant .montant { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: var(--cuivre-clair); }
+
+/* ---------- DASHBOARD ---------- */
+.grille-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 22px; }
+.kpi {
+  background: var(--blanc);
+  border: 1px solid var(--gris-ligne);
+  border-top: 4px solid var(--gris-ligne);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--ombre);
+}
+.kpi .label-kpi { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--charbon-clair); margin-bottom: 6px; }
+.kpi .valeur-kpi { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; color: var(--bordeaux); }
+.kpi .sous-valeur { font-size: 0.82rem; color: var(--charbon-clair); margin-top: 4px; }
+.kpi-bordeaux { border-top-color: var(--bordeaux); }
+.kpi-bordeaux .valeur-kpi { color: var(--bordeaux); }
+.kpi-cuivre { border-top-color: var(--cuivre); }
+.kpi-cuivre .valeur-kpi { color: var(--cuivre); }
+.kpi-vert { border-top-color: var(--vert-pret); }
+.kpi-vert .valeur-kpi { color: var(--vert-pret); }
+.kpi-bleu { border-top-color: #3b82f6; }
+.kpi-bleu .valeur-kpi { color: #3b82f6; }
+
+/* ---------- LOGIN ---------- */
+.ecran-centre {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.carte-login { max-width: 420px; width: 100%; text-align: center; }
+.carte-login .logo-login { font-family: var(--font-display); font-size: 1.8rem; color: var(--bordeaux); margin-bottom: 4px; }
+.carte-login .tagline { color: var(--charbon-clair); font-size: 0.9rem; margin-bottom: 28px; }
+
+/* ---------- DIVERS UI ---------- */
+.filtre-barre { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; align-items: center; }
+.vide-etat { text-align: center; padding: 50px 20px; color: var(--charbon-clair); }
+.vide-etat .icone-vide { font-size: 2.6rem; margin-bottom: 10px; }
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--charbon); color: var(--creme);
+  padding: 14px 20px; border-radius: var(--radius-sm);
+  box-shadow: var(--ombre-forte);
+  z-index: 1000;
+  animation: glisser-in 0.25s ease;
+  max-width: 360px;
+}
+.toast.erreur { background: #b3261e; }
+.toast.succes { background: var(--vert-pret); }
+@keyframes glisser-in { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.checkbox-instruction {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 2px solid var(--gris-ligne);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  user-select: none;
+}
+.checkbox-instruction.coche { background: var(--bordeaux); color: var(--creme); border-color: var(--bordeaux); }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(42,38,36,0.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 500; padding: 20px;
+}
+.modal {
+  background: var(--blanc); border-radius: var(--radius);
+  max-width: 600px; width: 100%; max-height: 88vh; overflow-y: auto;
+  padding: 26px; box-shadow: var(--ombre-forte);
+}
+
+/* ---------- IMPRESSION (classeur de préparation) ---------- */
+.fiche-commande {
+  background: var(--blanc);
+  border: 2px solid var(--charbon);
+  border-radius: 0;
+  padding: 24px;
+  page-break-after: always;
+}
+.fiche-commande .fiche-entete {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  border-bottom: 3px solid var(--charbon);
+  padding-bottom: 14px; margin-bottom: 14px;
+}
+.fiche-commande .fiche-numero { font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700; }
+.fiche-commande .fiche-instructions { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+.fiche-commande .fiche-cases { display: flex; gap: 24px; margin-top: 20px; border-top: 2px dashed var(--charbon); padding-top: 14px; }
+.fiche-commande .fiche-case { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.fiche-commande .fiche-case .carre { width: 22px; height: 22px; border: 2px solid var(--charbon); display: inline-block; }
+.fiche-commande .fiche-case-alerte { color: #b3261e; border: 2px solid #b3261e; padding: 2px 10px; border-radius: 4px; }
+.fiche-commande .fiche-case-alerte .carre { border-color: #b3261e; }
+
+/* ---------- ÉTIQUETTES (format Zebra 57,15 mm × 60,80 mm) ---------- */
+/* La taille de page (@page 57.15mm 60.80mm) est injectée dynamiquement
+   par JS juste avant window.print() pour ne pas affecter les autres
+   impressions (fiches production, classeur, etc.). */
+.etiquette {
+  width: 60.80mm;
+  height: 57.15mm;
+  overflow: hidden;
+  background: var(--blanc);
+  color: var(--charbon);
+  padding: 2mm 3mm;
+  box-sizing: border-box;
+  page-break-after: always;
+  break-after: page;
+  font-family: Arial, Helvetica, sans-serif;
+}
+.etq-marque { font-size: 0.88rem; font-weight: 700; letter-spacing: 0.01em; text-transform: uppercase; line-height: 1.1; }
+.etq-souligne { border-bottom: 2px solid var(--charbon); margin: 1px 0 2px 0; }
+.etq-tagline { font-size: 0.52rem; color: var(--charbon); margin-bottom: 2px; }
+.etq-cadre { border: 2.5px solid var(--charbon); padding: 3px; text-align: center; }
+.etq-date-magasin { font-size: 0.78rem; font-weight: 600; margin-bottom: 2px; }
+.etq-produit { font-size: 0.65rem; font-weight: 700; }
+.etq-nom-produit { font-size: 0.82rem; font-weight: 800; text-transform: uppercase; line-height: 1.1; }
+.etq-variante { font-size: 0.9rem; font-weight: 800; text-transform: uppercase; }
+.etq-personnes { font-size: 0.7rem; font-style: italic; font-weight: 600; text-decoration: underline; margin: 1px 0; }
+.etq-type-produit { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
+.etq-instructions { margin-top: 2px; text-align: center; font-size: 0.56rem; }
+.etq-instruction-ligne { line-height: 1.2; }
+.etq-specification { margin-top: 2px; text-align: center; font-size: 0.56rem; font-weight: 700; color: var(--bordeaux-fonce); }
+.etq-farce { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; border: 1px solid var(--charbon); display: inline-block; padding: 1px 4px; border-radius: 3px; }
+.etq-bas { margin-top: 2px; display: flex; justify-content: space-between; font-size: 0.52rem; color: var(--charbon-clair); border-top: 1px dashed var(--gris-ligne); padding-top: 2px; }
+
+/* Contraste maximum pour impression thermique Zebra */
+.zone-etiquettes .etiquette,
+.zone-etiquettes .etiquette * {
+  color: #000000 !important;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.zone-etiquettes .etq-cadre {
+  border-color: #000000 !important;
+  border-width: 3px !important;
+}
+.zone-etiquettes .etq-souligne {
+  border-bottom-color: #000000 !important;
+  border-bottom-width: 2px !important;
+}
+.zone-etiquettes .etq-farce {
+  border-color: #000000 !important;
+  border-width: 1.5px !important;
+}
+.zone-etiquettes .etq-marque,
+.zone-etiquettes .etq-nom-produit,
+.zone-etiquettes .etq-variante,
+.zone-etiquettes .etq-farce {
+  font-weight: 900 !important;
+}
+
+
+
+/* ---------- TABLEAU PRODUCTION CROISÉ (produits × magasins) ---------- */
+.table-production-croisee { border-collapse: collapse; }
+
+.table-production-croisee thead th {
+  font-size: 0.78rem;
+  padding: 5px 8px;
+  letter-spacing: 0.05em;
+  text-align: center;
+  white-space: nowrap;
+}
+.table-production-croisee thead th:first-child { text-align: left; }
+
+/* Cellules produit */
+.table-production-croisee .pc-nom {
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  min-width: 180px;
+}
+.table-production-croisee .pc-cell {
+  padding: 5px 8px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+.table-production-croisee .pc-total-cell {
+  font-weight: 700;
+  color: var(--bordeaux);
+  font-size: 0.9rem;
+  border-left: 2px solid var(--bordeaux-pale, #e8c8cc);
+}
+.table-production-croisee .pc-vide {
+  color: var(--gris-ligne);
+  font-weight: 400;
+}
+.table-production-croisee .pc-pieces {
+  font-size: 0.72rem;
+  color: var(--charbon-clair);
+  font-weight: 400;
+  display: block;
+}
+.pc-menu-info {
+  font-size: 0.62rem;
+  color: var(--cuivre);
+  font-style: italic;
+  font-weight: 400;
+  display: block;
+  white-space: nowrap;
+}
+.table-production-croisee .pc-farce {
+  font-size: 0.78rem;
+  color: var(--cuivre);
+  font-weight: 600;
+}
+
+/* Alternance de couleurs */
+.table-production-croisee tr.pc-pair  { background: #ffffff; }
+.table-production-croisee tr.pc-impair { background: #f5f0eb; }
+.table-production-croisee tr.pc-pair:hover,
+.table-production-croisee tr.pc-impair:hover { background: var(--creme); }
+
+/* En-têtes de catégorie — bien distincts des lignes produit */
+.table-production-croisee .pc-cat-ligne td {
+  background: var(--bordeaux);
+  color: white;
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 5px 10px;
+  border-top: 3px solid white;
+}
+
+/* Ligne totaux */
+.table-production-croisee .pc-total-ligne td {
+  background: var(--creme-fonce);
+  border-top: 2px solid var(--bordeaux-pale, #e8c8cc);
+  font-size: 0.82rem;
+  padding: 5px 8px;
+}
+
+@media print {
+  /* Page par défaut : portrait, marges réduites (les étiquettes Zebra écrasent
+     cette règle via l'injection dynamique @page dans etiquettes.js) */
+  @page { size: portrait; margin: 10mm 12mm; }
+
+  .no-print { display: none !important; }
+  body { background: white; }
+  .fiche-commande { border: 2px solid black; box-shadow: none; }
+
+  /* Quand une impression dédiée est en cours, on masque tout le reste de
+     la page et on affiche uniquement les fiches de la zone dédiée. */
+  body.mode-impression-dediee > *:not(.zone-impression-dediee) { display: none !important; }
+  body.mode-impression-dediee .zone-impression-dediee { display: block !important; }
+
+  /* Fiche production : ultra-compact pour tenir sur une page A4 portrait */
+  .zone-impression-dediee h2 {
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+    color: #5c1a2a;
+  }
+  .zone-impression-dediee .grille-kpi { display: none; }
+  .zone-impression-dediee .table-wrap { border: none; border-radius: 0; overflow: visible; }
+
+  .zone-impression-dediee .table-production-croisee { width: 100%; }
+
+  .zone-impression-dediee .table-production-croisee thead th {
+    font-size: 0.62rem;
+    padding: 3px 4px;
+    letter-spacing: 0.04em;
+    border-bottom: 1.5px solid #5c1a2a;
+    background: #f5f0eb;
+    color: #2d1a0e;
+  }
+  .zone-impression-dediee .table-production-croisee .pc-nom {
+    font-size: 0.64rem;
+    padding: 2px 5px;
+    min-width: 0;
+  }
+  .zone-impression-dediee .table-production-croisee .pc-cell {
+    font-size: 0.64rem;
+    padding: 2px 4px;
+  }
+  .zone-impression-dediee .table-production-croisee .pc-pieces {
+    font-size: 0.56rem;
+  }
+  .zone-impression-dediee .table-production-croisee .pc-farce {
+    font-size: 0.58rem;
+  }
+  .zone-impression-dediee .table-production-croisee .pc-cat-ligne td {
+    font-size: 0.6rem;
+    padding: 3px 5px;
+    letter-spacing: 0.08em;
+    background: #7a1f2b !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color: white !important;
+    border-top: 2px solid white;
+  }
+  .zone-impression-dediee .table-production-croisee .pc-total-ligne td {
+    font-size: 0.62rem;
+    padding: 3px 4px;
+    border-top: 1.5px solid #5c1a2a;
+    background: #f0ece7 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Alternance visible à l'impression — tableau croisé et pierrades */
+  .zone-impression-dediee .table-production-croisee tr.pc-impair,
+  .zone-impression-dediee .table-pierrades tr.pc-impair {
+    background: #ede8e2 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .zone-impression-dediee .table-production-croisee tr.pc-pair,
+  .zone-impression-dediee .table-pierrades tr.pc-pair {
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Table pierrades : compact print */
+  .zone-impression-dediee .table-pierrades { width: 100%; border-collapse: collapse; }
+  .zone-impression-dediee .table-pierrades thead th {
+    font-size: 0.62rem;
+    padding: 3px 4px;
+    letter-spacing: 0.04em;
+    border-bottom: 1.5px solid #5c1a2a;
+    background: #f5f0eb !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color: #2d1a0e;
+  }
+  .zone-impression-dediee .table-pierrades td {
+    font-size: 0.64rem;
+    padding: 2px 5px;
+  }
+  .zone-impression-dediee .table-pierrades .pc-total-ligne td {
+    font-size: 0.62rem;
+    padding: 3px 4px;
+    border-top: 1.5px solid #5c1a2a;
+    background: #f0ece7 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+.scroll-x { overflow-x: auto; }
+
+/* ---------- VUE CARTES SUIVI COMMANDES ---------- */
+.grille-commandes-cartes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.carte-commande-item {
+  background: var(--blanc);
+  border-radius: var(--radius);
+  box-shadow: var(--ombre);
+  padding: 16px;
+  border: 1px solid var(--gris-ligne);
+  transition: box-shadow 0.15s;
+}
+.carte-commande-item:hover {
+  box-shadow: var(--ombre-forte);
+}

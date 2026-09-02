@@ -1,0 +1,2930 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Commandes">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%231a1a18%27/%3E%3Ctext y=%270.9em%27 font-size=%2770%27 x=%2715%27%3E%F0%9F%93%8B%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="512x512" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%231a1a18%27/%3E%3Ctext y=%270.9em%27 font-size=%2770%27 x=%2715%27%3E%F0%9F%93%8B%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<title>Commandes — Mon Commerce</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --accent:#1A1A1A;--accent-dark:#000;--accent-light:#F0EDEA;--accent-border:#C8C0B8;
+  --cream:#F7F3EE;--cream-dark:#EDE8E1;--ivory:#FAFAF8;
+  --bg:#F0ECEE;--card:#FAFAF8;--border:#E2DDD8;--border2:#C8C0B8;
+  --text:#111010;--text2:#5A5450;--text3:#9A928C;
+  --radius:10px;--radius-sm:7px;
+  --green:var(--accent);--green-dark:var(--accent-dark);--green-light:var(--accent-light);--green-border:var(--accent-border);
+  --amber:#8C7355;--amber-light:#F0EDEA;--amber-dark:#5A4530;
+  --banner-color:#f97316;
+  --nav-bg:#1A1A1A;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--nav-bg);border-top:none;box-shadow:0 -1px 0 rgba(255,255,255,0.08);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.bnav-btn{flex:1;padding:12px 4px 10px;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:400;color:rgba(255,255,255,0.45);cursor:pointer;transition:color 0.15s;letter-spacing:0.08em;text-transform:uppercase}
+.bnav-btn.active{color:#fff}
+.bnav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+.view{display:none;padding:12px}
+.view.active{display:block}
+
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.page-title{font-size:20px;font-weight:600;color:var(--text);letter-spacing:0;line-height:1.2}
+.page-sub{font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0.12em;text-transform:uppercase;font-weight:400}
+
+.card{background:var(--ivory);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+
+.field{margin-bottom:12px}
+.field label{display:block;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px}
+.field select,.field input[type=date]{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:var(--card);color:var(--text);-webkit-appearance:none;font-family:'Inter',sans-serif;transition:border-color 0.15s}
+.livr-label{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2);cursor:pointer;padding:10px 0}
+.livr-label input[type=checkbox]{width:18px;height:18px;accent-color:var(--green);cursor:pointer}
+
+.sec-header{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;padding:16px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px}
+
+.items-list{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
+#form-items-wrapper{position:relative}
+
+
+
+
+
+/* LA CASE A COCHER - approche native HTML la plus simple possible */
+.item-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--card);cursor:pointer;user-select:none;-webkit-user-select:none}
+.item-row:hover{border-color:var(--border2)}
+.item-row input[type=checkbox]{
+  width:20px;height:20px;min-width:20px;
+  accent-color:var(--green);
+  cursor:pointer;
+  margin:0;
+}
+.item-row.on{background:var(--cream-dark);border-color:var(--border2);}
+.iname{flex:1;font-size:13.5px;color:var(--text);line-height:1.3;pointer-events:none;font-weight:400}
+.item-row.on .iname{color:var(--text);font-weight:600}
+.qty-input{width:62px;padding:4px 7px;border-radius:5px;border:1px solid var(--green-border);font-size:13px;text-align:center;background:var(--card);color:var(--text);display:none}
+.item-row.on .qty-input{display:block}
+.qty-input:focus{outline:2px solid var(--green);outline-offset:1px}
+.new-badge{font-size:10px;background:var(--green-light);color:var(--green-dark);padding:1px 5px;border-radius:8px;font-weight:600;pointer-events:none}
+
+.add-custom{display:flex;gap:8px;margin-top:6px;margin-bottom:2px}
+.add-custom input{flex:1;padding:8px 11px;border-radius:var(--radius-sm);border:1px solid var(--border2);font-size:13px;background:var(--ivory);color:var(--text)}
+.add-custom input:focus{outline:2px solid var(--green);outline-offset:1px;background:#dcdcdc}
+.add-custom button{padding:8px 14px;border-radius:var(--radius-sm);border:none;background:#7D2D2D;color:#fff;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:0.04em;transition:background 0.15s}
+.add-custom button:hover{background:#5E2020}
+
+.remarks-area{width:100%;min-height:70px;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border2);font-size:14px;background:var(--card);color:var(--text);resize:vertical;font-family:inherit;margin-top:4px}
+.remarks-area:focus{outline:2px solid var(--green);outline-offset:1px}
+
+.submit-bar{background:var(--ivory);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:8px;z-index:50}
+.sel-info{font-size:12px;color:var(--text3);letter-spacing:0.02em}
+.sel-info b{color:var(--text);font-weight:700}
+.btn-send{padding:12px 26px;border-radius:var(--radius-sm);background:var(--text);border:none;color:var(--ivory);font-size:12px;font-weight:500;cursor:pointer;letter-spacing:0.1em;text-transform:uppercase;font-family:'Inter',sans-serif;transition:background 0.15s}
+.btn-send:hover{background:#333}
+.btn-send:disabled{background:var(--border2);cursor:not-allowed}
+
+.date-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px}
+.date-nav-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border2);background:transparent;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all 0.12s}
+.date-nav-btn:hover{background:var(--bg)}
+.date-label{font-size:17px;font-weight:600;text-align:center;flex:1;color:var(--text)}
+.btn-refresh{padding:7px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--card);font-size:12px;cursor:pointer;color:var(--text2)}
+.btn-refresh:hover{background:var(--bg)}
+
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.stat-card{background:var(--ivory);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.stat-val{font-size:26px;font-weight:700;color:var(--text)}
+.stat-label{font-size:10px;color:var(--text3);margin-top:4px;letter-spacing:0.08em;text-transform:uppercase}
+
+.mag-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}
+.mag-scroll::-webkit-scrollbar{display:none}
+.mag-pill-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--ivory);font-size:11px;font-weight:400;cursor:pointer;white-space:nowrap;color:var(--text2);flex-shrink:0;letter-spacing:0.04em;transition:all 0.12s}
+.mag-pill-btn:hover{background:var(--bg)}
+.mag-pill-btn.active{background:var(--text);border-color:var(--text);color:var(--ivory)}
+.mag-pill-btn.sent{border-color:var(--border2);color:var(--text2)}
+
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.badge.sent{background:var(--cream-dark);color:var(--text2);border:1px solid var(--border2);font-size:10px;letter-spacing:0.06em;font-weight:500}
+.badge.pending{background:var(--cream-dark);color:var(--text3);border:1px solid var(--border);font-size:10px;letter-spacing:0.06em;font-weight:500}
+.badge.none{background:var(--bg);color:var(--text2)}
+
+.recap-cat{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;padding:8px 0 4px;border-bottom:1px solid var(--border)}
+.recap-item{display:flex;align-items:flex-start;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bg);gap:8px}
+.recap-item:last-child{border-bottom:none}
+.recap-item-name{font-size:13px;flex:1}
+.recap-mags{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.recap-mag-tag{padding:2px 8px;border-radius:8px;font-size:11px;background:var(--green-light);color:var(--green-dark);font-weight:500}
+.recap-qty{font-size:10px;opacity:0.7;margin-left:2px}
+.recap-total{font-size:12px;font-weight:700;color:var(--green-dark);background:var(--green-light);padding:1px 7px;border-radius:8px;flex-shrink:0}
+
+.mag-status-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.mag-status-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--ivory);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.mag-status-name{font-size:14px;font-weight:500;color:var(--text)}
+.mag-status-time{font-size:11px;color:var(--text2);margin-top:1px}
+
+.livr-tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:8px;font-size:11px;background:var(--amber-light);color:var(--amber-dark);font-weight:500;margin-bottom:8px}
+.remarque-box{background:var(--cream-dark);border-radius:var(--radius-sm);padding:10px 13px;font-size:13px;color:var(--text);margin-top:6px;border-left:2px solid var(--border2)}
+.remarque-box b{color:var(--text)}
+
+.empty{padding:40px 20px;text-align:center;color:var(--text2);font-size:14px}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--ivory);padding:10px 20px;border-radius:20px;font-size:11px;font-weight:400;z-index:999;white-space:nowrap;display:none;letter-spacing:0.08em;text-transform:uppercase;box-shadow:0 4px 20px rgba(0,0,0,0.25)}
+
+.view-admin{display:none;padding:12px}
+.view-admin.active{display:block}
+.admin-section{margin-bottom:1.5rem}
+.admin-section-title{font-size:13px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px}
+.admin-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.admin-item-row{display:flex;align-items:center;padding:6px 2px;border-bottom:1px solid #f0f0f0;gap:6px;transition:background 0.1s;border-radius:4px}
+.admin-item-row:last-child{border-bottom:none}
+.admin-item-row.editing{background:#f8f7f5;border-radius:6px;border-color:transparent}
+.ai-name{flex:1;font-size:13.5px;color:var(--text);cursor:text;padding:2px 4px;border-radius:4px;transition:background 0.1s;user-select:none;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-name:hover{background:#f0eee9}
+.ai-edit-wrap{flex:1;display:flex;align-items:center;gap:6px;min-width:0}
+.ai-edit-input{flex:1;padding:5px 8px;border:1.5px solid var(--text);border-radius:5px;font-size:13px;color:var(--text);background:#fff;outline:none;font-family:'Inter',sans-serif;min-width:0}
+.ai-edit-bar{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.ai-btn-ok{width:28px;height:28px;border-radius:5px;border:none;background:var(--text);color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:background 0.12s}
+.ai-btn-ok:hover{background:#333}
+.ai-btn-no{width:28px;height:28px;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
+.ai-btn-no:hover{background:#f0eee9}
+.ai-move-sel{padding:4px 6px;border-radius:5px;border:1px solid var(--border2);background:var(--ivory);color:var(--text2);font-size:11px;cursor:pointer;max-width:110px}
+.ai-btn-del{width:28px;height:28px;border-radius:5px;border:none;background:transparent;color:var(--text3);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;opacity:0.5;transition:all 0.12s}
+.ai-btn-del:hover{background:#fff0ee;color:#C0392B;opacity:1}
+.btn-delete{padding:4px 10px;border-radius:5px;border:1px solid var(--border2);background:var(--ivory);color:var(--text3);font-size:11px;font-weight:500;cursor:pointer;letter-spacing:0.04em}
+.btn-delete:hover{background:#C0392B;color:#fff}
+.admin-add-row{display:flex;gap:8px;margin-top:8px}
+.admin-add-row input{flex:1;padding:8px 11px;border-radius:var(--radius-sm);border:1px solid #bbb;font-size:13px;background:#e8e8e8;color:#1a1a18}
+.admin-add-row button{padding:8px 14px;border-radius:var(--radius-sm);border:none;background:#C0392B;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+.admin-cat-header{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--cream-dark);border-radius:var(--radius-sm);cursor:pointer;margin-bottom:6px;border:1px solid var(--border);transition:background 0.12s}
+.admin-cat-title{font-size:13px;font-weight:600;color:var(--text);font-family:'Inter',sans-serif}
+.admin-cat-toggle{font-size:18px;color:var(--text2)}
+.admin-cat-body{display:none;padding:0 4px}
+.admin-cat-body.open{display:block}
+.admin-order-row{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px}
+.admin-order-mag{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+.admin-order-meta{font-size:12px;color:var(--text2);margin-bottom:8px}
+.btn-del-order{padding:6px 14px;border-radius:var(--radius-sm);border:1px solid #f5c6c6;background:#fff5f5;color:#C0392B;font-size:11px;font-weight:500;cursor:pointer;letter-spacing:0.04em;transition:all 0.12s}
+.btn-del-order:hover{background:#fee;border-color:#e08080}
+.admin-login{max-width:320px;margin:60px auto;background:#fff;border-radius:var(--radius);padding:24px;border:1px solid var(--border)}
+.admin-login h3{font-size:18px;font-weight:600;margin-bottom:16px;color:var(--text)}
+.admin-login input{width:100%;padding:10px 12px;border:1px solid #bbb;border-radius:var(--radius-sm);font-size:15px;margin-bottom:12px;color:var(--text)}
+.admin-login button{width:100%;padding:11px;border-radius:var(--radius-sm);background:#C0392B;border:none;color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.admin-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none}
+.admin-tabs::-webkit-scrollbar{display:none}
+.admin-tab{flex-shrink:0;padding:7px 16px;border-radius:20px;border:1px solid var(--border2);background:var(--ivory);font-size:11px;font-weight:400;cursor:pointer;color:var(--text2);letter-spacing:0.06em;transition:all 0.12s;white-space:nowrap}
+.admin-tab.active{background:var(--text);border-color:var(--text);color:var(--ivory)}
+
+.atelier-table-wrap{overflow-x:auto;margin-bottom:12px;border-radius:var(--radius);border:1px solid var(--border)}
+.atelier-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;min-width:400px}
+.atelier-table th{padding:8px 10px;text-align:center;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;border-bottom:2px solid var(--border);border-right:1px solid #eee;white-space:nowrap;background:#f7f7f5;color:var(--text)}
+.atelier-table th.col-item{text-align:left;min-width:150px}
+.atelier-table th.col-total{color:var(--text);background:var(--cream-dark);border-right:none}
+.atelier-table td{padding:7px 10px;border-bottom:1px solid #f0f0ee;border-right:1px solid #f0f0ee;color:var(--text);text-align:center;vertical-align:middle}
+.atelier-table td.col-item{text-align:left;font-size:13px;background:#fff;border-right:1px solid #eee}
+.atelier-table td.col-total{font-weight:700;color:var(--text);background:var(--cream-dark);border-right:none}
+.atelier-table td.zero{color:#ccc}
+.atelier-table tr.cat-row td{background:var(--text);color:var(--ivory);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;padding:6px 10px;border-bottom:none;border-right:none;text-align:left}
+.atelier-table tbody tr:hover td.col-item,.atelier-table tbody tr:hover td:not(.col-total){background:#fafaf8}
+.atelier-table tbody tr:hover td.col-item{background:#fafaf8}
+
+
+.print-header{display:none;text-align:center;margin-bottom:20px}
+.print-header-section{display:none}
+.remarque-print-block{display:none}
+.print-header h2{font-size:20px;font-weight:700;color:#000}
+.print-header p{font-size:13px;color:#666;margin-top:4px}
+
+.section-print-label{font-size:13px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;padding:6px 10px;background:var(--bg);border-radius:var(--radius-sm)}
+.print-btn{padding:7px 16px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;font-weight:500;cursor:pointer;transition:all 0.12s;letter-spacing:0.06em;text-transform:uppercase}
+.print-btn:hover{background:var(--text);border-color:var(--text);color:var(--ivory)}
+@media print{
+  /* CSS print minimal — l'impression se fait dans une nouvelle fenêtre propre */
+  body{background:#fff}
+}
+
+.demo-banner{position:fixed;top:0;left:0;right:0;z-index:9999;background:var(--banner-color);color:#fff;text-align:center;font-size:12px;font-weight:600;padding:4px 8px;letter-spacing:.4px}
+body{padding-top:24px!important}
+
+/* ── SEARCH BAR ── */
+.search-wrap{position:relative;margin:0 0 10px}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--text3);pointer-events:none}
+#search-input{width:100%;padding:10px 12px 10px 36px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:var(--ivory);color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
+#search-input:focus{border-color:var(--border2)}
+#search-input::placeholder{color:var(--text3)}
+.search-no-result{text-align:center;padding:24px;color:var(--text3);font-size:14px;display:none}
+
+/* ── SEC HEADER amélioré ── */
+.sec-header{display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.14em;padding:16px 0 8px;border-bottom:1px solid var(--border);margin-bottom:6px;cursor:pointer;user-select:none}
+.sec-header-left{display:flex;align-items:center;gap:8px}
+.sec-badge{background:var(--cream-dark);color:var(--text3);font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.05em}
+.sec-badge.has-checked{background:#1A1A1A;color:#fff}
+
+/* ── ITEM ROW amélioré ── */
+.item-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--radius-sm);border:1.5px solid transparent;margin-bottom:4px;cursor:pointer;transition:all .12s;background:var(--ivory)}
+.item-row:hover{background:var(--cream-dark);border-color:var(--border)}
+.item-row.on{background:var(--cream-dark);border-color:#1A1A1A !important}
+.item-row input[type=checkbox]{width:17px;height:17px;accent-color:#1A1A1A;cursor:pointer;flex-shrink:0}
+.iname{font-size:14px;color:var(--text2);flex:1;line-height:1.3}
+.item-row.on .iname{color:var(--text);font-weight:600}
+.item-row.hidden-by-search{display:none}
+
+/* ── SUBMIT BAR amélioré ── */
+.submit-bar{position:sticky;top:24px;z-index:50;background:var(--ivory);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.sel-info{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px}
+.sel-count-badge{background:#1A1A1A;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;min-width:24px;text-align:center}
+.btn-clear{padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;font-size:11px;color:var(--text3);cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s}
+.btn-clear:hover{background:var(--cream-dark);color:var(--text)}
+.btn-send{padding:11px 22px;border-radius:var(--radius-sm);background:#1A1A1A;border:none;color:#fff;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.04em;transition:background .15s;font-family:'Inter',sans-serif}
+.btn-send:hover{background:#333}
+.btn-send:disabled{background:var(--border2);cursor:not-allowed}
+
+/* ── NAV BADGE ── */
+.bnav-btn{position:relative}
+.bnav-icon-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.nav-badge{position:absolute;top:-5px;left:calc(50% + 6px);background:#C0392B;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 3px}
+.nav-badge.visible{display:flex}
+
+/* ── SUMMARY MODAL ── */
+#summary-modal{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.4);align-items:flex-end}
+#summary-modal.open{display:flex}
+.summary-sheet{background:var(--ivory);border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-height:80vh;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.summary-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px;font-family:'Cormorant Garamond',serif}
+.summary-sub{font-size:12px;color:var(--text3);margin-bottom:18px}
+.summary-cat{margin-bottom:14px}
+.summary-cat-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:7px}
+.summary-item{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text);padding:4px 0}
+.summary-item-qty{font-size:12px;color:var(--text3);background:var(--cream-dark);padding:2px 7px;border-radius:10px}
+.summary-actions{display:flex;gap:10px;margin-top:20px}
+.summary-actions button{flex:1;padding:13px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:none}
+.btn-summary-cancel{background:var(--cream-dark);color:var(--text)}
+.btn-summary-confirm{background:#1A1A1A;color:#fff}
+
+#form-lock-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(244,240,235,0.82);z-index:10;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(1px)}
+.lock-msg{display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--text3);font-size:13px;text-align:center;padding:20px}
+.admin-items-draggable{display:flex;flex-direction:column;min-height:4px}
+.drag-handle{cursor:grab;color:var(--border2);font-size:14px;line-height:0.6;letter-spacing:-2px;padding:0 4px;flex-shrink:0;user-select:none;touch-action:none}
+.select-move-cat{padding:4px 6px;border-radius:5px;border:1px solid var(--border2);background:var(--ivory);color:var(--text2);font-size:11px;font-weight:500;cursor:pointer;letter-spacing:0.02em;max-width:120px;margin-right:4px}
+
+/* ── ADMIN PRODUITS — nouveau layout ── */
+.cat-name-text{font-size:13px;font-weight:600;color:var(--text)}
+.cat-name-text.editable{cursor:text;border-radius:3px;padding:0 2px}
+.cat-name-text.editable:hover{background:#e8e4de}
+.cat-count{font-size:11px;color:var(--text3);font-weight:400;margin-left:4px}
+.cat-actions{display:flex;align-items:center;gap:3px;margin-left:6px;flex-shrink:0}
+.cat-action-btn{width:24px;height:24px;border-radius:4px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;opacity:0.5;transition:all 0.12s;flex-shrink:0}
+.cat-action-btn:hover{opacity:1}
+.cat-btn-del:hover{background:#fff0ee;color:#C0392B}
+.cat-sheet-chips{display:flex;gap:4px;margin:0 8px;flex-shrink:0;flex-wrap:wrap}
+.cat-sheet-chip{font-size:9px;font-weight:600;color:var(--text3);background:var(--cream-dark);border-radius:10px;padding:2px 7px;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap}
+.ai-btn-move{height:24px;border-radius:5px;border:1px solid var(--border2);background:var(--ivory);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0 8px;gap:4px;font-size:11px;font-weight:500;opacity:0.7;transition:all 0.12s;white-space:nowrap}
+.ai-btn-move:hover{background:#eef3fb;border-color:#b0c4de;color:#3a5a8a;opacity:1}
+.ai-move-popup{display:flex;align-items:center;gap:6px;padding:6px 8px;background:#f8f7f5;border:1px solid var(--border);border-radius:6px;margin:2px 0 4px 22px;flex-wrap:wrap}
+.ai-move-popup select{flex:1;padding:5px 8px;border-radius:5px;border:1px solid var(--border2);background:#fff;font-size:12px;color:var(--text);cursor:pointer}
+.admin-items-draggable.drop-target{outline:2px dashed #C0392B;outline-offset:3px;border-radius:4px}
+
+/* ─── Admin Produits — Pro Layout ─── */
+.ap-wrap{background:#fff;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;transition:box-shadow 0.18s}
+.ap-wrap:hover{box-shadow:0 2px 10px rgba(0,0,0,0.07)}
+.ap-header{display:flex;align-items:center;cursor:pointer;user-select:none;border-bottom:1px solid transparent;transition:border-color 0.15s;min-height:46px}
+.ap-header.open{border-bottom-color:var(--border)}
+.ap-hdrag{width:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:grab;color:var(--border2);font-size:13px;letter-spacing:-2px;line-height:0.6;padding:0 2px;align-self:stretch;transition:color 0.1s}
+.ap-hdrag:hover{color:var(--text3)}
+.ap-hdrag-inner{display:flex;align-items:center}
+.ap-hname{flex:1;display:flex;align-items:center;gap:7px;padding:10px 10px 10px 4px;min-width:0}
+.ap-cat-lbl{font-size:13px;font-weight:700;color:var(--text);cursor:pointer;padding:2px 5px;border-radius:4px;margin:-2px -5px;transition:background 0.1s;flex:1;word-break:break-word}
+.ap-cat-lbl:hover{background:var(--cream-dark)}
+.ap-edit-cat-input{font-size:13px;font-weight:700;font-family:inherit;padding:3px 7px;border-radius:5px;border:1.5px solid #1a1a1a;outline:none;background:#fff;color:var(--text);min-width:120px;max-width:200px}
+.ap-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;border-radius:9px;background:var(--cream-dark);color:var(--text3);font-size:10px;font-weight:700;padding:0 5px;flex-shrink:0}
+.ap-hsheets{display:flex;align-items:center;padding:0 8px 0 0;flex-shrink:0}
+.ap-cat-sheet-sel{padding:5px 8px;border-radius:6px;border:1px solid var(--border2);background:#fff;font-size:12px;color:var(--text);cursor:pointer;outline:none;font-family:inherit;min-width:110px}
+.ap-cat-sheet-sel:focus{border-color:var(--text)}
+.ap-hactions{display:flex;align-items:center;gap:2px;padding:0 4px 0 8px;flex-shrink:0;border-left:1px solid var(--border)}
+.ap-icn{width:26px;height:26px;border-radius:5px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);padding:0;flex-shrink:0;transition:all 0.12s}
+.ap-icn:hover{background:var(--cream-dark);color:var(--text)}
+.ap-icn.del{color:#C0392B!important}
+.ap-icn.del:hover{background:#fff0ee;color:#C0392B}
+.ap-chevron{width:32px;display:flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0;transition:transform 0.2s;font-size:11px;padding:0 6px;align-self:stretch;border-left:1px solid var(--border)}
+.ap-chevron.open{transform:rotate(90deg)}
+.ap-body{display:none}
+.ap-body.open{display:block}
+.ap-item{display:flex;align-items:center;border-top:1px solid #f5f2ef;background:#fff;transition:background 0.1s;min-height:40px}
+.ap-item:hover{background:var(--cream)}
+.ap-item.dragging{opacity:0.4}
+.ap-item.drop-here{outline:2px dashed #C0392B;outline-offset:-2px}
+.ap-idrag{width:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:grab;color:var(--border2);font-size:12px;letter-spacing:-2px;line-height:0.6;padding:10px 0;user-select:none;touch-action:none;transition:color 0.1s;align-self:stretch}
+.ap-idrag:hover{color:var(--text3)}
+.ap-iname{flex:1;font-size:13px;color:var(--text);padding:9px 0 9px 2px;cursor:pointer;border-radius:4px;word-break:break-word;transition:color 0.1s}
+.ap-iname:hover{text-decoration:underline;text-underline-offset:2px}
+.ap-isheet{flex-shrink:0;padding:0 4px;opacity:0;transition:opacity 0.15s}
+.ap-item:hover .ap-isheet,.ap-isheet:focus-within{opacity:1}
+.ap-isheet select{padding:3px 5px;border-radius:5px;border:1px solid var(--border2);background:#fff;font-size:10px;color:var(--text3);cursor:pointer;outline:none;font-family:inherit;max-width:115px}
+.ap-isheet select:focus{border-color:var(--text)}
+.ap-iactions{display:flex;align-items:center;gap:3px;padding:0 8px 0 4px;flex-shrink:0}
+.ap-move-btn{padding:4px 8px;border-radius:5px;border:1px solid var(--border2);background:var(--ivory);color:var(--text2);font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all 0.12s;font-family:inherit}
+.ap-move-btn:hover{background:#eef3fb;border-color:#b0c4de;color:#3a5a8a}
+.ap-del-btn{width:26px;height:26px;border-radius:5px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#C0392B;padding:0;flex-shrink:0;transition:all 0.12s;opacity:0.5}
+.ap-del-btn:hover{background:#fff0ee;color:#C0392B;opacity:1}
+.ap-move-popup{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--cream);border-top:1px solid var(--border)}
+.ap-move-popup select{flex:1;padding:6px 9px;border-radius:6px;border:1px solid var(--border2);background:#fff;font-size:12px;color:var(--text);cursor:pointer;outline:none;font-family:inherit}
+.ap-move-popup select:focus{border-color:var(--text)}
+.ap-move-popup-lbl{font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.07em;white-space:nowrap;flex-shrink:0}
+.ap-move-cancel{width:26px;height:26px;border-radius:5px;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text3);font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:inherit;transition:all 0.12s}
+.ap-move-cancel:hover{background:var(--cream-dark)}
+.ap-add-zone{display:flex;gap:8px;padding:8px 14px 10px 32px;border-top:1px solid var(--border);background:var(--cream)}
+.ap-add-zone input{flex:1;padding:7px 10px;border-radius:6px;border:1px solid var(--border2);font-size:12px;font-family:inherit;background:#fff;color:var(--text);outline:none}
+.ap-add-zone input:focus{border-color:var(--text)}
+.ap-add-btn-submit{padding:7px 14px;border-radius:6px;border:none;background:#1a1a1a;color:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;transition:opacity 0.1s}
+.ap-add-btn-submit:hover{opacity:0.82}
+.ap-drag-over{outline:2px solid #C0392B;outline-offset:-2px;border-radius:var(--radius)}
+.ap-cat-dragging{opacity:0.4}
+</style>
+</head>
+<body>
+<div class="demo-banner">&#127919; VERSION DÉMO — Mot de passe admin : 0000
+  &nbsp;|&nbsp;
+  <button id="btn-reset-demo" style="background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.4);color:inherit;font:inherit;font-weight:600;padding:2px 10px;border-radius:12px;cursor:pointer;">↺ Réinitialiser la démo</button>
+</div>
+<script>
+  document.getElementById('btn-reset-demo').addEventListener('click', function () {
+    if (confirm('Réinitialiser cette démo et repartir de zéro ?')) {
+      sessionStorage.clear();
+      location.reload();
+    }
+  });
+</script>
+
+<div id="view-magasin" class="view active">
+  <div class="page-header">
+    <div style="width:56px;height:56px;background:#1a1a18;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></div>
+    <div style="flex:1;margin-left:12px">
+      <div class="page-title" id="app-page-title">Bon de commande</div>
+      <div class="page-sub" id="app-page-sub">Mon Commerce</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="field">
+      <label>Magasin</label>
+      <select id="mag-sel" onchange="loadExistingOrder()">
+        <option value="">— Sélectionner —</option>
+        <option>Magasin A</option>
+        <option>Magasin B</option>
+        <option>Magasin C</option>
+        <option>Magasin D</option>
+        <option>Magasin E</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Date de livraison</label>
+      <input type="date" id="mag-date" onchange="loadExistingOrder()">
+    </div>
+    <button id="btn-reprendre" onclick="reprendreCommandePrecedente()" style="display:none;width:100%;margin-top:8px;padding:9px 12px;border:1px dashed var(--border2);border-radius:var(--radius-sm);background:var(--ivory);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;text-align:left;font-family:inherit">↩️ Reprendre la commande précédente</button>
+  </div>
+  <div class="submit-bar">
+    <div class="sel-info">
+      <span class="sel-count-badge" id="sel-count">0</span>
+      article(s) coché(s)
+      <button class="btn-clear" id="btn-clear" onclick="clearAll()" style="display:none">✕ Effacer</button>
+    </div>
+    <button class="btn-send" id="btn-valider" onclick="showSummaryModal()">Envoyer →</button>
+  </div>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search-input" placeholder="Rechercher un article..." oninput="filterItems(this.value)">
+  </div>
+  <div class="search-no-result" id="search-no-result">Aucun article trouvé</div>
+  <div id="notif-banner" style="display:none;background:var(--cream-dark);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+    <div style="font-size:13px;color:var(--text)"><b>🔔 Activer les rappels</b><br><span style="font-size:12px">Recevez une notification à <span id="notif-time-display">18h30</span> si votre commande n'est pas envoyée.</span></div>
+    <button onclick="activerNotifs()" style="padding:8px 14px;border-radius:var(--radius-sm);border:none;background:#7D2D2D;color:#fff;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;letter-spacing:0.04em">Activer</button>
+  </div>
+<div id="form-items-wrapper" style="position:relative">
+  <div id="form-items"></div>
+  <div id="form-lock-overlay">
+    <div class="lock-msg">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <p>Sélectionnez votre magasin<br>pour accéder à la commande</p>
+    </div>
+  </div>
+</div>
+  <div class="card">
+    <div class="field">
+      <label>Remarques / Commandes spéciales</label>
+      <textarea class="remarks-area" id="mag-remarks" placeholder="Précisions, demandes particulières..."></textarea>
+    </div>
+  </div>
+</div>
+
+<div id="view-atelier" class="view">
+  <div class="page-header">
+    <div style="width:56px;height:56px;background:#1a1a18;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></div>
+    <div style="flex:1;margin-left:12px">
+      <div class="page-title">Atelier</div>
+      <div class="page-sub">Récapitulatif des commandes</div>
+    </div>
+    <button class="btn-refresh" onclick="loadAtelier()">↺ Actualiser</button>
+  </div>
+  <div class="date-bar">
+    <button class="date-nav-btn" onclick="changeDate(-1)">&#8249;</button>
+    <div class="date-label" id="atelier-date-label"></div>
+    <button class="date-nav-btn" onclick="changeDate(1)">&#8250;</button>
+  </div>
+  <div id="atelier-body">
+    <div class="empty"><div class="spinner"></div>Chargement...</div>
+  </div>
+</div>
+
+
+<div id="view-admin" class="view-admin">
+  <div class="page-header">
+    <div style="width:52px;height:52px;border-radius:12px;background:var(--nav-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </div>
+    <div style="flex:1;margin-left:12px">
+      <div class="page-title">Administration</div>
+      <div class="page-sub">Gestion des produits et commandes</div>
+    </div>
+  </div>
+
+  <div id="admin-login-screen">
+    <div class="admin-login">
+      <h3>Accès administrateur</h3>
+      <input type="password" id="admin-pwd" placeholder="Mot de passe" onkeydown="if(event.key==='Enter')checkAdminPwd()">
+      <button onclick="checkAdminPwd()">Se connecter</button>
+      <div id="admin-pwd-error" style="color:#C0392B;font-size:12px;margin-top:8px;display:none">Mot de passe incorrect</div>
+    </div>
+  </div>
+
+  <div id="admin-panel" style="display:none">
+    <div class="admin-tabs">
+      <button class="admin-tab active" id="atab-produits" onclick="switchAdminTab('produits')">Produits</button>
+      <button class="admin-tab" id="atab-commandes" onclick="switchAdminTab('commandes')">Commandes</button>
+      <button class="admin-tab" id="atab-stats" onclick="switchAdminTab('stats')">Stats</button>
+      <button class="admin-tab" id="atab-magasins" onclick="switchAdminTab('magasins')">Magasins</button>
+      <button class="admin-tab" id="atab-parametres" onclick="switchAdminTab('parametres')">⚙️ Paramètres</button>
+    </div>
+    <div id="admin-tab-stats" style="display:none"></div>
+    <div id="admin-tab-magasins" style="display:none"></div>
+    <div id="admin-tab-produits">
+      <div class="admin-card" style="margin-bottom:14px">
+        <div class="admin-section-title" style="margin-bottom:10px">Feuilles d'impression</div>
+        <div id="admin-sheets-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+        <button id="btn-new-sheet" onclick="createNewSheet()" style="width:100%;padding:10px;border:1.5px dashed var(--border2);border-radius:var(--radius-sm);background:var(--bg);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;letter-spacing:0.04em">+ Nouvelle feuille d'impression</button>
+      </div>
+      <button id="btn-new-category" onclick="createNewCategory()" style="width:100%;padding:12px;margin-bottom:14px;border:1.5px dashed var(--border2);border-radius:var(--radius-sm);background:var(--ivory);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;letter-spacing:0.04em">+ Nouvelle catégorie</button>
+      <div style="position:relative;margin-bottom:10px">
+        <input id="admin-search-input" type="text" placeholder="🔍  Rechercher un article ou une catégorie…" oninput="filterAdminProducts(this.value)" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:#fff;font-size:13px;font-family:inherit;color:var(--text);outline:none;box-sizing:border-box">
+      </div>
+      <div id="admin-cats-list"></div>
+    </div>
+    <div id="admin-tab-commandes" style="display:none">
+      <div class="date-bar" style="margin-bottom:14px">
+        <button class="date-nav-btn" onclick="changeAdminDate(-1)">&#8249;</button>
+        <div class="date-label" id="admin-date-label"></div>
+        <button class="date-nav-btn" onclick="changeAdminDate(1)">&#8250;</button>
+      </div>
+      <div id="admin-orders-list"></div>
+      <button onclick="deleteAllOrders()" style="margin-top:18px;width:100%;padding:10px;border:1.5px solid #f5c6c6;border-radius:var(--radius-sm);background:#fff5f5;color:#C0392B;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:0.04em;font-family:inherit">🗑️ Supprimer toutes les commandes réelles</button>
+    </div>
+
+    <div id="admin-tab-parametres" style="display:none">
+      <div class="admin-card" style="margin-bottom:14px">
+        <div class="admin-section-title" style="margin-bottom:14px">🏪 Identité</div>
+        <div class="field" style="margin-bottom:12px">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);display:block;margin-bottom:6px">Nom de la boucherie</label>
+          <input id="param-nom" type="text" placeholder="Mon Commerce" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:#fff;outline:none;box-sizing:border-box" oninput="previewSettings()">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);display:block;margin-bottom:6px">Titre de la page commande</label>
+          <input id="param-titre" type="text" placeholder="Bon de commande" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:#fff;outline:none;box-sizing:border-box" oninput="previewSettings()">
+        </div>
+      </div>
+
+      <div class="admin-card" style="margin-bottom:14px">
+        <div class="admin-section-title" style="margin-bottom:14px">🎨 Apparence</div>
+        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);display:block;margin-bottom:12px">Thème de couleur</label>
+        <div id="param-themes" style="display:flex;gap:16px;flex-wrap:wrap"></div>
+        <p style="font-size:11px;color:var(--text3);margin-top:10px;margin-bottom:0">Change les couleurs des cases cochées, boutons et accents dans toute l'app.</p>
+      </div>
+
+      <div class="admin-card" style="margin-bottom:14px">
+        <div class="admin-section-title" style="margin-bottom:14px">🔔 Notifications</div>
+        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);display:block;margin-bottom:8px">Heure du rappel si commande non envoyée</label>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input id="param-heure" type="number" min="0" max="23" placeholder="18" style="width:70px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:#fff;outline:none;text-align:center" oninput="previewSettings()">
+          <span style="font-size:18px;font-weight:700;color:var(--text2)">h</span>
+          <input id="param-minute" type="number" min="0" max="59" placeholder="30" style="width:70px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:#fff;outline:none;text-align:center" oninput="previewSettings()">
+          <span id="param-notif-preview" style="font-size:12px;color:var(--text3);margin-left:6px"></span>
+        </div>
+      </div>
+
+      <div class="admin-card" style="margin-bottom:14px">
+        <div class="admin-section-title" style="margin-bottom:14px">🔑 Sécurité</div>
+        <div class="field" style="margin-bottom:12px">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);display:block;margin-bottom:6px">Nouveau mot de passe admin</label>
+          <input id="param-pwd1" type="password" placeholder="Nouveau mot de passe" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:#fff;outline:none;box-sizing:border-box">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);display:block;margin-bottom:6px">Confirmer le mot de passe</label>
+          <input id="param-pwd2" type="password" placeholder="Confirmer" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:#fff;outline:none;box-sizing:border-box">
+        </div>
+        <div id="param-pwd-error" style="display:none;color:#C0392B;font-size:12px;margin-top:8px"></div>
+      </div>
+
+      <button onclick="saveSettingsForm()" style="width:100%;padding:13px;border:none;border-radius:var(--radius-sm);background:#1a1a1a;color:#fff;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:0.04em;font-family:inherit;margin-bottom:10px">💾 Enregistrer les paramètres</button>
+      <button onclick="resetSettings()" style="width:100%;padding:10px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--ivory);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;letter-spacing:0.04em;font-family:inherit">↺ Réinitialiser aux valeurs par défaut</button>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="bnav-btn active" id="nav-magasin" onclick="showView('magasin')">
+    <span class="bnav-icon-wrap">
+      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="nav-badge" id="nav-badge">0</span>
+    </span>
+    Commande
+  </button>
+  <button class="bnav-btn" id="nav-atelier" onclick="showView('atelier')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    Atelier
+  </button>
+  <button class="bnav-btn" id="nav-admin" onclick="showView('admin')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    Admin
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<div id="summary-modal" onclick="if(event.target===this)closeSummaryModal()">
+  <div class="summary-sheet">
+    <div class="summary-header">Récapitulatif de la commande</div>
+    <div class="summary-sub" id="summary-sub"></div>
+    <div id="summary-body"></div>
+    <div class="summary-actions">
+      <button onclick="closeSummaryModal()" style="flex:1;padding:12px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--ivory);color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit">Modifier</button>
+      <button onclick="confirmAndSend()" style="flex:2;padding:12px;border-radius:var(--radius-sm);border:none;background:var(--nav-bg);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;letter-spacing:0.05em">✓ Confirmer et envoyer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Mon Commerce DÉMO — Stockage sessionStorage (remplace Firebase Realtime DB) ──
+(function() {
+  const LS = "vanbademo_";
+  function getStore() { try { return JSON.parse(sessionStorage.getItem(LS+"data")||"{}"); } catch(e) { return {}; } }
+  function setStore(d) { sessionStorage.setItem(LS+"data", JSON.stringify(d)); }
+  function getPath(o, parts) { let c=o; for(const p of parts){ if(c==null) return undefined; c=c[p]; } return c; }
+  function setPath(o, parts, v) {
+    if(!parts.length) return v;
+    const k=parts[0];
+    if(v===null||v===undefined) {
+      if(parts.length===1) { delete o[k]; }
+      else { if(!o[k]) o[k]={}; o[k]=setPath(o[k],parts.slice(1),v); if(!Object.keys(o[k]).length) delete o[k]; }
+    } else {
+      if(parts.length===1) { o[k]=v; }
+      else { if(!o[k]||typeof o[k]!=="object") o[k]={}; o[k]=setPath(o[k],parts.slice(1),v); }
+    }
+    return o;
+  }
+  window._db = {__demo:true};
+  window._ref = (db, path) => ({path, __parts: path.split("/").filter(p=>p!=="")});
+  window._set = (r, v) => { const s=getStore(); setPath(s,r.__parts,v); setStore(s); return Promise.resolve(); };
+  window._get = (r) => { const v=getPath(getStore(),r.__parts); return Promise.resolve({exists:()=>v!=null&&v!==undefined, val:()=>v!=null?v:null}); };
+
+  window._fbReady = true;
+  window.dispatchEvent(new Event("fb-ready"));
+  console.log("Mon Commerce DEMO - sessionStorage actif");
+})();
+</script>
+
+<script>
+const MAGASINS_BASE = ['Magasin A','Magasin B','Magasin C','Magasin D','Magasin E'];
+let MAGASINS = JSON.parse(sessionStorage.getItem('vanbademo_magasins') || 'null') || MAGASINS_BASE.slice();
+
+const BASE = {
+  "Préparation bouchères & Charcutières": ["Grosses Saucisses","Saucisses Volaille","Fines Saucisses","Saucisses d'automne","Merguez","Hachis de porc","Farce à tomate","Pavé Burger","Tranche Flamande","Cordon Bleu","Cœur de veau","Crépinette","Carré Flamand","Pavé Chorizo","Tomates Farcies"],
+  "Saucisses BBQ": ["Andalouse","Cheddar","Bacon cheese","Comté","Chorizo","Chorizette","Herbes","Echalote","Maroilles","Basque","Italienne","Orloff"],
+  "Boucherie": ["Onglet","Joue de bœuf","Foie de veau","Foie de bœuf","Filet mignon de porc","Jarret de veau","Barde fine","Globe de bœuf","Avant de Bœuf","Entrecôte","Roti de bœuf","Faux Filet","Filet de bœuf","Cote a l'os","Veau avec os","Côte de Veau","Escalope de veau","Rôti de veau","Veau au jus","Longe de Porc","Hachis de bœuf"],
+  "Sauce boucherie": ["Marinade Chorizo","Américaine","Gyros","Indienne","Americaine épicée","Poivre","Echalote","Girolles","Maitre d'hotel","Thai"],
+  "Accompagnements": ["Epinards à la crème","Grenaille","Gratin Dauphinois Pt","Pommes Vanba","Puree butternut","Puree carotte","Puree celeri","Puree de patate douce"],
+  "Crudités": ["Carottes","Sld de pates","Chorizo crudité","Céleri","Taboulé","Coleslaw","Cervelas mayo","Pdt vinaigrette","Betterave"],
+  "Snacking": ["Brushetta","Pdt garnies","Tacos","Quiche","Quiche Lorraine","Pizza","Kebab","Hot dog","Panini kebab","Panini burger","Panini curry","Crêpes Jambon","Crêpes Poulet","Crêpes Welsh","Assiette fraicheur","Pasta Saumon","Pasta Poulet","Tagliatelle Pesto","Farfalles Curry","Farfalles Crevettes","Coquille saumon","Entremet poisson","Entremet charcutier","Vol au vent poulet","Vol au vent jambon","Vol au vent welsh","Vol au vent ris de veau"],
+  "Marinade petits pots": ["Mayo","Americaine","Americaine épicée"],
+  "Fromages": ["Emmental Bloc","Cheddar Bloc","Roquefort","Maroilles"],
+  "Plats cuisinés": ["Chili Con Carne","Couscous","Rougaille","Paillasson","Pot Sauce Bolognaise"],
+  "BOX": ["Box Navettes","Box Navettes Prestige","Box Surprise","Box Wraps","Box Lunch","Box Apéritive 6 pers","Box Apéritive 8 pers","Box Apéritive 10 pers","Plateau Amuse Bouches","Plateau de Verrines","Plateau Raclette"],
+  "Charcuterie & gelée": ["Lard cuit","Roti bœuf cuit","Roti porc cuit","Cuisse de poulet en gelée","Potje","Paté Poivre","Paté Chef","Paté Grand-Mère","Paté Campagne","Paté Foie","Paté Dunkerquois"],
+  "Jambon & Charcuterie": ["Jambon Blanc","Jambon Fumé","Boudin noir","Boudin noir sucré","Boudin noir pimenté","Saucisse de jean bart","Saucisse de Bergues","Saucisse de Strasbourg","Saucisson à l'ail","Saucisson de cheval","Tripes"],
+  "Sauces": ["Boulette","Museau","Chorizo","Girolles","Langue"],
+  "Boulettes & Traiteur": ["Boulettes","Boulettes de poulet","Courgettes farcies","Jarret de porc cuit","Langue cuite","Potage"],
+  "Aldudes": ["Chorizo Aldudes","Jambon Sec","Jésus","Saucisson"],
+  "Dessert": ["Muffin Chocolat","Muffin Fruits Rouge","Muffin Caramel","Cookies","Brownies"],
+  "Fruits, Légumes & Aromates": ["Oignons","Poivrons","Tomates Cerises","Courgettes","Carottes","Laurier","Persil","Thym"],
+  "Autres": ["Sopalin","Papier Toilette","Produit Main","Produit Plonge"],
+  "MONNAIE": ["0,01 ct","0,02 cts","0,05 cts","0,10 cts","0,20 cts","0,50 cts","1,00 €","2,00 €","5,00 €"]
+};
+
+let customItems = {};
+let customCategories = [];  // catégories créées depuis l'admin (en plus de BASE)
+let categorySheets = {};    // {cat: ['boucherie','traiteur',...]} — feuilles d'impression assignées
+let deletedBaseItems = {};  // items BASE supprimés par admin
+let renamedBaseItems = {};  // {cat: {oldName: newName}} — garde la position
+let itemOrder = {};         // {cat: [item1, item2, ...]} — ordre personnalisé
+let categoryOrder = [];     // ordre des catégories (drag-and-drop admin)
+let baseCatLabels = {};     // {originalBaseCatName: displayLabel} — renommage catégories BASE
+let itemSheets = {};        // {cat+'::'+item: sheetId} — feuille par article (override catégorie)
+let checked = {};       // {cat::item: true/false}
+let quantities = {};    // {cat::item: "valeur"}
+let existingOrder = null; // commande déjà envoyée pour ce magasin/date
+let atelierDate = todayStr();
+let atelierMag = 'all';
+
+function todayStr(){
+  return new Date().toISOString().split('T')[0];
+}
+function defaultOrderDate(){
+  const now = new Date();
+  const day = now.getDay(); // 0=dim, 1=lun, ..., 6=sam
+  // Samedi (6) -> J+2 pour lundi, sinon J+1
+  const offset = (day === 6) ? 2 : 1;
+  const d = new Date(now);
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().split('T')[0];
+}
+function fmtDate(s){
+  if(!s) return '';
+  const [y,m,d] = s.split('-');
+  const jours = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const mois = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  const dt = new Date(s+'T12:00:00');
+  return jours[dt.getDay()]+' '+parseInt(d)+' '+mois[parseInt(m)-1];
+}
+function safeKey(s){ return s.replace(/[.#$\[\]]/g,'_'); }
+function J(s){ return JSON.stringify(s); }
+
+// ─── VUE ───────────────────────────────────────────────
+function showView(v){
+  document.querySelectorAll('.view, .view-admin').forEach(x=>x.classList.remove('active'));
+  const el = document.getElementById('view-'+v);
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.bnav-btn').forEach(x=>x.classList.remove('active'));
+  const navEl = document.getElementById('nav-'+v);
+  if(navEl) navEl.classList.add('active');
+  if(v==='atelier') loadAtelier();
+  if(v==='admin') initAdminView();
+}
+
+// ─── FORMULAIRE ────────────────────────────────────────
+function getItems(cat){
+  const deleted = deletedBaseItems[cat]||[];
+  const renamed = renamedBaseItems[cat]||{};
+  // Items BASE : filtrer les supprimés, appliquer les renommages
+  const base = (BASE[cat]||[])
+    .filter(i=>!deleted.includes(i))
+    .map(i=> renamed[i] || i);
+  const all = [...base,...(customItems[cat]||[])];
+  // Appliquer l'ordre personnalisé si défini
+  if(itemOrder[cat] && itemOrder[cat].length){
+    const order = itemOrder[cat];
+    const ordered = order.filter(i => all.includes(i));
+    const rest = all.filter(i => !order.includes(i));
+    return [...ordered, ...rest];
+  }
+  return all;
+}
+
+// Charge la commande existante Firebase et pré-coche les cases
+async function loadExistingOrder(){
+  const mag = document.getElementById('mag-sel').value;
+  const date = document.getElementById('mag-date').value;
+  const overlay = document.getElementById('form-lock-overlay');
+  if(!mag){
+    if(overlay) overlay.style.display = 'flex';
+    existingOrder = null;
+    checked = {}; quantities = {};
+    buildForm(); updateCount();
+    document.getElementById('mag-remarks').value = '';
+    return;
+  }
+  if(overlay) overlay.style.display = 'none';
+  if(!date || !window._fbReady){ existingOrder = null; return; }
+
+  try{
+    const snap = await window._get(window._ref(window._db,'orders/'+safeKey(date)+'/'+safeKey(mag)));
+    if(!snap.exists()){
+      // Pas de vraie commande — pré-remplir avec la commande démo si disponible
+      existingOrder = null;
+      checked = {}; quantities = {};
+      const demoOrders = getDemoOrdersForDate(date);
+      const demoOrder = demoOrders[safeKey(mag)];
+      if(demoOrder){
+        Object.keys(demoOrder.items).forEach(catKey => {
+          const {label, items} = demoOrder.items[catKey];
+          items.forEach(({name, qty}) => {
+            const key = label+'::'+name;
+            checked[key] = true;
+            if(qty) quantities[key] = qty;
+          });
+        });
+      }
+      const btnReprendre = document.getElementById('btn-reprendre');
+      if(btnReprendre) btnReprendre.style.display = 'inline-flex';
+      buildForm(); updateCount();
+      document.getElementById('mag-remarks').value = '';
+      return;
+    }
+    existingOrder = snap.val();
+    // Pré-cocher les cases et remplir les quantités
+    checked = {}; quantities = {};
+    Object.keys(existingOrder.items).forEach(catKey => {
+      const {label, items} = existingOrder.items[catKey];
+      items.forEach(({name, qty}) => {
+        const key = label+'::'+name;
+        checked[key] = true;
+        if(qty) quantities[key] = qty;
+      });
+    });
+    // Pré-remplir les remarques
+    if(existingOrder.remarks){
+      document.getElementById('mag-remarks').value = existingOrder.remarks;
+    }
+    buildForm();
+    updateCount();
+    showToast('Commande existante chargée — vous pouvez la compléter');
+  }catch(e){
+    existingOrder = null;
+  }
+}
+
+function filterItems(q){
+  const query = q.toLowerCase().trim();
+  let anyVisible = false;
+  document.querySelectorAll('#form-items .item-row').forEach(row => {
+    const name = row.querySelector('.iname');
+    const match = !query || (name && name.textContent.toLowerCase().includes(query));
+    row.classList.toggle('hidden-by-search', !match);
+    if(match) anyVisible = true;
+  });
+  // Masquer les sec-body sans résultat
+  document.querySelectorAll('#form-items .sec-body').forEach(body => {
+    const visible = body.querySelectorAll('.item-row:not(.hidden-by-search)').length > 0;
+    body.closest('.sec-group')?.style.setProperty('display', visible || !query ? '' : 'none');
+  });
+  const noRes = document.getElementById('search-no-result');
+  if(noRes) noRes.style.display = (query && !anyVisible) ? 'block' : 'none';
+}
+
+function clearAll(){
+  checked = {}; quantities = {};
+  buildForm(); updateCount();
+  const inp = document.getElementById('search-input');
+  if(inp){ inp.value = ''; filterItems(''); }
+  showToast('Sélection effacée');
+}
+
+function showSummaryModal(){
+  const mag = document.getElementById('mag-sel').value;
+  const date = document.getElementById('mag-date').value;
+  if(!mag||!date){ showToast('Sélectionnez un magasin et une date'); return; }
+  const n = Object.values(checked).filter(Boolean).length;
+  if(!n){ showToast('Cochez au moins un article'); return; }
+  // Construire le résumé
+  const sub = document.getElementById('summary-sub');
+  const body = document.getElementById('summary-body');
+  if(sub) sub.textContent = mag + ' — ' + new Date(date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  let html = '';
+  Object.keys(getAllCategories()).forEach(cat => {
+    const sel = getItems(cat).filter(i => checked[cat+'::'+i]);
+    if(!sel.length) return;
+    html += '<div class="summary-cat"><div class="summary-cat-title">'+cat+'</div>';
+    sel.forEach(item => {
+      const qty = quantities[cat+'::'+item];
+      html += '<div class="summary-item"><span>'+item+'</span>'+(qty?'<span class="summary-item-qty">'+qty+'</span>':'')+'</div>';
+    });
+    html += '</div>';
+  });
+  if(body) body.innerHTML = html;
+  document.getElementById('summary-modal').classList.add('open');
+}
+
+function closeSummaryModal(){
+  document.getElementById('summary-modal').classList.remove('open');
+}
+
+async function confirmAndSend(){
+  closeSummaryModal();
+  await submitCommande();
+}
+
+function buildForm(){
+  const container = document.getElementById('form-items');
+  const frag = document.createDocumentFragment();
+
+  Object.keys(BASE).forEach(cat => {
+    // En-tête de section
+    const hdr = document.createElement('div');
+    hdr.className = 'sec-header';
+    hdr.setAttribute('data-cat', cat);
+    hdr.innerHTML = '<span class="sec-header-left"><span class="sec-label">'+(baseCatLabels[cat]||cat)+'</span></span>';
+    frag.appendChild(hdr);
+    // Liste des items
+    const list = document.createElement('div');
+    list.className = 'items-list';
+
+    getItems(cat).forEach(item => {
+      const key = cat+'::'+item;
+      const isOn = !!checked[key];
+      const isNew = (customItems[cat]||[]).includes(item);
+
+      // La ligne
+      const row = document.createElement('div');
+      row.className = 'item-row' + (isOn ? ' on' : '');
+
+      // La vraie case à cocher native
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = isOn;
+
+      // Le nom
+      const name = document.createElement('span');
+      name.className = 'iname';
+      name.textContent = item;
+      if(isNew){
+        const badge = document.createElement('span');
+        badge.className = 'new-badge';
+        badge.textContent = ' nouveau';
+        name.appendChild(badge);
+      }
+
+      // Le champ quantité
+      const qtyInput = document.createElement('input');
+      qtyInput.type = 'text';
+      qtyInput.inputMode = 'numeric';
+      qtyInput.className = 'qty-input';
+      qtyInput.placeholder = 'qté';
+      qtyInput.value = quantities[key]||'';
+      // qty-input est visible via CSS .item-row.on .qty-input
+
+      // Événement sur la ligne entière (délégué)
+      row.addEventListener('click', function(e){
+        // Si on clique sur le champ qté, on ne toggle pas
+        if(e.target === qtyInput) return;
+        // Toggle
+        checked[key] = !checked[key];
+        if(!checked[key]){
+          delete quantities[key];
+          qtyInput.value = '';
+        }
+        cb.checked = !!checked[key];
+        row.classList.toggle('on', !!checked[key]);
+        updateCount();
+      });
+
+      qtyInput.addEventListener('input', function(e){
+        e.stopPropagation();
+        quantities[key] = this.value;
+      });
+      qtyInput.addEventListener('click', function(e){
+        e.stopPropagation();
+      });
+
+      row.appendChild(cb);
+      row.appendChild(name);
+      row.appendChild(qtyInput);
+      list.appendChild(row);
+    });
+    frag.appendChild(list);
+
+    // Ajout article custom
+    const addRow = document.createElement('div');
+    addRow.className = 'add-custom';
+    const addInput = document.createElement('input');
+    addInput.type = 'text';
+    addInput.placeholder = 'Ajouter un article...';
+    const addBtn = document.createElement('button');
+    addBtn.textContent = '+ Ajouter';
+    addBtn.onclick = () => addCustom(cat, addInput);
+    addInput.addEventListener('keydown', e => { if(e.key==='Enter') addCustom(cat, addInput); });
+    addRow.appendChild(addInput);
+    addRow.appendChild(addBtn);
+    frag.appendChild(addRow);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(frag);
+  // Ré-appliquer le filtre de recherche si actif
+  const q = document.getElementById('search-input');
+  if(q && q.value) filterItems(q.value);
+}
+
+function updateCount(){
+  const n = Object.values(checked).filter(Boolean).length;
+  document.getElementById('sel-count').textContent = n;
+  const badge = document.getElementById('nav-badge');
+  if(badge){ badge.textContent = n; badge.classList.toggle('visible', n > 0); }
+  const clr = document.getElementById('btn-clear');
+  if(clr) clr.style.display = n > 0 ? 'inline-block' : 'none';
+}
+
+// ─── CUSTOM ITEMS ──────────────────────────────────────
+async function addCustom(cat, inp){
+  const val = inp.value.trim();
+  if(!val) return;
+  if(!customItems[cat]) customItems[cat] = [];
+  if(!customItems[cat].includes(val)){
+    customItems[cat].push(val);
+    if(window._fbReady){
+      await window._set(window._ref(window._db,'custom_items'), customItems);
+    }
+  }
+  inp.value = '';
+  buildForm();
+  showToast('Article "'+val+'" ajouté !');
+}
+
+async function saveCustomItems(){
+  if(!window._fbReady) return;
+  try{
+    await window._set(window._ref(window._db,'custom_items'), customItems);
+    await window._set(window._ref(window._db,'deleted_items'), deletedBaseItems);
+    await window._set(window._ref(window._db,'renamed_items'), renamedBaseItems);
+    await window._set(window._ref(window._db,'item_order'), itemOrder);
+    await window._set(window._ref(window._db,'custom_categories'), customCategories);
+    await window._set(window._ref(window._db,'category_sheets'), categorySheets);
+    await window._set(window._ref(window._db,'print_sheets'), PRINT_SHEETS);
+    await window._set(window._ref(window._db,'category_order'), categoryOrder);
+    await window._set(window._ref(window._db,'base_cat_labels'), baseCatLabels);
+    await window._set(window._ref(window._db,'item_sheets'), itemSheets);
+  }catch(e){ console.error('Erreur sauvegarde:', e); }
+}
+
+async function loadCustomItems(){
+  if(!window._fbReady) return;
+  try{
+    const snap = await window._get(window._ref(window._db,'custom_items'));
+    if(snap.exists()) customItems = snap.val();
+    const snap2 = await window._get(window._ref(window._db,'deleted_items'));
+    if(snap2.exists()) deletedBaseItems = snap2.val();
+    const snap3 = await window._get(window._ref(window._db,'renamed_items'));
+    if(snap3.exists()) renamedBaseItems = snap3.val();
+    const snap4 = await window._get(window._ref(window._db,'item_order'));
+    if(snap4.exists()) itemOrder = snap4.val();
+    const snap5 = await window._get(window._ref(window._db,'custom_categories'));
+    if(snap5.exists()) customCategories = snap5.val();
+    const snap6 = await window._get(window._ref(window._db,'category_sheets'));
+    if(snap6.exists()) categorySheets = snap6.val();
+    const snap7 = await window._get(window._ref(window._db,'print_sheets'));
+    if(snap7.exists() && Array.isArray(snap7.val()) && snap7.val().length) PRINT_SHEETS = snap7.val();
+    const snap8 = await window._get(window._ref(window._db,'category_order'));
+    if(snap8.exists() && Array.isArray(snap8.val()) && snap8.val().length) categoryOrder = snap8.val();
+    const snap9 = await window._get(window._ref(window._db,'base_cat_labels'));
+    if(snap9.exists() && snap9.val()) baseCatLabels = snap9.val();
+    const snap10 = await window._get(window._ref(window._db,'item_sheets'));
+    if(snap10.exists() && snap10.val()) itemSheets = snap10.val();
+  }catch(e){}
+  buildForm();
+  // Default date = demain
+  const dateEl = document.getElementById('mag-date');
+  if(dateEl && !dateEl.value) dateEl.value = defaultOrderDate();
+}
+
+// ─── ENVOI COMMANDE ────────────────────────────────────
+async function submitCommande(){
+  const mag = document.getElementById('mag-sel').value;
+  const date = document.getElementById('mag-date').value;
+  if(!mag||!date){ showToast('Sélectionnez un magasin et une date'); return; }
+
+  // Construire les items cochés actuellement
+  const newItems = {};
+  Object.keys(BASE).forEach(cat => {
+    const sel = getItems(cat).filter(i => checked[cat+'::'+i]);
+    if(sel.length){
+      newItems[safeKey(cat)] = {
+        label: cat,
+        items: sel.map(i => ({name:i, qty:quantities[cat+'::'+i]||''}))
+      };
+    }
+  });
+
+  if(!Object.keys(newItems).length){ showToast('Cochez au moins un article'); return; }
+
+  // ── UNION avec commande existante ────────────────────
+  const mergedItems = {};
+
+  // 1. Partir de la commande existante si elle existe
+  if(existingOrder && existingOrder.items){
+    Object.keys(existingOrder.items).forEach(catKey => {
+      mergedItems[catKey] = {
+        label: existingOrder.items[catKey].label,
+        items: [...existingOrder.items[catKey].items]
+      };
+    });
+  }
+
+  // 2. Ajouter / mettre à jour avec les nouveaux articles cochés
+  Object.keys(newItems).forEach(catKey => {
+    if(!mergedItems[catKey]){
+      mergedItems[catKey] = { label: newItems[catKey].label, items: [] };
+    }
+    newItems[catKey].items.forEach(newItem => {
+      const existIdx = mergedItems[catKey].items.findIndex(e => e.name === newItem.name);
+      if(existIdx >= 0){
+        if(newItem.qty) mergedItems[catKey].items[existIdx].qty = newItem.qty;
+      } else {
+        mergedItems[catKey].items.push(newItem);
+      }
+    });
+  });
+
+  // 3. Retirer les articles décochés volontairement
+  if(existingOrder && existingOrder.items){
+    Object.keys(existingOrder.items).forEach(catKey => {
+      const cat = existingOrder.items[catKey].label;
+      if(!mergedItems[catKey]) return;
+      mergedItems[catKey].items = mergedItems[catKey].items.filter(existItem => {
+        const isVisible = getItems(cat).includes(existItem.name);
+        if(!isVisible) return true; // article invisible = garder
+        return !!checked[cat+'::'+existItem.name];
+      });
+      if(!mergedItems[catKey].items.length) delete mergedItems[catKey];
+    });
+  }
+
+  if(!Object.keys(mergedItems).length){ showToast('Cochez au moins un article'); return; }
+
+  const order = {
+    mag, date,
+    items: mergedItems,
+    remarks: document.getElementById('mag-remarks').value.trim(),
+    sentAt: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),
+    updatedAt: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
+  };
+
+  const btn = document.getElementById('btn-valider');
+  btn.disabled = true; btn.textContent = 'Envoi...';
+
+  try{
+    if(!window._fbReady) throw new Error('Firebase non prêt');
+    await window._set(window._ref(window._db, 'orders/'+safeKey(date)+'/'+safeKey(mag)), order);
+    existingOrder = order;
+    showToast('Commande de '+mag+' mise à jour !');
+  }catch(e){
+    showToast('Erreur : vérifiez votre connexion');
+  }
+  btn.disabled=false; btn.textContent='Envoyer la commande';
+}
+
+
+// ─── ATELIER ───────────────────────────────────────────
+function setMagTab(m){ atelierMag = m===null ? "all" : m; loadAtelier(); }
+
+function changeDate(d){
+  const dt = new Date(atelierDate+'T12:00:00');
+  dt.setDate(dt.getDate()+d);
+  atelierDate = dt.toISOString().split('T')[0];
+  atelierMag = 'all';
+  loadAtelier();
+}
+
+async function loadAtelier(){
+  document.getElementById('atelier-date-label').textContent = fmtDate(atelierDate);
+  document.getElementById('atelier-body').innerHTML = '<div class="empty"><div class="spinner"></div>Chargement...</div>';
+  if(!window._fbReady){ document.getElementById('atelier-body').innerHTML='<div class="empty">Firebase non connecté</div>'; return; }
+  try{
+    const snap = await window._get(window._ref(window._db,'orders/'+safeKey(atelierDate)));
+    const realOrders = snap.exists() ? snap.val() : {};
+    const demoOrders = getDemoOrdersForDate(atelierDate);
+    const merged = Object.assign({}, demoOrders, realOrders);
+    renderAtelier(merged);
+  }catch(e){
+    document.getElementById('atelier-body').innerHTML='<div class="empty">Erreur de chargement</div>';
+  }
+}
+
+function renderAtelier(dayOrders){
+  const body = document.getElementById('atelier-body');
+  const sent = MAGASINS.filter(m=>dayOrders[safeKey(m)]);
+  const pending = MAGASINS.filter(m=>!dayOrders[safeKey(m)]);
+  let html = '';
+
+  // Stats
+  html += '<div class="stats-grid">';
+  html += '<div class="stat-card"><div class="stat-val">'+sent.length+'/'+MAGASINS.length+'</div><div class="stat-label">Commandes reçues</div></div>';
+  html += '<div class="stat-card"><div class="stat-val">'+pending.length+'</div><div class="stat-label">En attente</div></div>';
+  html += '</div>';
+
+  // Statut par magasin
+  html += '<div class="mag-status-list">';
+  MAGASINS.forEach(m=>{
+    const o = dayOrders[safeKey(m)];
+    html += '<div class="mag-status-row"><div><div class="mag-status-name">'+m+'</div><div class="mag-status-time">'+(o?'Envoyé à '+o.sentAt:'Pas encore envoyé')+'</div></div>';
+    html += o?'<span class="badge sent">✓ Reçu</span>':'<span class="badge pending">En attente</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Onglets
+  html += '<div class="mag-scroll"><button class="mag-pill-btn'+(atelierMag==="all"?' active':'')+'" onclick="setMagTab(null)">Tous</button>';
+  MAGASINS.forEach(m=>{
+    const s=!!dayOrders[safeKey(m)];
+    html += '<button class="mag-pill-btn '+(s?'sent':'')+(atelierMag===m?' active':'')+'" onclick="setMagTab('+JSON.stringify(m)+')">'+m+'</button>';
+  });
+  html += '</div>';
+
+  if(atelierMag==='all'){
+    if(!sent.length){ html += '<div class="empty">Aucune commande reçue pour cette date.</div>'; body.innerHTML=html; return; }
+
+    // Construire {cat: {item: {mag: qty}}}
+    const allCats={}, catOrder=[];
+    MAGASINS.forEach(mag=>{
+      const o=dayOrders[safeKey(mag)]; if(!o) return;
+      Object.keys(o.items).forEach(k=>{
+        const {label,items}=o.items[k];
+        if(!allCats[label]){allCats[label]={};catOrder.push(label);}
+        items.forEach(({name,qty})=>{
+          if(!allCats[label][name]) allCats[label][name]={};
+          allCats[label][name][mag]=qty||'1';
+        });
+      });
+    });
+
+    const abbr={'Magasin A':'MA','Magasin B':'MB','Magasin C':'MC','Magasin D':'MD','Magasin E':'ME'};
+    const BOUCHERIE_CATS=['Préparation bouchères & Charcutières','Saucisses BBQ','Boucherie','Sauce boucherie'];
+    const SNACKING_CATS=['Snacking'];
+    const BOX_CATS=['BOX'];
+    const MONNAIE_CATS=['MONNAIE'];
+    const theadRow = '<thead><tr><th class="col-item">Article</th><th class="col-total">Total</th>'+sent.map(m=>'<th>'+(abbr[m]||m)+'</th>').join('')+'</tr></thead>';
+
+    function buildTableRows(cats){
+      let rows='';
+      cats.forEach(cat=>{
+        if(!allCats[cat]) return;
+        rows += '<tr class="cat-row"><td colspan="'+(sent.length+2)+'">'+cat+'</td></tr>';
+        // Trier les items selon l'ordre défini dans BASE + itemOrder (pas l'ordre Firebase)
+        const baseOrder = getItems(cat);
+        const allItems = Object.keys(allCats[cat]);
+        // Items dans l'ordre BASE d'abord, puis les éventuels items non trouvés dans BASE
+        const sortedItems = [
+          ...baseOrder.filter(i => allItems.includes(i)),
+          ...allItems.filter(i => !baseOrder.includes(i))
+        ];
+        sortedItems.forEach(item=>{
+          const row=allCats[cat][item]; if(!row) return;
+          let total=0;
+          // Calculer le total avant d'afficher
+          sent.forEach(m=>{ const v=row[m]; if(v){ const n=parseInt(v); total+=(isNaN(n)?1:n); } });
+          // Total en 2e colonne, puis magasins
+          rows += '<tr><td class="col-item">'+item+'</td>';
+          rows += '<td class="col-total">'+total+'</td>';
+          sent.forEach(m=>{
+            const v=row[m];
+            if(v){ rows+='<td>'+v+'</td>'; }
+            else rows+='<td class="zero">0</td>';
+          });
+          rows += '</tr>';
+        });
+      });
+      return rows;
+    }
+
+    const boucherieCatList = catOrder.filter(cat=>BOUCHERIE_CATS.includes(cat));
+    const snackingCatList  = catOrder.filter(cat=>SNACKING_CATS.includes(cat));
+    const traiteurCatList  = catOrder.filter(cat=>!BOUCHERIE_CATS.includes(cat) && !SNACKING_CATS.includes(cat) && !BOX_CATS.includes(cat) && !MONNAIE_CATS.includes(cat));
+    const boxList          = catOrder.filter(cat=>BOX_CATS.includes(cat));
+    const monnaieList      = catOrder.filter(cat=>MONNAIE_CATS.includes(cat));
+
+    const boucherieRows = buildTableRows(boucherieCatList);
+    const traiteurRows  = buildTableRows(traiteurCatList);
+    const snackingRows  = buildTableRows(snackingCatList);
+    const boxRows       = buildTableRows(boxList);
+    const monnaieRows   = buildTableRows(monnaieList);
+
+    html += '<div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px;flex-wrap:wrap">';
+    html += '<button class="print-btn" onclick="printSection(&quot;boucherie&quot;)">&#128424; Boucherie</button>';
+    html += '<button class="print-btn" onclick="printSection(&quot;traiteur&quot;)">&#128424; Traiteur</button>';
+    html += '<button class="print-btn" onclick="printSection(&quot;box&quot;)">&#128424; BOX</button>';
+    html += '<button class="print-btn" onclick="printSection(&quot;snacking&quot;)">&#128424; Snacking</button>';
+    html += '<button class="print-btn" onclick="printSection(&quot;all&quot;)">&#128424; Tout</button>';
+    html += '</div>';
+
+    // Construire le bloc remarques (réutilisé dans chaque section)
+    const avecRem=sent.filter(m=>dayOrders[safeKey(m)].remarks);
+    function buildRemBlock(){
+      if(!avecRem.length) return '';
+      let r = '<div class="remarque-print-block">';
+      r += '<div class="remarque-print-title">Remarques</div>';
+      avecRem.forEach(m=>{ r+='<div class="remarque-box"><b>'+m+' :</b> '+dayOrders[safeKey(m)].remarks+'</div>'; });
+      r += '</div>';
+      return r;
+    }
+
+    // Section boucherie
+    html += '<div class="print-section-boucherie">';
+    html += '<div class="print-header-section"><h2>BOUCHERIE — '+fmtDate(atelierDate)+'</h2><p>Mon Commerce</p></div>';
+    html += '<div class="section-print-label">BOUCHERIE</div>';
+    html += '<div class="atelier-table-wrap"><table class="atelier-table">'+theadRow+'<tbody>'+boucherieRows+'</tbody></table></div>';
+    html += buildRemBlock();
+    html += '</div>';
+
+    // Section traiteur (avec MONNAIE séparée en dessous)
+    html += '<div class="print-section-traiteur">';
+    html += '<div class="print-header-section"><h2>TRAITEUR — '+fmtDate(atelierDate)+'</h2><p>Mon Commerce</p></div>';
+    html += '<div class="section-print-label">TRAITEUR</div>';
+    html += '<div class="atelier-table-wrap"><table class="atelier-table">'+theadRow+'<tbody>'+traiteurRows+'</tbody></table></div>';
+    if(monnaieRows){
+      html += '<div style="margin-top:20px;padding-top:16px;border-top:2px solid #333">';
+      html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#333;margin-bottom:8px">MONNAIE</div>';
+      html += '<div class="atelier-table-wrap"><table class="atelier-table">'+theadRow+'<tbody>'+monnaieRows+'</tbody></table></div>';
+      html += '</div>';
+    }
+    html += buildRemBlock();
+    html += '</div>';
+
+    // Section snacking
+    html += '<div class="print-section-snacking">';
+    html += '<div class="print-header-section"><h2>SNACKING — '+fmtDate(atelierDate)+'</h2><p>Mon Commerce</p></div>';
+    html += '<div class="section-print-label">SNACKING</div>';
+    html += '<div class="atelier-table-wrap"><table class="atelier-table">'+theadRow+'<tbody>'+snackingRows+'</tbody></table></div>';
+    html += buildRemBlock();
+    html += '</div>';
+
+    // Section BOX
+    html += '<div class="print-section-box">';
+    html += '<div class="print-header-section"><h2>BOX — '+fmtDate(atelierDate)+'</h2><p>Mon Commerce</p></div>';
+    html += '<div class="section-print-label">BOX</div>';
+    html += '<div class="atelier-table-wrap"><table class="atelier-table">'+theadRow+'<tbody>'+boxRows+'</tbody></table></div>';
+    html += buildRemBlock();
+    html += '</div>';
+
+    // Bloc remarques visible à l'écran (hors impression)
+    if(avecRem.length){
+      html += '<div class="card no-print" style="margin-top:10px">';
+      avecRem.forEach(m=>{ html+='<div class="remarque-box"><b>'+m+' :</b> '+dayOrders[safeKey(m)].remarks+'</div>'; });
+      html += '</div>';
+    }
+
+  } else {
+    const o=dayOrders[safeKey(atelierMag)];
+    if(!o){ html+='<div class="empty">Aucune commande de '+atelierMag+' pour cette date.</div>'; body.innerHTML=html; return; }
+    html += '<div class="print-header"><h2>Commande '+atelierMag+' — '+fmtDate(atelierDate)+'</h2><p>Mon Commerce</p></div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+    html += '<div style="font-size:13px;color:rgba(255,255,255,0.6)">Envoyé à '+o.sentAt+'</div>';
+    html += '<button class="print-btn" onclick="window.print()">&#128424; Imprimer</button></div>';
+    html += '<div class="atelier-table-wrap"><table class="atelier-table"><thead><tr><th class="col-item">Article</th><th>Quantité</th></tr></thead><tbody>';
+    Object.keys(o.items).forEach(k=>{
+      const {label,items}=o.items[k];
+      html += '<tr class="cat-row"><td colspan="2">'+label+'</td></tr>';
+      items.forEach(({name,qty})=>{ html+='<tr><td class="col-item">'+name+'</td><td>'+(qty||'—')+'</td></tr>'; });
+    });
+    html += '</tbody></table></div>';
+    if(o.remarks) html+='<div class="remarque-box" style="margin-top:10px;background:#fff"><b>Remarques :</b> '+o.remarks+'</div>';
+  }
+
+  body.innerHTML = html;
+}
+
+
+// CSS partagé pour l'impression
+const PRINT_CSS = `
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:10px;color:#000;background:#fff;padding:14px}
+  h2{font-size:16px;font-weight:700;text-align:center;margin-bottom:3px}
+  p.subtitle{font-size:10px;color:#666;text-align:center;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;margin-bottom:14px}
+  th{padding:5px 7px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;border-bottom:2px solid #ccc;background:#f5f5f5;white-space:nowrap}
+  th.col-item{text-align:left}
+  th.col-total{text-align:left;background:#f5f5f5;color:#7D2D2D;min-width:40px}
+  th:not(.col-item):not(.col-total){text-align:center}
+  td{padding:4px 7px;border-bottom:1px solid #f0f0f0;font-size:10px;vertical-align:middle}
+  td.col-item{text-align:left}
+  td.col-total{font-weight:700;color:#7D2D2D;text-align:left;background:transparent}
+  td:not(.col-item):not(.col-total){text-align:center}
+  td.zero{color:#bbb}
+  /* Lignes alternées */
+  tbody tr:not(.cat-row):nth-child(even) td{background:#f7f6f4}
+  tbody tr:not(.cat-row):nth-child(odd) td{background:#fff}
+  tbody tr:not(.cat-row):nth-child(even) td.col-total,
+  tbody tr:not(.cat-row):nth-child(odd) td.col-total{background:transparent}
+  tr.cat-row td{background:#111 !important;color:#fff !important;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:0.07em;padding:5px 7px;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+  .remarque-print-block{margin-top:10px;border:1px solid #ccc;border-radius:4px;padding:8px 10px;page-break-inside:avoid}
+  .remarque-print-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#666;margin-bottom:5px}
+  .remarque-box{font-size:10px;padding:3px 0;border-top:1px solid #eee;color:#333}
+  .remarque-box:first-of-type{border-top:none}
+  .remarque-box b{font-weight:600}
+  .section-print-label{display:none}
+  .atelier-table-wrap{overflow:visible}
+  .monnaie-sep{margin-top:18px;padding-top:14px;border-top:2px solid #333}
+  .monnaie-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#333;margin-bottom:8px}
+  .page-break{page-break-before:always;break-before:page;display:block;height:0;margin:0;padding:0}
+  @media print{
+    body{padding:8px}
+    tr{page-break-inside:avoid}
+    table{page-break-inside:auto}
+    tbody tr:not(.cat-row):nth-child(even) td{background:#f7f6f4 !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+  }
+  @page{size:A4 portrait;margin:1cm;-webkit-print-color-adjust:exact}
+`;
+
+function buildPrintHTML(contentHTML){
+  const btnStyle = 'display:block;width:100%;padding:12px;margin-bottom:16px;'
+    + 'background:#111;color:#fff;border:none;border-radius:6px;font-size:14px;'
+    + 'font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif;'
+    + 'letter-spacing:0.04em;-webkit-appearance:none';
+  const closeBtn = '<button style="'+btnStyle+'" onclick="window.close()" class="no-print">← Fermer et revenir à l\'application</button>';
+
+  return '<!DOCTYPE html><html lang="fr"><head>'
+    + '<meta charset="UTF-8">'
+    + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<title>Impression — Mon Commerce</title>'
+    + '<style>' + PRINT_CSS + '@media print{.no-print{display:none !important}}</style>'
+    + '</head><body>'
+    + closeBtn
+    + contentHTML
+    + '<script>window.onload=function(){window.print();}<\/script>'
+    + '</body></html>';
+}
+
+function printSection(section){
+  const sections = {
+    boucherie: document.querySelector('.print-section-boucherie'),
+    traiteur:  document.querySelector('.print-section-traiteur'),
+    snacking:  document.querySelector('.print-section-snacking'),
+    box:       document.querySelector('.print-section-box')
+  };
+
+  let html = '';
+
+  if(section === 'all'){
+    const order = ['boucherie','traiteur','snacking','box'];
+    let first = true;
+    order.forEach(s => {
+      const el = sections[s];
+      if(el && el.innerHTML.trim()){
+        if(!first) html += '<div class="page-break"></div>';
+        html += el.innerHTML;
+        first = false;
+      }
+    });
+  } else {
+    const el = sections[section];
+    if(el) html = el.innerHTML;
+  }
+
+  if(!html.trim()){ showToast('Aucune donnée à imprimer'); return; }
+
+  const fullHTML = buildPrintHTML(html);
+
+  // Méthode 1 : Blob URL (fonctionne sur tous les navigateurs modernes)
+  try{
+    const blob = new Blob([fullHTML], {type:'text/html;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, '_blank');
+    if(w){
+      // Libérer l'URL après 30s
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+      return;
+    }
+  }catch(e){}
+
+  // Méthode 2 : data URI (fallback Safari iOS)
+  try{
+    const encoded = encodeURIComponent(fullHTML);
+    window.open('data:text/html;charset=utf-8,' + encoded, '_blank');
+    return;
+  }catch(e){}
+
+  // Méthode 3 : iframe caché (fallback ultime)
+  let iframe = document.getElementById('print-iframe');
+  if(!iframe){
+    iframe = document.createElement('iframe');
+    iframe.id = 'print-iframe';
+    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:210mm;height:297mm;border:none';
+    document.body.appendChild(iframe);
+  }
+  iframe.onload = function(){
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  };
+  iframe.srcdoc = fullHTML;
+}
+
+// ─── TOAST ─────────────────────────────────────────────
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(window._tt);
+  window._tt = setTimeout(()=>t.style.display='none', 2800);
+}
+
+
+// ─── PARAMÈTRES ───────────────────────────────────────
+const APP_THEMES = [
+  {
+    id:'classique', label:'Classique',
+    bg:'#F0ECEE', card:'#FAFAF8', ivory:'#FAFAF8', cream:'#F7F3EE', creamDark:'#EDE8E1',
+    text:'#111010', text2:'#5A5450', text3:'#9A928C',
+    border:'#E2DDD8', border2:'#C8C0B8',
+    navBg:'#1A1A1A',
+    accent:'#1A1A1A', accentDark:'#000', accentLight:'#F0EDEA', accentBorder:'#C8C0B8',
+    banner:'#f97316'
+  },
+  {
+    id:'bordeaux', label:'Bordeaux',
+    bg:'#F8F0F2', card:'#FFF8F9', ivory:'#FFF4F5', cream:'#F3E6E9', creamDark:'#E8D5D9',
+    text:'#1A0A0D', text2:'#6B4550', text3:'#A87880',
+    border:'#E8D0D5', border2:'#D8B8C0',
+    navBg:'#5C0A18',
+    accent:'#8B1A2A', accentDark:'#5C0A18', accentLight:'#FDEEF0', accentBorder:'#E8C0C8',
+    banner:'#9B2335'
+  },
+  {
+    id:'marine', label:'Marine',
+    bg:'#EEF2F8', card:'#F6F9FC', ivory:'#F4F8FC', cream:'#E4ECF4', creamDark:'#D2E0EC',
+    text:'#0D1A2E', text2:'#445870', text3:'#7A90A8',
+    border:'#C8D8E8', border2:'#B0C8DC',
+    navBg:'#0D1F3C',
+    accent:'#1B3A5C', accentDark:'#0D1F3C', accentLight:'#E4EEF8', accentBorder:'#B0C8DC',
+    banner:'#2563EB'
+  },
+  {
+    id:'foret', label:'Forêt',
+    bg:'#EEF5F0', card:'#F5FBF7', ivory:'#F3FAF5', cream:'#E2EEE6', creamDark:'#CCE2D4',
+    text:'#0A1F14', text2:'#3E6050', text3:'#729080',
+    border:'#C0DCC8', border2:'#A8CCBA',
+    navBg:'#0A2B1A',
+    accent:'#1A6640', accentDark:'#0A2B1A', accentLight:'#E4F4EA', accentBorder:'#A8D8B8',
+    banner:'#16a34a'
+  },
+  {
+    id:'ardoise', label:'Ardoise',
+    bg:'#EEF0F4', card:'#F5F7FA', ivory:'#F3F5F8', cream:'#E2E8EE', creamDark:'#CCD4DE',
+    text:'#141C28', text2:'#445060', text3:'#7888A0',
+    border:'#C4CED8', border2:'#AABAC8',
+    navBg:'#1A2436',
+    accent:'#2C4060', accentDark:'#1A2436', accentLight:'#E4EAF4', accentBorder:'#A8BCD0',
+    banner:'#475569'
+  },
+];
+
+let appSettings = {
+  nomBoucherie: 'Mon Commerce',
+  titreCommande: 'Bon de commande',
+  reminderHour: 18,
+  reminderMinute: 30,
+  adminPassword: '0000',
+  theme: 'classique'
+};
+
+function loadSettings(){
+  try {
+    const s = sessionStorage.getItem('vanbademo_settings');
+    if(s) Object.assign(appSettings, JSON.parse(s));
+  } catch(e) {}
+  applySettings();
+}
+
+function saveSettings_(){
+  sessionStorage.setItem('vanbademo_settings', JSON.stringify(appSettings));
+  applySettings();
+}
+
+function applySettings(){
+  const el = id => document.getElementById(id);
+  const nom = appSettings.nomBoucherie || 'Mon Commerce';
+  const titre = appSettings.titreCommande || 'Bon de commande';
+  const h = String(appSettings.reminderHour ?? 18).padStart(2,'0');
+  const m = String(appSettings.reminderMinute ?? 30).padStart(2,'0');
+  if(el('app-page-sub')) el('app-page-sub').textContent = nom;
+  if(el('app-page-title')) el('app-page-title').textContent = titre;
+  if(el('notif-time-display')) el('notif-time-display').textContent = h+'h'+m;
+  document.title = titre + ' — ' + nom;
+  // Thème
+  applyTheme(appSettings.theme || 'classique');
+}
+
+function applyTheme(themeId){
+  const t = APP_THEMES.find(t => t.id === themeId) || APP_THEMES[0];
+  const r = document.documentElement;
+  r.style.setProperty('--bg', t.bg);
+  r.style.setProperty('--card', t.card);
+  r.style.setProperty('--ivory', t.ivory);
+  r.style.setProperty('--cream', t.cream);
+  r.style.setProperty('--cream-dark', t.creamDark);
+  r.style.setProperty('--text', t.text);
+  r.style.setProperty('--text2', t.text2);
+  r.style.setProperty('--text3', t.text3);
+  r.style.setProperty('--border', t.border);
+  r.style.setProperty('--border2', t.border2);
+  r.style.setProperty('--nav-bg', t.navBg);
+  r.style.setProperty('--accent', t.accent);
+  r.style.setProperty('--accent-dark', t.accentDark);
+  r.style.setProperty('--accent-light', t.accentLight);
+  r.style.setProperty('--accent-border', t.accentBorder);
+  r.style.setProperty('--green', t.accent);
+  r.style.setProperty('--green-dark', t.accentDark);
+  r.style.setProperty('--green-light', t.accentLight);
+  r.style.setProperty('--green-border', t.accentBorder);
+  r.style.setProperty('--banner-color', t.banner);
+}
+
+function renderParamForm(){
+  const el = id => document.getElementById(id);
+  if(el('param-nom')) el('param-nom').value = appSettings.nomBoucherie || '';
+  if(el('param-titre')) el('param-titre').value = appSettings.titreCommande || '';
+  if(el('param-heure')) el('param-heure').value = appSettings.reminderHour ?? 18;
+  if(el('param-minute')) el('param-minute').value = String(appSettings.reminderMinute ?? 30).padStart(2,'0');
+  if(el('param-pwd1')) el('param-pwd1').value = '';
+  if(el('param-pwd2')) el('param-pwd2').value = '';
+  if(el('param-pwd-error')) el('param-pwd-error').style.display = 'none';
+  // Rendre les swatches de thème
+  const themeWrap = el('param-themes');
+  if(themeWrap){
+    themeWrap.innerHTML = APP_THEMES.map(t => {
+      const active = (appSettings.theme||'classique') === t.id;
+      return '<div onclick="selectTheme(\''+t.id+'\')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px">'
+        +'<div style="width:38px;height:38px;border-radius:50%;background:'+t.accent+';border:3px solid '+(active?'#1a1a1a':'transparent')+';box-shadow:'+(active?'0 0 0 2px #fff, 0 0 0 4px #1a1a1a':'0 1px 3px rgba(0,0,0,.15)')+';transition:all .15s"></div>'
+        +'<span style="font-size:10px;color:var(--text2);font-weight:'+(active?'700':'400')+'">'+t.label+'</span>'
+        +'</div>';
+    }).join('');
+  }
+  previewSettings();
+}
+
+function selectTheme(themeId){
+  appSettings.theme = themeId;
+  applyTheme(themeId);
+  renderParamForm(); // rafraîchir les swatches
+}
+
+function previewSettings(){
+  const el = id => document.getElementById(id);
+  const h = parseInt(el('param-heure')?.value ?? 18) || 18;
+  const m = parseInt(el('param-minute')?.value ?? 30) || 0;
+  const preview = el('param-notif-preview');
+  if(preview) preview.textContent = '→ rappel à ' + String(h).padStart(2,'0')+'h'+String(m).padStart(2,'0');
+}
+
+function saveSettingsForm(){
+  const el = id => document.getElementById(id);
+  const nom = el('param-nom')?.value.trim() || 'Mon Commerce';
+  const titre = el('param-titre')?.value.trim() || 'Bon de commande';
+  const h = Math.min(23, Math.max(0, parseInt(el('param-heure')?.value ?? 18) || 18));
+  const mn = Math.min(59, Math.max(0, parseInt(el('param-minute')?.value ?? 30) || 0));
+  // Mot de passe
+  const pwd1 = el('param-pwd1')?.value || '';
+  const pwd2 = el('param-pwd2')?.value || '';
+  const errEl = el('param-pwd-error');
+  if(pwd1 || pwd2){
+    if(pwd1 !== pwd2){ if(errEl){ errEl.textContent='Les mots de passe ne correspondent pas'; errEl.style.display='block'; } return; }
+    if(pwd1.length < 2){ if(errEl){ errEl.textContent='Mot de passe trop court (min 2 caractères)'; errEl.style.display='block'; } return; }
+    appSettings.adminPassword = pwd1;
+  }
+  if(errEl) errEl.style.display = 'none';
+  appSettings.nomBoucherie = nom;
+  appSettings.titreCommande = titre;
+  appSettings.reminderHour = h;
+  appSettings.reminderMinute = mn;
+  // theme déjà mis à jour via selectTheme()
+  saveSettings_();
+  showToast('✅ Paramètres enregistrés');
+}
+
+function resetSettings(){
+  if(!confirm('Réinitialiser tous les paramètres aux valeurs par défaut ?')) return;
+  sessionStorage.removeItem('vanbademo_settings');
+  appSettings = { nomBoucherie:'Mon Commerce', titreCommande:'Bon de commande', reminderHour:18, reminderMinute:30, adminPassword:'0000', theme:'classique' };
+  saveSettings_();
+  renderParamForm();
+  showToast('Paramètres réinitialisés');
+}
+
+// ─── ADMIN ────────────────────────────────────────────
+let adminUnlocked = false;
+let adminDate = todayStr();
+
+function checkAdminPwd(){
+  const pwd = document.getElementById('admin-pwd').value;
+  if(pwd === appSettings.adminPassword){
+    adminUnlocked = true;
+    document.getElementById('admin-login-screen').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    renderAdminProducts();
+    renderAdminOrders();
+  } else {
+    document.getElementById('admin-pwd-error').style.display = 'block';
+  }
+}
+
+function switchAdminTab(tab){
+  ['produits','commandes','stats','magasins','parametres'].forEach(t => {
+    const el = document.getElementById('admin-tab-'+t);
+    if(el) el.style.display = tab===t ? 'block' : 'none';
+    const btn = document.getElementById('atab-'+t);
+    if(btn) btn.classList.toggle('active', tab===t);
+  });
+  if(tab === 'magasins') renderAdminMagasins();
+  if(tab === 'parametres') renderParamForm();
+  if(tab === 'stats') renderAdminStats();
+}
+
+function initAdminView(){
+  document.getElementById('admin-date-label').textContent = fmtDate(adminDate);
+  if(!adminUnlocked) return;
+  renderAdminProducts();
+  renderAdminOrders();
+}
+
+let PRINT_SHEETS = [
+  {id:'boucherie', label:'Boucherie'},
+  {id:'traiteur',  label:'Traiteur'},
+  {id:'box',       label:'BOX'},
+  {id:'snacking',  label:'Snacking'},
+];
+
+async function createNewSheet(){
+  const name = prompt('Nom de la nouvelle feuille d\'impression (ex: "Desserts") :');
+  if(!name || !name.trim()) return;
+  const trimmed = name.trim();
+  const id = safeKey(trimmed.toLowerCase());
+  if(PRINT_SHEETS.some(s => s.id === id)){ showToast('Cette feuille existe déjà'); return; }
+  PRINT_SHEETS.push({id, label: trimmed});
+  await saveCustomItems();
+  renderAdminSheets();
+  renderAdminProducts();
+  showToast('Feuille "' + trimmed + '" créée — assignez-y des catégories ci-dessous');
+}
+
+async function deleteSheet(sheetId){
+  if(PRINT_SHEETS.length <= 1){ showToast('Il doit rester au moins une feuille'); return; }
+  const sheet = PRINT_SHEETS.find(s => s.id === sheetId);
+  if(!sheet) return;
+  if(!confirm('Supprimer la feuille "' + sheet.label + '" ? Les catégories qui n\'imprimaient que sur cette feuille basculeront sur la première feuille disponible.')) return;
+  PRINT_SHEETS = PRINT_SHEETS.filter(s => s.id !== sheetId);
+  const fallback = PRINT_SHEETS[0].id;
+  Object.keys(categorySheets).forEach(cat => {
+    categorySheets[cat] = categorySheets[cat].filter(s => s !== sheetId);
+    if(!categorySheets[cat].length) categorySheets[cat] = [fallback];
+  });
+  await saveCustomItems();
+  renderAdminProducts();
+  showToast('Feuille "' + sheet.label + '" supprimée');
+}
+
+function defaultSheetForCat(cat){
+  if(['Préparation bouchères & Charcutières','Saucisses BBQ','Boucherie','Sauce boucherie'].includes(cat)) return ['boucherie'];
+  if(cat === 'Snacking') return ['snacking'];
+  if(cat === 'BOX') return ['box'];
+  return ['traiteur']; // MONNAIE et tout le reste vont dans traiteur par défaut
+}
+
+function getCategorySheets(cat){
+  if(categorySheets[cat] && categorySheets[cat].length) return categorySheets[cat];
+  return defaultSheetForCat(cat);
+}
+
+function getAllCategoryNames(){
+  // Toutes les catégories : BASE + custom créées depuis admin
+  return [...Object.keys(BASE), ...customCategories.filter(c => !Object.keys(BASE).includes(c))];
+}
+
+function getAllCategories(){
+  const raw = {};
+  Object.keys(BASE).forEach(cat => { raw[cat] = getItems(cat); });
+  Object.keys(customItems).forEach(cat => {
+    if(!raw[cat]) raw[cat] = [...(customItems[cat]||[])];
+  });
+  // Respecter l'ordre personnalisé si défini
+  if(categoryOrder.length > 0){
+    const ordered = {};
+    categoryOrder.forEach(cat => { if(raw[cat] !== undefined) ordered[cat] = raw[cat]; });
+    Object.keys(raw).forEach(cat => { if(ordered[cat] === undefined) ordered[cat] = raw[cat]; });
+    return ordered;
+  }
+  return raw;
+}
+
+function renderAdminSheets(){
+  const container = document.getElementById('admin-sheets-list');
+  if(!container) return;
+  container.innerHTML = '';
+  PRINT_SHEETS.forEach(sheet => {
+    const chip = document.createElement('div');
+    chip.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 6px 5px 12px;border-radius:14px;border:1px solid var(--border2);background:var(--ivory)';
+    const lbl = document.createElement('span');
+    lbl.textContent = sheet.label;
+    lbl.style.cssText = 'font-size:11px;font-weight:500;color:var(--text)';
+    const btnDel = document.createElement('button');
+    btnDel.innerHTML = '&times;';
+    btnDel.title = 'Supprimer cette feuille';
+    btnDel.style.cssText = 'width:18px;height:18px;border-radius:50%;border:none;background:var(--border);color:var(--text2);font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0';
+    btnDel.addEventListener('click', function(){ deleteSheet(sheet.id); });
+    chip.appendChild(lbl);
+    chip.appendChild(btnDel);
+    container.appendChild(chip);
+  });
+}
+
+// ─── getCatLabel helper ───────────────────────────────
+function getCatLabel(cat){
+  return baseCatLabels[cat] || cat;
+}
+
+// ─── renderAdminProducts — table pro ─────────────────
+function renderAdminProducts(){
+  const container = document.getElementById('admin-cats-list');
+  if(!container) return;
+  container.innerHTML = '';
+  window._dragItem = null;
+  window._dragItemCat = null;
+  const all = getAllCategories();
+
+  Object.keys(all).forEach(cat => {
+    const items = all[cat];
+    const assignedSheets = getCategorySheets(cat);
+    const isCustom = customCategories.includes(cat);
+    const label = getCatLabel(cat);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'ap-wrap';
+    wrap.dataset.catKey = cat;
+
+    // ─ Header ─
+    const header = document.createElement('div');
+    header.className = 'ap-header';
+
+    // drag
+    const hdrag = document.createElement('div');
+    hdrag.className = 'ap-hdrag';
+    hdrag.innerHTML = '<div class="ap-hdrag-inner">⋮⋮</div>';
+    hdrag.title = 'Glisser pour réordonner';
+
+    // name + count
+    const hname = document.createElement('div');
+    hname.className = 'ap-hname';
+
+    const catLbl = document.createElement('span');
+    catLbl.className = 'ap-cat-lbl';
+    catLbl.textContent = label;
+    catLbl.title = 'Cliquer pour ouvrir / fermer';
+    // name click now handled by header toggle
+
+    const catEditInput = document.createElement('input');
+    catEditInput.type = 'text';
+    catEditInput.className = 'ap-edit-cat-input';
+    catEditInput.style.display = 'none';
+
+    const badge = document.createElement('span');
+    badge.className = 'ap-count';
+    badge.textContent = items.length;
+
+    hname.appendChild(catLbl);
+    hname.appendChild(catEditInput);
+    hname.appendChild(badge);
+
+    // sheet chips
+    const hsheets = document.createElement('div');
+    hsheets.className = 'ap-hsheets';
+    const sheetSel = document.createElement('select');
+    sheetSel.className = 'ap-cat-sheet-sel';
+    sheetSel.title = "Feuille d'impression de cette catégorie";
+    // Option "multiple" pour indiquer si mixte
+    const currentSheet = assignedSheets[0] || PRINT_SHEETS[0].id;
+    PRINT_SHEETS.forEach(sheet => {
+      const opt = document.createElement('option');
+      opt.value = sheet.id; opt.textContent = sheet.label;
+      if(sheet.id === currentSheet) opt.selected = true;
+      sheetSel.appendChild(opt);
+    });
+    sheetSel.addEventListener('click', e => e.stopPropagation());
+    sheetSel.addEventListener('change', async e => {
+      e.stopPropagation();
+      categorySheets[cat] = [sheetSel.value];
+      await saveCustomItems();
+      showToast('Feuille "' + PRINT_SHEETS.find(s=>s.id===sheetSel.value)?.label + '" assignée à "' + getCatLabel(cat) + '"');
+    });
+    hsheets.appendChild(sheetSel);
+
+    // actions
+    const hactions = document.createElement('div');
+    hactions.className = 'ap-hactions';
+
+    // Pencil rename button (all cats)
+    const btnRen = document.createElement('button');
+    btnRen.className = 'ap-icn';
+    btnRen.title = 'Renommer la catégorie';
+    btnRen.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+    btnRen.addEventListener('click', e => { e.stopPropagation(); startCatRenameAP(wrap, cat); });
+    hactions.appendChild(btnRen);
+
+    // Delete button (custom only)
+    const btnDel = document.createElement('button');
+    btnDel.className = 'ap-icn del';
+    btnDel.title = isCustom ? 'Supprimer la catégorie' : 'Catégorie système (non supprimable)';
+    btnDel.disabled = !isCustom;
+    if(!isCustom){ btnDel.style.opacity = '0.15'; btnDel.style.pointerEvents = 'none'; }
+    btnDel.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>';
+    if(isCustom) btnDel.addEventListener('click', e => { e.stopPropagation(); deleteCategoryAdmin(cat, wrap); });
+    hactions.appendChild(btnDel);
+
+    const chevron = document.createElement('span');
+    chevron.className = 'ap-chevron';
+    chevron.innerHTML = '&#9654;';
+
+    header.appendChild(hdrag);
+    header.appendChild(hname);
+    header.appendChild(hactions);
+    header.appendChild(chevron);
+
+    // toggle on header click (name area + chevron)
+    header.addEventListener('click', function(e){
+      if(e.target.closest('.ap-hdrag') || e.target.closest('.ap-hactions') || e.target.closest('.ap-edit-cat-input')) return;
+      const body = wrap.querySelector('.ap-body');
+      const isOpen = body.classList.toggle('open');
+      header.classList.toggle('open', isOpen);
+      chevron.classList.toggle('open', isOpen);
+    });
+
+    // ─ Body ─
+    const body = document.createElement('div');
+    body.className = 'ap-body';
+
+    // Sheet selector row (in body, labelled)
+    const sheetRow = document.createElement('div');
+    sheetRow.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--cream)';
+    const sheetRowLbl = document.createElement('span');
+    sheetRowLbl.textContent = 'Feuille d\'impression :';
+    sheetRowLbl.style.cssText = 'font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;white-space:nowrap;flex-shrink:0';
+    sheetRow.appendChild(sheetRowLbl);
+    sheetRow.appendChild(hsheets);
+    body.appendChild(sheetRow);
+
+    // Items list
+    const itemsList = document.createElement('div');
+    itemsList.dataset.cat = cat;
+
+    // DnD drop zone for cross-cat
+    itemsList.addEventListener('dragover', e => {
+      if(!window._dragItem) return;
+      e.preventDefault(); e.stopPropagation();
+      if(window._dragItemCat !== cat) itemsList.classList.add('ap-drag-over');
+    });
+    itemsList.addEventListener('dragleave', () => itemsList.classList.remove('ap-drag-over'));
+    itemsList.addEventListener('drop', async e => {
+      e.preventDefault(); e.stopPropagation();
+      itemsList.classList.remove('ap-drag-over');
+      if(!window._dragItem || !window._dragItemCat) return;
+      const srcCat = window._dragItemCat, srcItem = window._dragItem;
+      window._dragItem = null; window._dragItemCat = null;
+      if(srcCat === cat){
+        const newOrder = Array.from(itemsList.querySelectorAll('.ap-item')).map(r => r.dataset.item);
+        itemOrder[cat] = newOrder; await saveCustomItems(); buildForm();
+      } else {
+        await moveItemToCategory(srcCat, srcItem, cat);
+        setTimeout(() => { reopenCategoryAP(srcCat); reopenCategoryAP(cat); }, 50);
+      }
+    });
+
+    items.forEach(item => itemsList.appendChild(buildItemRow(item, cat, all)));
+    body.appendChild(itemsList);
+
+    // Add item zone
+    const addZone = document.createElement('div');
+    addZone.className = 'ap-add-zone';
+    const addInput = document.createElement('input');
+    addInput.type = 'text'; addInput.placeholder = 'Nouvel article…';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'ap-add-btn-submit'; addBtn.textContent = '+ Ajouter';
+    addBtn.addEventListener('click', () => addItemAdmin(cat, addInput));
+    addInput.addEventListener('keydown', e => { if(e.key === 'Enter') addItemAdmin(cat, addInput); });
+    addZone.appendChild(addInput); addZone.appendChild(addBtn);
+    body.appendChild(addZone);
+
+    wrap.appendChild(header); wrap.appendChild(body);
+
+    // ─ Category DnD ─
+    wrap.draggable = true;
+    wrap.addEventListener('dragstart', e => {
+      if(window._dragItem) return;
+      e.stopPropagation();
+      wrap.classList.add('ap-cat-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', cat);
+      container._draggingCat = cat;
+    });
+    wrap.addEventListener('dragend', () => {
+      wrap.classList.remove('ap-cat-dragging');
+      container.querySelectorAll('.ap-wrap').forEach(c => c.classList.remove('ap-drag-over'));
+    });
+    wrap.addEventListener('dragover', e => {
+      if(window._dragItem || !container._draggingCat || container._draggingCat === cat) return;
+      e.preventDefault(); e.stopPropagation();
+      container.querySelectorAll('.ap-wrap').forEach(c => c.classList.remove('ap-drag-over'));
+      wrap.classList.add('ap-drag-over');
+    });
+    wrap.addEventListener('dragleave', () => wrap.classList.remove('ap-drag-over'));
+    wrap.addEventListener('drop', async e => {
+      if(window._dragItem) return;
+      e.preventDefault(); e.stopPropagation();
+      wrap.classList.remove('ap-drag-over');
+      const srcCat = container._draggingCat; container._draggingCat = null;
+      if(!srcCat || srcCat === cat) return;
+      let order = categoryOrder.length > 0 ? [...categoryOrder] : Array.from(container.querySelectorAll('.ap-wrap')).map(c => c.dataset.catKey);
+      const allCats = Object.keys(getAllCategories());
+      allCats.forEach(c => { if(!order.includes(c)) order.push(c); });
+      const si = order.indexOf(srcCat), ti = order.indexOf(cat);
+      if(si === -1 || ti === -1) return;
+      order.splice(si, 1); order.splice(ti, 0, srcCat);
+      categoryOrder = order; await saveCustomItems(); renderAdminProducts();
+      showToast('Catégories réordonnées');
+    });
+
+    container.appendChild(wrap);
+  });
+}
+
+// ─── Build item row ────────────────────────────────────
+function buildItemRow(item, cat, all){
+  const row = document.createElement('div');
+  row.className = 'ap-item'; row.draggable = true;
+  row.dataset.item = item; row.dataset.cat = cat;
+
+  // drag handle
+  const idrag = document.createElement('div');
+  idrag.className = 'ap-idrag'; idrag.innerHTML = '⋮⋮'; idrag.title = 'Glisser pour réordonner';
+
+  // name
+  const iname = document.createElement('span');
+  iname.className = 'ap-iname'; iname.textContent = item; iname.title = 'Cliquer pour modifier';
+  iname.addEventListener('click', () => startItemEditAP(row, cat));
+
+  // sheet dropdown
+  const isheet = document.createElement('div');
+  isheet.className = 'ap-isheet';
+  const sheetSel = document.createElement('select');
+  const inheritOpt = document.createElement('option');
+  inheritOpt.value = ''; inheritOpt.textContent = '— hérite cat.';
+  sheetSel.appendChild(inheritOpt);
+  PRINT_SHEETS.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id; opt.textContent = s.label;
+    if((itemSheets[cat + '::' + item]) === s.id) opt.selected = true;
+    sheetSel.appendChild(opt);
+  });
+  sheetSel.addEventListener('click', e => e.stopPropagation());
+  sheetSel.addEventListener('change', async function(){
+    const val = sheetSel.value;
+    if(val) itemSheets[cat + '::' + item] = val;
+    else delete itemSheets[cat + '::' + item];
+    await saveCustomItems();
+    showToast('Feuille mise à jour');
+  });
+  isheet.appendChild(sheetSel);
+
+  // actions
+  const iactions = document.createElement('div');
+  iactions.className = 'ap-iactions';
+
+  const btnMove = document.createElement('button');
+  btnMove.className = 'ap-move-btn'; btnMove.textContent = 'Déplacer →';
+  btnMove.addEventListener('click', e => { e.stopPropagation(); toggleMovePopupAP(row, cat, all); });
+
+  const btnDel = document.createElement('button');
+  btnDel.className = 'ap-del-btn'; btnDel.title = 'Supprimer';
+  btnDel.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>';
+  btnDel.addEventListener('click', e => { e.stopPropagation(); deleteItemDOM(row, cat); });
+
+  iactions.appendChild(btnMove); iactions.appendChild(btnDel);
+  row.appendChild(idrag); row.appendChild(iname); row.appendChild(isheet); row.appendChild(iactions);
+
+  // item DnD
+  row.addEventListener('dragstart', e => {
+    if(row.dataset.editing){ e.preventDefault(); return; }
+    row.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', item);
+    window._dragItem = row.dataset.item; window._dragItemCat = cat;
+    e.stopPropagation();
+  });
+  row.addEventListener('dragend', () => {
+    row.classList.remove('dragging');
+    window._dragItem = null; window._dragItemCat = null;
+    document.querySelectorAll('.ap-item').forEach(r => r.classList.remove('drop-here'));
+    document.querySelectorAll('[data-cat]').forEach(l => l.classList.remove('ap-drag-over'));
+  });
+  row.addEventListener('dragover', e => {
+    if(!window._dragItem) return;
+    e.preventDefault(); e.stopPropagation();
+    const dragging = document.querySelector('.ap-item.dragging');
+    if(!dragging || dragging === row) return;
+    const rect = row.getBoundingClientRect();
+    const after = (e.clientY - rect.top) > rect.height / 2;
+    const tgtList = row.parentNode;
+    if(after) tgtList.insertBefore(dragging, row.nextSibling);
+    else tgtList.insertBefore(dragging, row);
+    if(window._dragItemCat !== tgtList.dataset.cat){
+      document.querySelectorAll('[data-cat]').forEach(l => l.classList.remove('ap-drag-over'));
+      tgtList.classList.add('ap-drag-over');
+    } else {
+      document.querySelectorAll('[data-cat]').forEach(l => l.classList.remove('ap-drag-over'));
+    }
+  });
+  row.addEventListener('drop', async e => {
+    e.preventDefault(); e.stopPropagation();
+    document.querySelectorAll('[data-cat]').forEach(l => l.classList.remove('ap-drag-over'));
+    if(!window._dragItem) return;
+    const tgtList = row.parentNode, tgtCat = tgtList.dataset.cat;
+    const srcCat = window._dragItemCat, srcItem = window._dragItem;
+    window._dragItem = null; window._dragItemCat = null;
+    if(srcCat !== tgtCat){
+      await moveItemToCategory(srcCat, srcItem, tgtCat);
+      setTimeout(() => { reopenCategoryAP(srcCat); reopenCategoryAP(tgtCat); }, 50);
+    } else {
+      const newOrder = Array.from(tgtList.querySelectorAll('.ap-item')).map(r => r.dataset.item);
+      itemOrder[tgtCat] = newOrder; await saveCustomItems(); buildForm();
+    }
+  });
+
+  return row;
+}
+
+// ─── Rename category (BASE + custom) ──────────────────
+function startCatRenameAP(wrap, cat){
+  const header = wrap.querySelector('.ap-header');
+  if(!header || header.dataset.renaming) return;
+  header.dataset.renaming = '1';
+  const catLbl = header.querySelector('.ap-cat-lbl');
+  const catInput = header.querySelector('.ap-edit-cat-input');
+  if(!catLbl || !catInput) return;
+  catLbl.style.display = 'none';
+  catInput.style.display = '';
+  catInput.value = getCatLabel(cat);
+  catInput.focus(); catInput.select();
+
+  const isCustom = customCategories.includes(cat);
+  const isBase = Object.keys(BASE).includes(cat);
+
+  const restore = () => {
+    catLbl.style.display = ''; catInput.style.display = 'none';
+    delete header.dataset.renaming;
+  };
+
+  const save = async () => {
+    const newName = catInput.value.trim();
+    if(!newName){ restore(); return; }
+    if(isBase){
+      // Pour les catégories BASE : stocker juste le label d'affichage
+      if(newName === cat || newName === (baseCatLabels[cat] || cat)){
+        delete baseCatLabels[cat];
+      } else {
+        baseCatLabels[cat] = newName;
+      }
+      await saveCustomItems();
+      catLbl.textContent = getCatLabel(cat);
+      catLbl.style.display = ''; catInput.style.display = 'none';
+      delete header.dataset.renaming;
+      // update form labels
+      document.querySelectorAll('.sec-label').forEach(el => {
+        if(el.textContent === cat || el.textContent === newName) el.textContent = getCatLabel(cat);
+      });
+      showToast('Catégorie renommée : ' + newName);
+    } else {
+      // Catégorie custom : renommage complet de la clé
+      const ci = customCategories.indexOf(cat);
+      if(ci >= 0) customCategories[ci] = newName;
+      if(categorySheets[cat] !== undefined){ categorySheets[newName] = categorySheets[cat]; delete categorySheets[cat]; }
+      if(customItems[cat] !== undefined){ customItems[newName] = customItems[cat]; delete customItems[cat]; }
+      if(itemOrder[cat] !== undefined){ itemOrder[newName] = itemOrder[cat]; delete itemOrder[cat]; }
+      const co = categoryOrder.indexOf(cat); if(co >= 0) categoryOrder[co] = newName;
+      await saveCustomItems(); buildForm();
+      delete header.dataset.renaming;
+      renderAdminProducts(); setTimeout(() => reopenCategoryAP(newName), 50);
+      showToast('Catégorie renommée : ' + newName);
+    }
+  };
+
+  catInput.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); save(); } if(e.key === 'Escape') restore(); });
+  catInput.addEventListener('blur', () => setTimeout(restore, 180));
+}
+
+// ─── Inline edit item ─────────────────────────────────
+function startItemEditAP(row, cat){
+  if(row.dataset.editing) return;
+  row.dataset.editing = '1';
+  const iname = row.querySelector('.ap-iname');
+  const isheet = row.querySelector('.ap-isheet');
+  const iactions = row.querySelector('.ap-iactions');
+  const item = row.dataset.item;
+
+  const input = document.createElement('input');
+  input.type = 'text'; input.value = item; input.className = 'ap-iname-input';
+  input.style.cssText = 'flex:1;padding:6px 9px;border-radius:5px;border:1.5px solid #1a1a1a;font-size:13px;font-family:inherit;background:#fff;color:var(--text);outline:none;margin:5px 0 5px 0';
+
+  const btnOk = document.createElement('button');
+  btnOk.className = 'ap-icn'; btnOk.style.cssText = 'background:#1a1a1a;color:#fff;flex-shrink:0;margin-right:4px';
+  btnOk.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+
+  const btnNo = document.createElement('button');
+  btnNo.className = 'ap-icn';
+  btnNo.innerHTML = '×';
+
+  const savedActions = iactions.innerHTML;
+  iname.style.display = 'none';
+  isheet.style.display = 'none';
+  iactions.innerHTML = '';
+  row.insertBefore(input, isheet);
+  iactions.appendChild(btnOk);
+  iactions.appendChild(btnNo);
+
+  input.focus(); input.select();
+
+  const restore = () => {
+    delete row.dataset.editing;
+    input.remove();
+    iname.style.display = ''; isheet.style.display = '';
+    iactions.innerHTML = savedActions;
+    // re-wire actions
+    const newBtnMove = iactions.querySelector('.ap-move-btn');
+    const newBtnDel = iactions.querySelector('.ap-del-btn');
+    const all = getAllCategories();
+    if(newBtnMove) newBtnMove.addEventListener('click', e => { e.stopPropagation(); toggleMovePopupAP(row, cat, all); });
+    if(newBtnDel) newBtnDel.addEventListener('click', e => { e.stopPropagation(); deleteItemDOM(row, cat); });
+  };
+
+  const saveEdit = async () => {
+    const newVal = input.value.trim();
+    if(!newVal || newVal === item){ restore(); return; }
+    // Rename in storage
+    if(BASE[cat] && BASE[cat].includes(item)){
+      if(!renamedBaseItems[cat]) renamedBaseItems[cat] = {};
+      renamedBaseItems[cat][item] = newVal;
+    } else {
+      if(customItems[cat]){
+        const idx = customItems[cat].indexOf(item);
+        if(idx >= 0) customItems[cat][idx] = newVal;
+      }
+    }
+    // Migrate itemOrder
+    if(itemOrder[cat]){
+      const idx = itemOrder[cat].indexOf(item);
+      if(idx >= 0) itemOrder[cat][idx] = newVal;
+    }
+    // Migrate itemSheets
+    const oldKey = cat + '::' + item, newKey = cat + '::' + newVal;
+    if(itemSheets[oldKey]){ itemSheets[newKey] = itemSheets[oldKey]; delete itemSheets[oldKey]; }
+    row.dataset.item = newVal;
+    await saveCustomItems(); buildForm();
+    delete row.dataset.editing;
+    input.remove();
+    iname.textContent = newVal; iname.style.display = ''; isheet.style.display = '';
+    iactions.innerHTML = savedActions;
+    const newBtnMove = iactions.querySelector('.ap-move-btn');
+    const newBtnDel = iactions.querySelector('.ap-del-btn');
+    const all = getAllCategories();
+    if(newBtnMove) newBtnMove.addEventListener('click', e => { e.stopPropagation(); toggleMovePopupAP(row, newVal, all); });
+    if(newBtnDel) newBtnDel.addEventListener('click', e => { e.stopPropagation(); deleteItemDOM(row, cat); });
+    showToast('"' + newVal + '" mis à jour');
+  };
+
+  btnOk.addEventListener('click', e => { e.stopPropagation(); saveEdit(); });
+  btnNo.addEventListener('click', e => { e.stopPropagation(); restore(); });
+  input.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); saveEdit(); } if(e.key === 'Escape') restore(); });
+}
+
+// ─── Move popup ───────────────────────────────────────
+function toggleMovePopupAP(row, cat, all){
+  const existing = document.querySelector('.ap-move-popup');
+  if(existing){
+    const key = row.dataset.item + '|' + cat;
+    const isThis = existing.dataset.forRow === key;
+    existing.remove();
+    if(isThis) return;
+  }
+  const popup = document.createElement('div');
+  popup.className = 'ap-move-popup';
+  popup.dataset.forRow = row.dataset.item + '|' + cat;
+
+  const lbl = document.createElement('span');
+  lbl.className = 'ap-move-popup-lbl'; lbl.textContent = 'Déplacer vers :';
+  popup.appendChild(lbl);
+
+  const sel = document.createElement('select');
+  const defOpt = document.createElement('option');
+  defOpt.value = ''; defOpt.textContent = '— choisir —'; sel.appendChild(defOpt);
+  Object.keys(all).forEach(otherCat => {
+    if(otherCat === cat) return;
+    const opt = document.createElement('option'); opt.value = otherCat;
+    opt.textContent = getCatLabel(otherCat); sel.appendChild(opt);
+  });
+  sel.addEventListener('change', async function(){
+    const target = sel.value; if(!target) return;
+    popup.remove();
+    await moveItemToCategory(cat, row.dataset.item, target);
+    setTimeout(() => { reopenCategoryAP(cat); reopenCategoryAP(target); }, 50);
+  });
+
+  const btnClose = document.createElement('button');
+  btnClose.className = 'ap-move-cancel'; btnClose.innerHTML = '×';
+  btnClose.addEventListener('click', () => popup.remove());
+
+  popup.appendChild(sel); popup.appendChild(btnClose);
+  row.parentNode.insertBefore(popup, row.nextSibling);
+  sel.focus();
+}
+
+// ─── Delete category ──────────────────────────────────
+async function deleteCategoryAdmin(cat, wrapEl){
+  const items = getAllCategories()[cat] || [];
+  const msg = items.length > 0
+    ? 'Supprimer "'+getCatLabel(cat)+'" et ses '+items.length+' article(s) ?'
+    : 'Supprimer la catégorie "'+getCatLabel(cat)+'" ?';
+  if(!confirm(msg)) return;
+  const ci = customCategories.indexOf(cat);
+  if(ci >= 0) customCategories.splice(ci, 1);
+  delete categorySheets[cat]; delete customItems[cat]; delete itemOrder[cat];
+  const co = categoryOrder.indexOf(cat); if(co >= 0) categoryOrder.splice(co, 1);
+  await saveCustomItems(); buildForm();
+  wrapEl.style.transition = 'opacity 0.2s, max-height 0.3s';
+  wrapEl.style.opacity = '0';
+  setTimeout(() => wrapEl.remove(), 220);
+  showToast('Catégorie "'+getCatLabel(cat)+'" supprimée');
+}
+
+// ─── deleteItemDOM (keep inline) ──────────────────────
+function deleteItemDOM(row, cat){
+  const item = row.dataset.item;
+  if(!confirm('Supprimer "'+item+'" de la catégorie "'+getCatLabel(cat)+'" ?')) return;
+  // remove from storage
+  const isBase = BASE[cat] && (BASE[cat].includes(item) || Object.values(renamedBaseItems[cat]||{}).includes(item));
+  if(isBase){
+    const origName = Object.keys(renamedBaseItems[cat]||{}).find(k=>(renamedBaseItems[cat][k]===item))||item;
+    if(!deletedBaseItems[cat]) deletedBaseItems[cat]=[];
+    if(!deletedBaseItems[cat].includes(origName)) deletedBaseItems[cat].push(origName);
+    if(renamedBaseItems[cat]) delete renamedBaseItems[cat][origName];
+  } else {
+    if(customItems[cat]){ const idx=customItems[cat].indexOf(item); if(idx>=0) customItems[cat].splice(idx,1); }
+  }
+  if(itemOrder[cat]){ itemOrder[cat]=itemOrder[cat].filter(i=>i!==item); }
+  delete itemSheets[cat+'::'+item];
+  saveCustomItems(); buildForm();
+  row.style.transition='opacity 0.18s,max-height 0.18s';
+  row.style.opacity='0';
+  const badge = row.closest('.ap-wrap')?.querySelector('.ap-count');
+  setTimeout(()=>{
+    row.remove();
+    if(badge){
+      const list=row.parentNode;
+      // badge already removed with row's parent
+    }
+    // Refresh badge
+    const allWraps = document.querySelectorAll('.ap-wrap');
+    allWraps.forEach(w => {
+      if(w.dataset.catKey===cat){
+        const b=w.querySelector('.ap-count');
+        const c=w.querySelectorAll('.ap-item').length;
+        if(b) b.textContent=c;
+      }
+    });
+  },180);
+}
+
+function deleteItem(cat, item){
+  // Legacy wrapper — find the row by cat+item and delete it
+  const row = document.querySelector('.ap-item[data-cat="'+CSS.escape(cat)+'"][data-item="'+CSS.escape(item)+'"]');
+  if(row) deleteItemDOM(row, cat);
+}
+
+// ─── reopenCategoryAP ─────────────────────────────────
+function reopenCategoryAP(cat){
+  const wraps = document.querySelectorAll('.ap-wrap');
+  wraps.forEach(w => {
+    const key = w.dataset.catKey;
+    if(key === cat){
+      const body = w.querySelector('.ap-body');
+      const header = w.querySelector('.ap-header');
+      const chevron = w.querySelector('.ap-chevron');
+      if(body && !body.classList.contains('open')){
+        body.classList.add('open');
+        if(header) header.classList.add('open');
+        if(chevron) chevron.classList.add('open');
+      }
+    }
+  });
+}
+
+// keep backward compat alias
+function reopenCategory(cat){ reopenCategoryAP(cat); }
+
+
+function filterAdminProducts(query){
+  const q = query.trim().toLowerCase();
+  const wraps = document.querySelectorAll('#admin-cats-list .ap-wrap');
+  wraps.forEach(wrap => {
+    if(!q){
+      wrap.style.display = '';
+      // close all items (keep open state as-is, just show all)
+      wrap.querySelectorAll('.ap-item,.ap-add-zone,.ap-move-popup').forEach(el => el.style.display = '');
+      return;
+    }
+    const catKey = wrap.dataset.catKey || '';
+    const catLabel = (document.querySelector && wrap.querySelector('.ap-cat-lbl')?.textContent || catKey).toLowerCase();
+    const catMatch = catLabel.includes(q);
+
+    let anyItemMatch = false;
+    wrap.querySelectorAll('.ap-item').forEach(row => {
+      const itemName = (row.dataset.item || '').toLowerCase();
+      const match = catMatch || itemName.includes(q);
+      row.style.display = match ? '' : 'none';
+      if(match) anyItemMatch = true;
+    });
+
+    const visible = catMatch || anyItemMatch;
+    wrap.style.display = visible ? '' : 'none';
+
+    // Auto-open category if items match
+    if(visible && q){
+      const body = wrap.querySelector('.ap-body');
+      const header = wrap.querySelector('.ap-header');
+      const chevron = wrap.querySelector('.ap-chevron');
+      if(body && !body.classList.contains('open')){
+        body.classList.add('open');
+        if(header) header.classList.add('open');
+        if(chevron) chevron.classList.add('open');
+      }
+    }
+  });
+}
+
+
+function renderAdminMagasins(){
+  const container = document.getElementById('admin-tab-magasins');
+  if(!container) return;
+  container.innerHTML = `
+    <div class="admin-card">
+      <div class="admin-section-title" style="margin-bottom:10px">Noms des magasins / points de vente</div>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">
+        Personnalisez les noms affichés dans les formulaires de commande. Les commandes existantes ne sont pas modifiées.
+      </p>
+      ${MAGASINS.map((m, i) => `
+        <div class="admin-item-row">
+          <span style="font-size:11px;color:var(--text3);font-weight:600;width:22px;flex-shrink:0;">${i+1}.</span>
+          <input type="text" id="mag-input-${i}" value="${m}"
+            style="flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:5px;font-size:13px;color:var(--text);background:#fff;">
+        </div>
+      `).join('')}
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button onclick="saveMagasins()"
+          style="padding:9px 20px;background:#C0392B;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">
+          Enregistrer
+        </button>
+        <button onclick="resetMagasins()"
+          style="padding:9px 16px;background:var(--ivory);color:var(--text2);border:1px solid var(--border2);border-radius:6px;font-size:13px;cursor:pointer;">
+          Réinitialiser
+        </button>
+      </div>
+      <div id="mag-confirm" style="display:none;margin-top:10px;font-size:12px;color:#16a34a;font-weight:600;">✔ Noms enregistrés — les formulaires seront mis à jour au prochain rechargement.</div>
+    </div>
+  `;
+}
+
+function saveMagasins(){
+  const newMags = MAGASINS.map((_, i) => {
+    const v = (document.getElementById('mag-input-'+i)||{}).value || '';
+    return v.trim() || MAGASINS_BASE[i];
+  });
+  MAGASINS.splice(0, MAGASINS.length, ...newMags);
+  sessionStorage.setItem('vanbademo_magasins', JSON.stringify(MAGASINS));
+  const conf = document.getElementById('mag-confirm');
+  if(conf){ conf.style.display='block'; setTimeout(()=>{ conf.style.display='none'; }, 3000); }
+  // Rebuild le sélecteur magasin dans le formulaire principal
+  const sel = document.getElementById('mag-sel');
+  if(sel){
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">— Choisir un magasin —</option>' +
+      MAGASINS.map(m => `<option value="${m}"${m===prev?' selected':''}>${m}</option>`).join('');
+  }
+}
+
+function resetMagasins(){
+  if(!confirm('Réinitialiser les noms des magasins par défaut ?')) return;
+  MAGASINS.splice(0, MAGASINS.length, ...MAGASINS_BASE);
+  sessionStorage.removeItem('vanbademo_magasins');
+  renderAdminMagasins();
+  showToast('Noms réinitialisés');
+}
+
+async function createNewCategory(){
+  const name = prompt('Nom de la nouvelle catégorie :');
+  if(!name || !name.trim()) return;
+  const trimmed = name.trim();
+  if(getAllCategoryNames().includes(trimmed)){ showToast('Cette catégorie existe déjà'); return; }
+
+  // Demander sur quelle feuille imprimer (par défaut la première feuille disponible)
+  const sheetNames = PRINT_SHEETS.map((s,i) => (i+1)+'. '+s.label).join('\n');
+  const choice = prompt('Sur quelle feuille cette catégorie doit-elle s\'imprimer ?\n'+sheetNames+'\n\nTapez le numéro (vous pourrez le modifier ensuite) :', '1');
+  const idx = parseInt(choice) - 1;
+  const chosenSheet = (PRINT_SHEETS[idx] || PRINT_SHEETS[0]).id;
+
+  customCategories.push(trimmed);
+  categorySheets[trimmed] = [chosenSheet];
+  customItems[trimmed] = [];
+  await saveCustomItems();
+  buildForm();
+  renderAdminProducts();
+  setTimeout(() => reopenCategory(trimmed), 50);
+  showToast('Catégorie "' + trimmed + '" créée');
+}
+
+
+function changeAdminDate(d){
+  const dt = new Date(adminDate+'T12:00:00');
+  dt.setDate(dt.getDate()+d);
+  adminDate = dt.toISOString().split('T')[0];
+  document.getElementById('admin-date-label').textContent = fmtDate(adminDate);
+  renderAdminOrders();
+}
+
+async function renderAdminOrders(){
+  const list = document.getElementById('admin-orders-list');
+  if(!list) return;
+  list.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Chargement…</div></div>';
+  try {
+    const snap = await window._get(window._ref(window._db, 'orders/'+safeKey(adminDate)));
+    const realOrders = snap.exists() ? snap.val() : {};
+
+    // Merge : démo comme fond + vraies commandes par dessus
+    const demoOrders = getDemoOrdersForDate(adminDate);
+    const dayOrders = Object.assign({}, demoOrders, realOrders);
+    const realMags = new Set(Object.keys(realOrders));
+
+    const sent = MAGASINS.filter(m => dayOrders[safeKey(m)]);
+
+    if(!sent.length){
+      list.innerHTML = '<div class="empty"><div class="empty-icon">💭</div><div class="empty-text">Aucune commande pour cette date</div></div>';
+      return;
+    }
+
+    let html = '';
+    sent.forEach(mag => {
+      const o = dayOrders[safeKey(mag)];
+      const isReal = realMags.has(safeKey(mag));
+      const cats = Object.values(o.items||{});
+      const totalItems = cats.reduce((acc, cat) => acc + (cat.items||[]).length, 0);
+      const hasRemarks = !!(o.remarks && o.remarks.trim());
+      const magKey = CSS.escape(mag);
+      html += '<div class="admin-order-row" data-mag="'+mag.replace(/"/g,'&quot;')+'">';
+      html += '<div class="admin-order-mag">'+mag+(isReal ? '' : ' <span style="font-size:10px;font-weight:500;background:#f0f0f0;color:#888;border-radius:4px;padding:1px 5px;vertical-align:middle">démo</span>')+'</div>';
+      html += '<div class="admin-order-meta">'+(o.sentAt ? '📨 '+o.sentAt+' · ' : '')+totalItems+' article'+(totalItems>1?'s':'')+' commandé'+(totalItems>1?'s':'')+(hasRemarks ? ' · «'+o.remarks+'»' : '')+'</div>';
+      html += '<div class="admin-order-meta order-detail" style="margin-bottom:10px">';
+      cats.forEach(cat => {
+        if(!cat.items||!cat.items.length) return;
+        html += '<span style="display:inline-block;margin-right:8px;margin-bottom:2px"><b>'+cat.label+'</b> : ';
+        html += cat.items.map(i => i.name+(i.qty?' ×'+i.qty:'')).join(', ');
+        html += '</span>';
+      });
+      html += '</div>';
+      html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+      html += '<button style="padding:7px 13px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--ivory);color:var(--text);font-size:12px;cursor:pointer;font-family:inherit;font-weight:500" onclick="editOrderAdmin('+JSON.stringify(mag)+','+isReal+')">✏️ Modifier</button>';
+      if(isReal) html += '<button class="btn-del-order" onclick="deleteOrder('+JSON.stringify(mag)+')">Supprimer</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    list.innerHTML = html;
+  } catch(e) {
+    list.innerHTML = '<div class="empty"><div class="empty-text">Erreur : '+e.message+'</div></div>';
+  }
+}
+
+// ─── DEMO ORDERS — génération déterministe par date ──────────────────────────
+// PRNG rapide et reproductible basé sur la chaîne de caractères
+function _demoRng(seed){
+  let h = 5381;
+  for(let i=0; i<seed.length; i++) h = Math.imul(h^h>>16, 2246822507) ^ Math.imul(h^h>>13, 3266489909);
+  h = Math.imul(h^h>>16, 2246822507);
+  return function(){
+    h ^= h << 13; h ^= h >> 17; h ^= h << 5;
+    return (h >>> 0) / 4294967296;
+  };
+}
+
+// _DEMO_CATS : quantités en chiffres purs (pas d'unité)
+// required:true = toujours présent dans les commandes démo
+// group: pour la feuille d'atelier
+const _DEMO_CATS = [
+  {cat:'Préparation bouchères & Charcutières', key:'preparation_boucheres___charcutieres', required:true,
+   items:[['Grosses Saucisses','8'],['Saucisses Volaille','4'],['Fines Saucisses','6'],['Merguez','6'],['Hachis de porc','4'],['Farce à tomate','3'],['Pavé Burger','4'],['Cordon Bleu','2'],['Crépinette','2'],['Tranche Flamande','3']]},
+  {cat:'Saucisses BBQ', key:'saucisses_bbq', required:true,
+   items:[['Andalouse','4'],['Cheddar','3'],['Chorizo','3'],['Herbes','2'],['Comté','2'],['Basque','2'],['Italienne','2'],['Bacon cheese','2']]},
+  {cat:'Boucherie', key:'boucherie', required:false,
+   items:[['Entrecôte','4'],['Onglet','3'],['Faux Filet','4'],['Roti de bœuf','3'],['Filet mignon de porc','2'],['Hachis de bœuf','4'],['Escalope de veau','2'],['Rôti de veau','2']]},
+  {cat:'Sauce boucherie', key:'sauce_boucherie', required:false,
+   items:[['Américaine','8'],['Poivre','6'],['Echalote','6'],['Maitre d\'hotel','4'],['Girolles','4'],['Gyros','4']]},
+  {cat:'Accompagnements', key:'accompagnements', required:false,
+   items:[['Gratin Dauphinois Pt','8'],['Grenaille','6'],['Pommes Vanba','4'],['Epinards à la crème','4'],['Puree butternut','3'],['Puree carotte','3']]},
+  {cat:'Crudités', key:'crudites', required:false,
+   items:[['Taboulé','4'],['Carottes','3'],['Céleri','2'],['Coleslaw','3'],['Pdt vinaigrette','4'],['Betterave','2']]},
+  {cat:'Snacking', key:'snacking', required:true,
+   items:[['Quiche Lorraine','6'],['Pizza','4'],['Tacos','10'],['Panini burger','8'],['Hot dog','12'],['Crêpes Jambon','8'],['Panini kebab','6'],['Pasta Saumon','4']]},
+  {cat:'BOX', key:'BOX', required:false,
+   items:[['Box Navettes','2'],['Box Navettes Prestige','1'],['Box Surprise','1'],['Box Wraps','2'],['Box Apéritive 6 pers','1'],['Box Apéritive 8 pers','1']]},
+  {cat:'Charcuterie & gelée', key:'charcuterie___gelee', required:false,
+   items:[['Lard cuit','2'],['Roti bœuf cuit','2'],['Paté Poivre','4'],['Paté Campagne','4'],['Paté Chef','3'],['Cuisse de poulet en gelée','2']]},
+  {cat:'Jambon & Charcuterie', key:'jambon___charcuterie', required:false,
+   items:[['Jambon Blanc','4'],['Jambon Fumé','3'],['Boudin noir','2'],['Saucisson à l\'ail','2'],['Saucisse de Bergues','3'],['Boudin noir sucré','2']]},
+  {cat:'Boulettes & Traiteur', key:'boulettes___traiteur', required:false,
+   items:[['Boulettes','8'],['Boulettes de poulet','6'],['Courgettes farcies','4'],['Langue cuite','2'],['Potage','2']]},
+];
+
+const _DEMO_REMARQUES = ['','','','','Livraison avant 8h00','Commande urgente SVP','Merci de bien emballer les saucisses séparément','Peut-être +1kg si dispo','',''];
+
+function getDemoOrdersForDate(dateStr){
+  const mags = MAGASINS;
+  const result = {};
+  mags.forEach(mag => {
+    const rng = _demoRng(dateStr + '|' + mag);
+    if(rng() > 0.18){ // ~82% des magasins commandent
+      result[safeKey(mag)] = _makeDemoOrder(dateStr, mag, rng);
+    }
+  });
+  return result;
+}
+
+function _makeDemoOrder(dateStr, mag, rng){
+  const required = _DEMO_CATS.filter(c => c.required);
+  const optional = _DEMO_CATS.filter(c => !c.required).slice().sort(() => rng() - 0.5);
+  const nbOptional = 2 + Math.floor(rng() * 4); // 2-5 optionnelles en plus
+  const selected = [...required, ...optional.slice(0, nbOptional)];
+  const items = {};
+  selected.forEach(c => {
+    const prodList = c.items.slice().sort(() => rng() - 0.5);
+    const nbItems = 2 + Math.floor(rng() * Math.min(4, prodList.length - 1));
+    const picked = prodList.slice(0, nbItems);
+    if(picked.length){
+      items[c.key] = { label: c.cat, items: picked.map(([name,qty]) => {
+        // varier légèrement les qtés pour plus de réalisme
+        const base = parseInt(qty) || 1;
+        const varied = Math.max(1, base + Math.floor(rng() * 5) - 2);
+        return {name, qty: String(varied)};
+      })};
+    }
+  });
+  const h = 7 + Math.floor(rng() * 3);
+  const m = Math.floor(rng() * 60);
+  const sentAt = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+  const rem = _DEMO_REMARQUES[Math.floor(rng() * _DEMO_REMARQUES.length)];
+  return { date:dateStr, mag, items, remarks:rem, sentAt, updatedAt:sentAt };
+}
+
+async function deleteAllOrders(){
+  if(!confirm('Supprimer TOUTES les commandes réelles ?\n\nLes commandes démo (générées automatiquement) resteront visibles.')) return;
+  try {
+    await window._set(window._ref(window._db, 'orders'), null);
+    showToast('Toutes les commandes réelles supprimées');
+    renderAdminOrders();
+  } catch(e){
+    showToast('Erreur : '+e.message);
+  }
+}
+
+async function deleteOrder(mag){
+  if(!confirm('Supprimer la commande de '+mag+' du '+fmtDate(adminDate)+' ?')) return;
+  try {
+    await window._set(window._ref(window._db, 'orders/'+safeKey(adminDate)+'/'+safeKey(mag)), null);
+    showToast('Commande de '+mag+' supprimée');
+    renderAdminOrders();
+  } catch(e){
+    showToast('Erreur : '+e.message);
+  }
+}
+
+// ─── NOTIFICATIONS ────────────────────────────────────
+let _rappelTimer = null;
+
+async function activerNotifs(){
+  if(!('Notification' in window)){
+    showToast('Notifications non supportées sur ce navigateur');
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if(perm === 'granted'){
+    sessionStorage.setItem('vanbademo_notif_active','1');
+    document.getElementById('notif-banner').style.display = 'none';
+    const h = String(appSettings.reminderHour??18).padStart(2,'0');
+    const m = String(appSettings.reminderMinute??30).padStart(2,'0');
+    showToast('🔔 Rappel activé — notification à '+h+'h'+m+' si commande non envoyée');
+    _scheduleRappel();
+  } else {
+    showToast('❌ Permission refusée — activez les notifications dans les réglages du navigateur');
+  }
+}
+
+function _scheduleRappel(){
+  if(_rappelTimer) clearTimeout(_rappelTimer);
+  const now = new Date();
+  const rappel = new Date();
+  rappel.setHours(appSettings.reminderHour??18, appSettings.reminderMinute??30, 0, 0);
+  if(rappel <= now) rappel.setDate(rappel.getDate()+1);
+  const delay = rappel - now;
+  _rappelTimer = setTimeout(async () => {
+    const mag = document.getElementById('mag-sel')?.value;
+    const date = document.getElementById('mag-date')?.value;
+    if(mag && date){
+      const snap = await window._get(window._ref(window._db,'orders/'+safeKey(date)+'/'+safeKey(mag)));
+      if(!snap.exists()){
+        new Notification('📋 Rappel commande — '+mag, {
+          body: 'Votre commande pour le '+fmtDate(date)+' n\'a pas encore été envoyée !',
+          icon: 'icon-192.png'
+        });
+      }
+    }
+    _scheduleRappel(); // reprogrammer pour demain
+  }, delay);
+}
+
+// Afficher le bouton notif si permission pas encore accordée
+function initNotifBanner(){
+  const banner = document.getElementById('notif-banner');
+  if(!banner) return;
+  if(!('Notification' in window)){ banner.style.display='none'; return; }
+  if(Notification.permission === 'granted'){
+    banner.style.display = 'none';
+    if(sessionStorage.getItem('vanbademo_notif_active')==='1') _scheduleRappel();
+  } else {
+    banner.style.display = 'flex';
+  }
+}
+
+// ─── REPRENDRE COMMANDE PRÉCÉDENTE ────────────────────
+async function reprendreCommandePrecedente(){
+  const mag = document.getElementById('mag-sel').value;
+  if(!mag){ showToast('Sélectionnez d\'abord un magasin'); return; }
+  // Chercher la commande réelle la plus récente (14 derniers jours)
+  let found = null;
+  const currentDate = document.getElementById('mag-date').value;
+  for(let i=1; i<=14; i++){
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    if(dateStr === currentDate) continue; // skip la date actuelle
+    const snap = await window._get(window._ref(window._db,'orders/'+safeKey(dateStr)+'/'+safeKey(mag)));
+    if(snap.exists()){ found = snap.val(); break; }
+  }
+  // Fallback : commande démo d'hier
+  if(!found){
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate()-1);
+    const yStr = yesterday.toISOString().split('T')[0];
+    const demoOrders = getDemoOrdersForDate(yStr);
+    found = demoOrders[safeKey(mag)] || null;
+  }
+  if(!found){ showToast('Aucune commande précédente trouvée'); return; }
+  checked = {}; quantities = {};
+  Object.keys(found.items||{}).forEach(catKey => {
+    const {label, items} = found.items[catKey];
+    items.forEach(({name, qty}) => {
+      const key = label+'::'+name;
+      checked[key] = true;
+      if(qty) quantities[key] = qty;
+    });
+  });
+  buildForm(); updateCount();
+  showToast('↩️ Commande précédente reprise');
+}
+
+// ─── ÉDITION COMMANDE ADMIN ───────────────────────────
+function editOrderAdmin(mag, isDemo){
+  const ordersDiv = document.getElementById('admin-orders-list');
+  // Trouver la row par data-mag (attr HTML-encodé vs JS string)
+  const rows = ordersDiv?.querySelectorAll('[data-mag]');
+  let orderRow = null;
+  rows?.forEach(r => { if(r.getAttribute('data-mag') === mag) orderRow = r; });
+  if(!orderRow) return;
+
+  // Récupérer la commande (réelle ou démo)
+  const store = JSON.parse(sessionStorage.getItem('vanbademo_data')||'{}');
+  const realOrders = (store.orders||{})[safeKey(adminDate)]||{};
+  const demoOrders = getDemoOrdersForDate(adminDate);
+  const allOrders = Object.assign({}, demoOrders, realOrders);
+  const order = allOrders[safeKey(mag)];
+  if(!order) return;
+
+  // Construire le formulaire d'édition inline
+  let html = '<div style="padding:12px 0">';
+  html += '<div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px">Modifier la commande de '+mag+'</div>';
+
+  // Pour chaque catégorie de la commande existante
+  Object.keys(order.items||{}).forEach(catKey => {
+    const cat = order.items[catKey];
+    html += '<div style="margin-bottom:12px">';
+    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);margin-bottom:6px">'+cat.label+'</div>';
+    cat.items.forEach(({name, qty}) => {
+      const k = catKey+'::'+name;
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+      html += '<span style="flex:1;font-size:13px">'+name+'</span>';
+      html += '<input type="number" min="0" value="'+qty+'" data-key="'+k+'" style="width:64px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;text-align:center;font-family:inherit">';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+
+  html += '<div style="margin-bottom:10px">';
+  html += '<label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);display:block;margin-bottom:4px">Remarques</label>';
+  html += '<textarea id="edit-order-remarks-'+safeKey(mag)+'" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;min-height:52px">'+( order.remarks||'')+'</textarea>';
+  html += '</div>';
+
+  html += '<div style="display:flex;gap:8px">';
+  html += '<button onclick="saveOrderEdit('+JSON.stringify(mag)+','+JSON.stringify(order)+')" style="flex:1;padding:10px;border:none;border-radius:var(--radius-sm);background:#1a1a1a;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">💾 Enregistrer</button>';
+  html += '<button onclick="renderAdminOrders()" style="padding:10px 14px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--ivory);color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit">Annuler</button>';
+  html += '</div></div>';
+
+  // Remplacer le contenu de la card (tout sauf le header)
+  const detailDiv = orderRow.querySelector('.order-detail');
+  if(detailDiv){
+    detailDiv.innerHTML = html;
+  }
+}
+
+async function saveOrderEdit(mag, originalOrder){
+  const ordersDiv = document.getElementById('admin-orders-list');
+  const rows = ordersDiv?.querySelectorAll('[data-mag]');
+  let orderRow = null;
+  rows?.forEach(r => { if(r.getAttribute('data-mag') === mag) orderRow = r; });
+  if(!orderRow) return;
+
+  // Reconstruire les items avec les nouvelles quantités
+  const newOrder = JSON.parse(JSON.stringify(originalOrder));
+  const inputs = orderRow.querySelectorAll('input[data-key]');
+  inputs.forEach(inp => {
+    const [catKey, ...nameParts] = inp.dataset.key.split('::');
+    const name = nameParts.join('::');
+    const qty = inp.value;
+    if(newOrder.items[catKey]){
+      const item = newOrder.items[catKey].items.find(i => i.name === name);
+      if(item){
+        item.qty = qty;
+        item.qty = qty === '0' ? '0' : (qty || item.qty);
+      }
+    }
+  });
+  // Retirer les articles à 0
+  Object.keys(newOrder.items||{}).forEach(catKey => {
+    newOrder.items[catKey].items = newOrder.items[catKey].items.filter(i => parseInt(i.qty||'1') > 0);
+    if(!newOrder.items[catKey].items.length) delete newOrder.items[catKey];
+  });
+
+  const remarksEl = orderRow.querySelector('#edit-order-remarks-'+safeKey(mag));
+  if(remarksEl) newOrder.remarks = remarksEl.value.trim();
+  newOrder.updatedAt = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+
+  try {
+    await window._set(window._ref(window._db,'orders/'+safeKey(adminDate)+'/'+safeKey(mag)), newOrder);
+    showToast('✅ Commande de '+mag+' mise à jour');
+    renderAdminOrders();
+  } catch(e){
+    showToast('Erreur : '+e.message);
+  }
+}
+
+// ─── STATISTIQUES ─────────────────────────────────────
+function renderAdminStats(){
+  const container = document.getElementById('admin-tab-stats');
+  if(!container) return;
+  container.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center">Calcul en cours…</div>';
+
+  const today = new Date();
+  const days = [];
+  for(let i=13; i>=0; i--){
+    const d = new Date(today);
+    d.setDate(d.getDate()-i);
+    const dateStr = d.toISOString().split('T')[0];
+    const demoOrders = getDemoOrdersForDate(dateStr);
+    const store = JSON.parse(sessionStorage.getItem('vanbademo_data')||'{}');
+    const realOrders = ((store.orders||{})[safeKey(dateStr)])||{};
+    const dayAll = Object.assign({}, demoOrders, realOrders);
+    days.push({dateStr, orders:dayAll, d});
+  }
+
+  // Commandes par jour
+  const ordersPerDay = days.map(({d, orders}) => ({
+    day: d.getDate(),
+    dayShort: ['D','L','M','M','J','V','S'][d.getDay()],
+    count: MAGASINS.filter(m => orders[safeKey(m)]).length
+  }));
+  const maxDay = Math.max(...ordersPerDay.map(d=>d.count), 1);
+
+  // Top articles
+  const itemCounts = {};
+  days.forEach(({orders}) => {
+    Object.values(orders).forEach(order => {
+      Object.values(order.items||{}).forEach(cat => {
+        (cat.items||[]).forEach(({name,qty}) => {
+          if(!itemCounts[name]) itemCounts[name]=0;
+          itemCounts[name] += Math.max(1, parseInt(qty)||1);
+        });
+      });
+    });
+  });
+  const top10 = Object.entries(itemCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const maxCount = top10[0]?.[1] || 1;
+
+  // Taux réponse par magasin
+  const magRates = MAGASINS.map(mag => {
+    const sent = days.filter(({orders}) => orders[safeKey(mag)]).length;
+    return {mag, rate: Math.round(sent/days.length*100), sent};
+  });
+
+  // Total global
+  const totalOrders = days.reduce((acc,{orders}) => acc + MAGASINS.filter(m=>orders[safeKey(m)]).length, 0);
+  const avgPerDay = (totalOrders/days.length).toFixed(1);
+
+  let html = '';
+
+  // KPIs
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">';
+  html += kpiCard('📦', totalOrders, 'commandes (14j)');
+  html += kpiCard('📅', avgPerDay, 'moy. par jour');
+  html += kpiCard('🏪', MAGASINS.length, 'magasins actifs');
+  html += kpiCard('🏆', top10[0]?.[0]?.split(' ')[0]||'—', 'article #1');
+  html += '</div>';
+
+  // Graphique barres 14j
+  html += '<div class="admin-card" style="margin-bottom:14px">';
+  html += '<div class="admin-section-title" style="margin-bottom:14px">📅 Activité — 14 derniers jours</div>';
+  html += '<div style="display:flex;align-items:flex-end;gap:3px;height:90px">';
+  ordersPerDay.forEach(({day,dayShort,count}) => {
+    const barH = Math.round((count/maxDay)*68);
+    const isToday = day === today.getDate();
+    html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">';
+    html += '<div style="font-size:8px;color:var(--text3);line-height:1">'+(count||'')+'</div>';
+    html += '<div style="width:100%;height:'+barH+'px;min-height:3px;background:'+(isToday?'#1a1a1a':'var(--border2)')+';border-radius:3px 3px 0 0;transition:height 0.3s"></div>';
+    html += '<div style="font-size:8px;color:'+(isToday?'var(--text)':'var(--text3)')+';font-weight:'+(isToday?'700':'400')+'">'+dayShort+day+'</div>';
+    html += '</div>';
+  });
+  html += '</div></div>';
+
+  // Taux réponse
+  html += '<div class="admin-card" style="margin-bottom:14px">';
+  html += '<div class="admin-section-title" style="margin-bottom:12px">📊 Taux de réponse par magasin</div>';
+  magRates.forEach(({mag,rate,sent}) => {
+    const color = rate>80?'#16a34a':rate>50?'#f97316':'#C0392B';
+    html += '<div style="margin-bottom:10px">';
+    html += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:500">'+mag+'</span><span style="color:var(--text2)">'+sent+'/'+days.length+' jours — '+rate+'%</span></div>';
+    html += '<div style="background:var(--cream-dark);border-radius:4px;height:7px;overflow:hidden"><div style="width:'+rate+'%;height:100%;background:'+color+';border-radius:4px"></div></div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Top 10 articles
+  html += '<div class="admin-card">';
+  html += '<div class="admin-section-title" style="margin-bottom:12px">🏆 Articles les plus commandés (14j)</div>';
+  top10.forEach(([name,count],i) => {
+    const pct = Math.round(count/maxCount*100);
+    html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">';
+    html += '<span style="font-size:11px;color:var(--text3);width:14px;text-align:right;flex-shrink:0">'+(i+1)+'</span>';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">';
+    html += '<span style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px">'+name+'</span>';
+    html += '<span style="color:var(--text2);flex-shrink:0">'+count+'</span></div>';
+    html += '<div style="background:var(--cream-dark);border-radius:4px;height:5px"><div style="width:'+pct+'%;height:100%;background:#1a1a1a;border-radius:4px"></div></div>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+function kpiCard(icon, val, label){
+  return '<div class="admin-card" style="text-align:center;padding:14px 8px"><div style="font-size:20px;margin-bottom:4px">'+icon+'</div><div style="font-size:20px;font-weight:700;color:var(--text)">'+val+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+label+'</div></div>';
+}
+
+// ─── INIT ─────────────────────────────────────────────
+function _initApp(){
+  // Paramètres en premier (synchrone)
+  loadSettings();
+  // Date par défaut = demain (synchrone, avant tout async)
+  const _de = document.getElementById('mag-date');
+  if(_de && !_de.value) _de.value = defaultOrderDate();
+  // Notifications
+  initNotifBanner();
+  // Charger les produits custom + peupler le formulaire
+  loadCustomItems();
+}
+if(document.readyState !== 'loading'){
+  _initApp();
+} else {
+  document.addEventListener('DOMContentLoaded', _initApp);
+}
+</script>
+</body>
+</html>
