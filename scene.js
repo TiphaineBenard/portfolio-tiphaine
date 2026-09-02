@@ -1269,7 +1269,7 @@ window.Scene = (function () {
   // de ce qu'il fallait faire).
   const BASE_APERTURE = 0.0018;
   const BASE_MAXBLUR = 0.008;
-  const MOBILE_BLUR_BOOST = 2.4;
+  const MOBILE_BLUR_BOOST = 1.3;
   const blurMult = IS_MOBILE ? MOBILE_BLUR_BOOST : 1;
   const bokehPass = new THREE.BokehPass(scene, camera, {
     focus: DEFAULT_CAMERA_POS.z, // suit la distance caméra réelle (6.4 mobile / 8 desktop) — sinon le téléphone actif sortirait lui-même du plan net sur mobile
