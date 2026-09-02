@@ -1377,6 +1377,7 @@ window.Scene = (function () {
     phones, hitboxes, track, SPACING, SLIDER_BOUNDS, APPS,
     loadingManager, DEFAULT_CAMERA_POS, animate,
     bokehPass, // exposé pour ajuster `focus` quand main.js zoome sur un projet (sinon le téléphone actif sortirait lui-même du plan net)
+    IS_MOBILE, // exposé pour activer le snap au swipe (main.js), uniquement sur mobile
   };
 
 })();

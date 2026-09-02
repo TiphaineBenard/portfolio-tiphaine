@@ -7,6 +7,7 @@
   const {
     camera, canvas, phones, hitboxes, track,
     SPACING, SLIDER_BOUNDS, APPS, DEFAULT_CAMERA_POS, animate, bokehPass,
+    IS_MOBILE,
   } = window.Scene;
 
   /* ═══════════════════════════════════════════════════════════
@@ -70,6 +71,25 @@
     return THREE.MathUtils.clamp(x, SLIDER_BOUNDS.min, SLIDER_BOUNDS.max);
   }
 
+  // ── Snap au swipe (mobile uniquement) — au lieu de devoir glisser
+  // plusieurs fois pour traverser tout l'espacement entre deux
+  // téléphones, un seul swipe (au-delà d'un petit seuil) fait sauter
+  // directement au téléphone suivant/précédent, centré.
+  const SWIPE_THRESHOLD_PX = 40;
+  function nearestIndexAtScroll(scrollX) {
+    let nearestIndex = 0;
+    let nearestDist = Infinity;
+    phones.forEach((group) => {
+      const worldX = group.userData.localX + scrollX;
+      const d = Math.abs(worldX);
+      if (d < nearestDist) { nearestDist = d; nearestIndex = group.userData.appIndex; }
+    });
+    return nearestIndex;
+  }
+  function scrollForIndex(i) {
+    return clampScroll(-phones[i].userData.localX);
+  }
+
   function onDragStart(clientX) {
     isDragging = true;
     velocity = 0;
@@ -108,6 +128,22 @@
     // Clic (pas de drag significatif) → tenter l'ouverture d'un projet
     if (totalDragDistance < DRAG_CLICK_THRESHOLD) {
       tryOpenProjectAt(clientX, clientY);
+      return;
+    }
+
+    // Sur mobile : un swipe suffisant fait sauter directement au
+    // téléphone suivant/précédent (au lieu de laisser l'inertie
+    // continue décider d'une position arbitraire entre deux téléphones).
+    if (IS_MOBILE) {
+      const deltaFromStart = clientX - dragStartClientX;
+      const startIndex = nearestIndexAtScroll(dragStartScroll);
+      let targetIndex = startIndex;
+      if (Math.abs(deltaFromStart) >= SWIPE_THRESHOLD_PX) {
+        targetIndex = deltaFromStart < 0 ? startIndex + 1 : startIndex - 1;
+        targetIndex = THREE.MathUtils.clamp(targetIndex, 0, phones.length - 1);
+      }
+      targetScroll = scrollForIndex(targetIndex);
+      velocity = 0;
     }
   }
 
