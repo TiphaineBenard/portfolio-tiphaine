@@ -717,7 +717,7 @@ window.Scene = (function () {
     // le code de dessin ci-dessous continue de raisonner en coordonnées
     // LOGIQUES (CW×CH = 512×1024, via ctx.scale), donc aucune valeur de
     // mise en page n'a besoin de changer.
-    const RES_SCALE = 4; // supersampling x4 — un canvas source large permet aux mipmaps de downsampler proprement au lieu d'agrandir une petite image (cause du flou précédent à 2.5 avec mipmaps actifs)
+    const RES_SCALE = 5; // supersampling x5 — palier prudent au-dessus de 4 : au-delà, risque de surcharge mémoire GPU sur mobile (instabilité/écran noir déjà observé avec 4 textures haute résolution simultanées)
     const CW = 512;
     const CH = 1024;
     canvas.width = CW * RES_SCALE;
