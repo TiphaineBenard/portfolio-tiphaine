@@ -712,7 +712,7 @@ window.Scene = (function () {
     // le code de dessin ci-dessous continue de raisonner en coordonnées
     // LOGIQUES (CW×CH = 512×1024, via ctx.scale), donc aucune valeur de
     // mise en page n'a besoin de changer.
-    const RES_SCALE = 2;
+    const RES_SCALE = 4; // "4K" — texture source à très haute résolution pour un texte d'écran net indépendamment du flou d'arrière-plan (DOF)
     const CW = 512;
     const CH = 1024;
     canvas.width = CW * RES_SCALE;
@@ -1278,7 +1278,7 @@ window.Scene = (function () {
   // garantit que le texte de l'écran — le plus sensible au flou — reste net,
   // quitte à ce que les bords de la coque soient dans une profondeur de
   // champ légèrement moins précise (imperceptible sur la coque unie).
-  const SCREEN_FOCUS_Z = DEFAULT_CAMERA_POS.z - 0.05;
+  const SCREEN_FOCUS_Z = DEFAULT_CAMERA_POS.z - 0.08;
   const bokehPass = new THREE.BokehPass(scene, camera, {
     focus: SCREEN_FOCUS_Z, // suit la distance caméra réelle (6.4 mobile / 8 desktop) — sinon le téléphone actif sortirait lui-même du plan net sur mobile
     aperture: BASE_APERTURE * blurMult,
