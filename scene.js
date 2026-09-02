@@ -65,7 +65,12 @@ window.Scene = (function () {
   camera.lookAt(0, CAROUSEL_Y, 0);
 
   const canvas3d = document.getElementById('webgl-canvas');
-  const renderer = new THREE.WebGLRenderer({ canvas: canvas3d, alpha: true, antialias: true });
+  // preserveDrawingBuffer:true — certains navigateurs mobiles (Android/
+  // Chrome) capturent un écran NOIR quand on fait une capture d'écran
+  // sur un canvas WebGL par défaut (le buffer est effacé juste après
+  // affichage). Ce réglage force la conservation de l'image affichée,
+  // pour que les captures d'écran fonctionnent normalement.
+  const renderer = new THREE.WebGLRenderer({ canvas: canvas3d, alpha: true, antialias: true, preserveDrawingBuffer: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0x000000, 0); // transparent — le fond vient du CSS du body
@@ -712,7 +717,7 @@ window.Scene = (function () {
     // le code de dessin ci-dessous continue de raisonner en coordonnées
     // LOGIQUES (CW×CH = 512×1024, via ctx.scale), donc aucune valeur de
     // mise en page n'a besoin de changer.
-    const RES_SCALE = 4; // "4K" — texture source à très haute résolution pour un texte d'écran net indépendamment du flou d'arrière-plan (DOF)
+    const RES_SCALE = 2.5; // ramené de 4 à 2.5 — 4 sollicitait trop la mémoire graphique sur mobile (4 textures haute résolution en simultané), pouvant causer instabilité/écran noir
     const CW = 512;
     const CH = 1024;
     canvas.width = CW * RES_SCALE;
