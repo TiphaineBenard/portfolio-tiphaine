@@ -717,7 +717,7 @@ window.Scene = (function () {
     // le code de dessin ci-dessous continue de raisonner en coordonnées
     // LOGIQUES (CW×CH = 512×1024, via ctx.scale), donc aucune valeur de
     // mise en page n'a besoin de changer.
-    const RES_SCALE = 2.5; // ramené de 4 à 2.5 — 4 sollicitait trop la mémoire graphique sur mobile (4 textures haute résolution en simultané), pouvant causer instabilité/écran noir
+    const RES_SCALE = 4; // supersampling x4 — un canvas source large permet aux mipmaps de downsampler proprement au lieu d'agrandir une petite image (cause du flou précédent à 2.5 avec mipmaps actifs)
     const CW = 512;
     const CH = 1024;
     canvas.width = CW * RES_SCALE;
@@ -927,16 +927,17 @@ window.Scene = (function () {
     // mipmapping devient mathématiquement correct, donc plus de halo —
     // et les mipmaps peuvent rester actifs pour lisser le reflet.
     texture.premultiplyAlpha = true;
-    // Mipmaps désactivés : le filtrage trilinéaire (LinearMipmapLinearFilter)
-    // mélange toujours deux niveaux de mip, ce qui adoucit le texte en
-    // permanence dès que l'écran n'est pas affiché pile à sa résolution
-    // native — même avec une texture haute résolution. LinearFilter seul
-    // échantillonne directement la texture source en pleine résolution,
-    // donc un texte net. Contrepartie acceptée : le reflet au sol de cet
-    // écran (bien plus petit/lointain) peut légèrement aliaser au lieu
-    // d'être lissé — texte net au premier plan > reflet parfait.
-    texture.generateMipmaps = false;
-    texture.minFilter = THREE.LinearFilter;
+    // Mipmaps réactivés : avec un canvas source à RES_SCALE=4 (bien plus
+    // grand que ce qu'il affiche à l'écran), le vrai problème n'était pas
+    // le mipmapping en soi mais un canvas source trop petit — les mipmaps
+    // devaient AGRANDIR une image basse résolution (flou). Maintenant que
+    // la source est large, les mipmaps la RÉDUISENT proprement (downsampling
+    // correct), ce qui élimine à la fois le flou ET le crénelage/scintillement
+    // qu'on avait avec LinearFilter seul (qui échantillonne toujours la
+    // pleine résolution même quand le texte est affiché en plus petit,
+    // d'où l'aliasing observé).
+    texture.generateMipmaps = true;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
     texture.needsUpdate = true;
@@ -1350,16 +1351,13 @@ window.Scene = (function () {
       // Pendant un survol, GSAP pilote position.y et rotation.x (main.js) —
       // l'idle ne doit pas les écraser à chaque frame.
       if (!ud.isHovered) {
-        // Le léger flottement vertical (bounce) est lui aussi coupé pour le
-        // téléphone centré : les mipmaps ayant été désactivés sur la
-        // texture de l'écran (pour un texte net), le moindre micro-
-        // mouvement continu du plan fait scintiller/trembler le texte
-        // pixel par pixel d'une image à l'autre (aliasing de
-        // ré-échantillonnage sans préfiltrage). Le téléphone actif doit
-        // rester parfaitement immobile pour un rendu stable ; les
-        // téléphones latéraux gardent le mouvement (pas de souci de
-        // netteté de texte là-bas).
-        const targetPosY = group === nearestGroup ? 0 : Math.sin(t * ud.floatSpeed + ud.floatOffset) * 0.18;
+        // Flottement vertical (bounce) restauré pour le téléphone centré :
+        // les mipmaps sont de nouveau actifs sur la texture d'écran (avec un
+        // canvas source large, RES_SCALE=4), donc le filtrage trilinéaire
+        // préfiltre correctement le texte à chaque micro-mouvement — plus de
+        // scintillement pixel par pixel. Le scintillement précédent venait de
+        // LinearFilter seul (aucun préfiltrage), pas du mouvement en lui-même.
+        const targetPosY = Math.sin(t * ud.floatSpeed + ud.floatOffset) * 0.18;
         ud.currentPosY = THREE.MathUtils.lerp(ud.currentPosY ?? targetPosY, targetPosY, 0.06);
         group.position.y = ud.currentPosY;
         // Inclinaison (rotation.x) coupée pour le téléphone centré (nearestGroup) :
