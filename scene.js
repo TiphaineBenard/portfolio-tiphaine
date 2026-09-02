@@ -927,8 +927,17 @@ window.Scene = (function () {
     // mipmapping devient mathématiquement correct, donc plus de halo —
     // et les mipmaps peuvent rester actifs pour lisser le reflet.
     texture.premultiplyAlpha = true;
-    texture.generateMipmaps = true;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    // Mipmaps désactivés : le filtrage trilinéaire (LinearMipmapLinearFilter)
+    // mélange toujours deux niveaux de mip, ce qui adoucit le texte en
+    // permanence dès que l'écran n'est pas affiché pile à sa résolution
+    // native — même avec une texture haute résolution. LinearFilter seul
+    // échantillonne directement la texture source en pleine résolution,
+    // donc un texte net. Contrepartie acceptée : le reflet au sol de cet
+    // écran (bien plus petit/lointain) peut légèrement aliaser au lieu
+    // d'être lissé — texte net au premier plan > reflet parfait.
+    texture.generateMipmaps = false;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
     texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
     texture.needsUpdate = true;
 
@@ -1289,7 +1298,7 @@ window.Scene = (function () {
   // navigateur avec barre d'adresse et appli installée plein écran,
   // par exemple), sans supprimer le flou d'arrière-plan (maxblur inchangé
   // = le fond flou garde son intensité maximale).
-  const BASE_APERTURE = 0.0005; // marge de sécurité supplémentaire (certains contextes de rendu — navigation privée, mini-navigateurs intégrés — semblent plus sensibles au moindre écart de mise au point)
+  const BASE_APERTURE = 0.0009;
   const BASE_MAXBLUR = 0.008;
   const MOBILE_BLUR_BOOST = 1.0; // priorité à la netteté du texte des écrans plutôt qu'à l'intensité du flou d'arrière-plan
   const blurMult = IS_MOBILE ? MOBILE_BLUR_BOOST : 1;
@@ -1321,8 +1330,6 @@ window.Scene = (function () {
   ═══════════════════════════════════════════════════════════ */
   const clock = new THREE.Clock();
   const MAX_SWING = 0.2;
-
-  const _screenWorldPos = new THREE.Vector3(); // réutilisé chaque frame (évite d'allouer un nouveau Vector3 à chaque image)
 
   function animate() {
     requestAnimationFrame(animate);
@@ -1390,22 +1397,6 @@ window.Scene = (function () {
       if (dustPos[i * 3 + 1] > DUST_TOP) dustPos[i * 3 + 1] = DUST_BOTTOM;
     }
     dustGeometry.attributes.position.needsUpdate = true;
-
-    // ── Plan net (DOF) recalculé en TEMPS RÉEL, chaque image, au lieu
-    // d'une constante devinée (SCREEN_FOCUS_Z) : on mesure la vraie
-    // distance caméra→écran du téléphone centré. Ça élimine tout écart
-    // possible (léger flou du texte constaté selon le navigateur/contexte
-    // — navigation privée, mini-navigateur intégré d'une appli de
-    // messagerie, etc. — où devicePixelRatio ou le rendu GPU peuvent
-    // différer légèrement d'un Chrome classique). `window.__cameraLocked`
-    // (posé par main.js) signale qu'un projet est ouvert : dans ce cas
-    // c'est main.js qui pilote déjà `focus` explicitement, on ne doit
-    // pas l'écraser ici.
-    if (bokehPass && !window.__cameraLocked && nearestGroup) {
-      _screenWorldPos.set(0, 0, 0.05);
-      nearestGroup.localToWorld(_screenWorldPos);
-      bokehPass.uniforms.focus.value = camera.position.distanceTo(_screenWorldPos);
-    }
 
     composer.render();
   }
