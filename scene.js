@@ -1269,7 +1269,7 @@ window.Scene = (function () {
   // de ce qu'il fallait faire).
   const BASE_APERTURE = 0.0018;
   const BASE_MAXBLUR = 0.008;
-  const MOBILE_BLUR_BOOST = 1.3;
+  const MOBILE_BLUR_BOOST = 1.0; // priorité à la netteté du texte des écrans plutôt qu'à l'intensité du flou d'arrière-plan
   const blurMult = IS_MOBILE ? MOBILE_BLUR_BOOST : 1;
   // L'écran (texture) de chaque téléphone est légèrement en saillie de la
   // coque (screenMesh.position.z = 0.05 dans createPhone), donc physiquement
