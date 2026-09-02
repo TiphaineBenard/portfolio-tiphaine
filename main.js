@@ -24,6 +24,7 @@
   let lastClientX = 0;
   let lastMoveTime = 0;
   let totalDragDistance = 0; // sert à distinguer un clic d'un drag
+  let isPointerTouch = false; // vrai doigt sur écran tactile (fiable, contrairement à IS_MOBILE basé sur la taille d'écran/user-agent)
 
   // ── Indicateur de position (points ● ○ ○ ○) — un point par app,
   // généré dynamiquement (pas de nombre codé en dur), mis à jour selon
@@ -131,10 +132,13 @@
       return;
     }
 
-    // Sur mobile : un swipe suffisant fait sauter directement au
-    // téléphone suivant/précédent (au lieu de laisser l'inertie
-    // continue décider d'une position arbitraire entre deux téléphones).
-    if (IS_MOBILE) {
+    // Sur mobile (vrai doigt sur écran tactile) : un swipe suffisant fait
+    // sauter directement au téléphone suivant/précédent (au lieu de
+    // laisser l'inertie continue décider d'une position arbitraire entre
+    // deux téléphones). On se base sur le type de pointeur réel de ce
+    // geste (e.pointerType === 'touch'), pas sur IS_MOBILE (détection par
+    // taille d'écran/user-agent, pas fiable à 100% sur tous les téléphones).
+    if (isPointerTouch) {
       const deltaFromStart = clientX - dragStartClientX;
       const startIndex = nearestIndexAtScroll(dragStartScroll);
       let targetIndex = startIndex;
@@ -151,6 +155,7 @@
   // API, donc pas de duplication mouse/touch séparée pour le drag.
   canvas.addEventListener('pointerdown', (e) => {
     if (!window.introComplete || focusedGroup) return;
+    isPointerTouch = e.pointerType === 'touch';
     canvas.setPointerCapture(e.pointerId);
     onDragStart(e.clientX);
   });
