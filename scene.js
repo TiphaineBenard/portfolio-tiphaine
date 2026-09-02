@@ -1342,7 +1342,18 @@ window.Scene = (function () {
       // l'idle ne doit pas les écraser à chaque frame.
       if (!ud.isHovered) {
         group.position.y = Math.sin(t * ud.floatSpeed + ud.floatOffset) * 0.18;
-        group.rotation.x = Math.sin(t * 0.35 + ud.floatOffset) * 0.035;
+        // Inclinaison (rotation.x) coupée pour le téléphone centré (nearestGroup) :
+        // même une micro-inclinaison de ±2° suffit à ce que le haut et le bas de
+        // l'écran ne soient plus à la même profondeur caméra — le flou
+        // d'arrière-plan (DOF) rendait alors une partie du texte floue et
+        // l'autre nette, selon l'angle exact à l'instant donné (bug signalé :
+        // le texte de l'écran paraissait flou "au hasard"). Le téléphone actif
+        // doit rester bien à plat, parallèle à la caméra, pour un focus net
+        // uniforme sur tout l'écran ; seuls les téléphones latéraux (dont le
+        // flou est de toute façon voulu) gardent cette respiration.
+        const targetRotX = group === nearestGroup ? 0 : Math.sin(t * 0.35 + ud.floatOffset) * 0.035;
+        ud.currentRotX = THREE.MathUtils.lerp(ud.currentRotX ?? targetRotX, targetRotX, 0.06);
+        group.rotation.x = ud.currentRotX;
       }
 
       const targetRotY = group === nearestGroup ? 0 : Math.sin(t * 0.5 + ud.swingOffset) * MAX_SWING;
