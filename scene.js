@@ -1267,7 +1267,14 @@ window.Scene = (function () {
   // et on la BOOSTE sur mobile pour compenser l'écran plus étroit, au
   // lieu de la réduire sur desktop comme tenté juste avant (l'inverse
   // de ce qu'il fallait faire).
-  const BASE_APERTURE = 0.0018;
+  // Aperture réduite (0.0018 → 0.0009) : l'aperture contrôle la vitesse à
+  // laquelle le flou augmente avec la distance au plan net — la réduire
+  // rend l'écran du téléphone actif nettement plus tolérant à un petit
+  // écart de mise au point (différence de hauteur de viewport entre
+  // navigateur avec barre d'adresse et appli installée plein écran,
+  // par exemple), sans supprimer le flou d'arrière-plan (maxblur inchangé
+  // = le fond flou garde son intensité maximale).
+  const BASE_APERTURE = 0.0009;
   const BASE_MAXBLUR = 0.008;
   const MOBILE_BLUR_BOOST = 1.0; // priorité à la netteté du texte des écrans plutôt qu'à l'intensité du flou d'arrière-plan
   const blurMult = IS_MOBILE ? MOBILE_BLUR_BOOST : 1;
