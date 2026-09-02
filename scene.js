@@ -796,9 +796,19 @@ window.Scene = (function () {
       ctx.font = '900 55px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
-      ctx.shadowColor = 'rgba(0,0,0,0.3)';
-      ctx.shadowBlur = 15;
-      ctx.shadowOffsetY = 5;
+      // Ombre portée très réduite (était shadowBlur:15 — beaucoup trop
+      // fort, ça rendait le titre flou en permanence, sur TOUS les
+      // appareils : certains moteurs de rendu (Chrome mobile notamment)
+      // n'appliquent pas le shadowBlur à la même échelle que le texte une
+      // fois le canvas mis à l'échelle (RES_SCALE), le rendant bien plus
+      // large/doux que prévu. Un flou de 15px sur ce texte est le
+      // problème signalé ("EVENTPRO" flou alors que "11:09" juste
+      // au-dessus, sans ombre, reste net) — pas le flou d'arrière-plan
+      // (DOF), qui ne peut pas s'appliquer différemment à deux zones
+      // d'un même plan à profondeur constante.
+      ctx.shadowColor = 'rgba(0,0,0,0.35)';
+      ctx.shadowBlur = 3;
+      ctx.shadowOffsetY = 2;
       ctx.fillText(appName.toUpperCase(), centerX, CH / 2 - 40);
       ctx.shadowBlur = 0;
       ctx.shadowOffsetY = 0;
