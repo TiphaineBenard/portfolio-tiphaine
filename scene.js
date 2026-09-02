@@ -1350,7 +1350,18 @@ window.Scene = (function () {
       // Pendant un survol, GSAP pilote position.y et rotation.x (main.js) —
       // l'idle ne doit pas les écraser à chaque frame.
       if (!ud.isHovered) {
-        group.position.y = Math.sin(t * ud.floatSpeed + ud.floatOffset) * 0.18;
+        // Le léger flottement vertical (bounce) est lui aussi coupé pour le
+        // téléphone centré : les mipmaps ayant été désactivés sur la
+        // texture de l'écran (pour un texte net), le moindre micro-
+        // mouvement continu du plan fait scintiller/trembler le texte
+        // pixel par pixel d'une image à l'autre (aliasing de
+        // ré-échantillonnage sans préfiltrage). Le téléphone actif doit
+        // rester parfaitement immobile pour un rendu stable ; les
+        // téléphones latéraux gardent le mouvement (pas de souci de
+        // netteté de texte là-bas).
+        const targetPosY = group === nearestGroup ? 0 : Math.sin(t * ud.floatSpeed + ud.floatOffset) * 0.18;
+        ud.currentPosY = THREE.MathUtils.lerp(ud.currentPosY ?? targetPosY, targetPosY, 0.06);
+        group.position.y = ud.currentPosY;
         // Inclinaison (rotation.x) coupée pour le téléphone centré (nearestGroup) :
         // même une micro-inclinaison de ±2° suffit à ce que le haut et le bas de
         // l'écran ne soient plus à la même profondeur caméra — le flou
