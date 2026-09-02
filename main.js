@@ -332,7 +332,14 @@
 
     focusedGroup = group;
     group.userData.isFocused = true;
+    // Bug corrigé : si ce téléphone (ou un autre) était "soulevé" par
+    // l'effet de survol au moment du clic, on ne faisait qu'oublier la
+    // référence `hoveredGroup` sans jamais le redescendre — il restait
+    // visuellement surélevé indéfiniment, même après fermeture du projet.
+    if (hoveredGroup) lowerPhone(hoveredGroup);
     hoveredGroup = null;
+    gsap.to(group.position, { y: 0, duration: 0.4, ease: 'power2.out' });
+    group.userData.isHovered = false;
     canvas.style.cursor = 'default';
     window.__cameraLocked = true; // suspend le parallax souris (scene.js) pendant le zoom GSAP
 
