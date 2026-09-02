@@ -1,0 +1,584 @@
+/* ═══════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+/* Retire le rectangle bleu de "tap highlight" que certains navigateurs
+   mobiles (Chrome/Android surtout) affichent automatiquement au toucher
+   sur tout élément cliquable (canvas, boutons, points du carrousel...).
+   N'affecte pas le focus clavier (:focus-visible ci-dessous), qui reste
+   volontairement visible pour l'accessibilité. */
+*{ -webkit-tap-highlight-color:transparent; }
+
+html,body{
+  height:100%;
+  width:100%;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════
+   ACCESSIBILITÉ — focus clavier visible sur tout élément
+   interactif (Tab). `:focus-visible` : uniquement au clavier,
+   jamais au clic souris (pas de halo parasite en usage normal).
+═══════════════════════════════════════════════════ */
+a:focus-visible,
+button:focus-visible{
+  outline:2px solid #ffffff;
+  outline-offset:3px;
+}
+
+/* Effet "Studio Ciao Energy" — spot métallique au centre qui se fond
+   vers le noir profond sur les bords, visible à travers le canvas WebGL
+   transparent (plus de scene.background/fog en JS). */
+body{
+  background:radial-gradient(circle at 50% 50%, #3a3a3d 0%, #18181a 45%, #060606 100%);
+  color:#ffffff;
+  margin:0;
+  overflow:hidden;
+}
+
+/* ═══════════════════════════════════════════════════
+   TRAÎNÉE LUMINEUSE — curseur natif conservé ; un canvas plein écran
+   dessine le tracé récent de la souris (ligne blanche qui s'efface
+   progressivement), voir main.js.
+═══════════════════════════════════════════════════ */
+#cursor-trail-canvas{
+  position:fixed;inset:0;
+  width:100%;height:100%;
+  pointer-events:none;
+  z-index:20000;
+}
+
+/* Curseur personnalisé — anneau blanc, remplissage transparent,
+   remplace le curseur natif du système. */
+body.has-custom-cursor,
+body.has-custom-cursor *{ cursor:none !important; }
+
+#custom-cursor{
+  position:fixed;top:0;left:0;
+  width:22px;height:22px;
+  margin-left:-11px;margin-top:-11px;
+  border-radius:50%;
+  border:1.5px solid #ffffff;
+  background:transparent;
+  pointer-events:none;
+  z-index:20001;
+  opacity:0;
+  transition:opacity 0.25s ease;
+}
+#custom-cursor.is-visible{ opacity:1; }
+
+/* ═══════════════════════════════════════════════════
+   VIGNETTE + GRAIN — habillage "photo produit studio" du fond.
+   Purement décoratif : pointer-events:none pour ne jamais gêner
+   les clics sur les téléphones/UI en dessous ou au-dessus.
+═══════════════════════════════════════════════════ */
+.vignette-overlay{
+  position:fixed;inset:0;
+  z-index:2;
+  pointer-events:none;
+  background:radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 45%, rgba(0,0,0,0.4) 100%);
+}
+.grain-overlay{
+  position:fixed;inset:0;
+  z-index:2;
+  pointer-events:none;
+  opacity:0.05;
+  mix-blend-mode:soft-light;
+  /* feColorMatrix ajouté : désature le bruit (feTurbulence produit du
+     bruit COULEUR par défaut). Sans ça, combiné à mix-blend-mode:overlay
+     sur une zone sombre et plate (le sol miroir), le bruit coloré
+     ressortait fortement en bleu/vert — un vrai bug visuel, pas un
+     effet "reflet/miroir" du tout : c'était CE calque CSS, invariant
+     par device, d'où le fait que rien côté WebGL ne le corrigeait.
+     mix-blend-mode passé de overlay à soft-light : overlay est trop
+     agressif sur du quasi-noir. */
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px 180px;
+}
+
+#webgl-canvas{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  display:block;
+  width:100%;
+  height:100%;
+  touch-action:none; /* le raycaster/slider gère lui-même le geste tactile */
+  cursor:grab;
+}
+
+/* ═══════════════════════════════════════════════════
+   CINEMATIC LOADER — minimalisme absolu, centré
+═══════════════════════════════════════════════════ */
+#cinematic-loader{
+  position:fixed;inset:0;z-index:9999;
+  background-color:#050505;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  font-family:'Inter',-apple-system,sans-serif;
+}
+/* Signature en haut */
+#loader-brand{
+  position:absolute;top:40px;
+  font-size:11px;font-weight:600;letter-spacing:4px;color:#77777c; /* Gris moyen plus lisible */
+}
+
+.loader-dynamic-zone{
+  position:relative;
+  width:100%;height:160px; /* Fixe la hauteur pour que le texte en dessous ne bouge jamais */
+  display:flex;justify-content:center;align-items:center;
+}
+/* Forcer le chiffre ultra-fin (Fallback sur Helvetica/Arial si Inter Light n'est pas chargé) */
+#loader-percentage{
+  position:absolute;
+  font-family:'Inter',-apple-system,sans-serif;
+  font-size:140px; /* Taille fixe et maîtrisée */
+  font-weight:200; /* Finesse absolue */
+  letter-spacing:-2px;
+  color:#ffffff;margin:0;
+  font-variant-numeric:tabular-nums;
+}
+#enter-btn{
+  position:absolute;
+  opacity:0;pointer-events:none; /* Invisible et incliquable au départ */
+  transform:translateY(20px); /* Préparé pour l'animation GSAP */
+  background-color:#ffffff;color:#050505;
+  font-size:16px;
+  font-weight:600;
+  padding:18px 45px;border:none;border-radius:50px;cursor:pointer;
+  transition:all 0.4s cubic-bezier(0.25,1,0.5,1);
+  box-shadow:0 0 0 rgba(255,255,255,0);
+}
+#enter-btn:hover{
+  background-color:#ffffff;
+  transform:scale(1.05) translateY(0) !important;
+  box-shadow:0 10px 30px rgba(255,255,255,0.2); /* Halo lumineux */
+}
+#enter-btn .arrow{ display:inline-block;margin-left:2px }
+
+/* La barre de progression (1 pixel d'épaisseur) */
+.progress-track{
+  width:200px;height:1px;background-color:#222225;margin-bottom:40px;overflow:hidden;
+}
+#progress-bar{
+  width:0%;height:100%;background-color:#ffffff;
+}
+
+#loader-pitch{
+  margin-top:20px;text-align:center;
+}
+#loader-pitch p{
+  font-size:18px;
+  font-weight:400;line-height:1.6;color:#8e8e93;margin:0;
+}
+.highlight{ color:#ffffff;font-weight:500; }
+
+/* ═══════════════════════════════════════════════════
+   UI DE SURFACE
+═══════════════════════════════════════════════════ */
+.site-header{
+  position:fixed;top:0;left:0;right:0;z-index:60;
+  /* z-index remonté (10→60) : le popup de contact (dans le header) et
+     .hero avaient tous les deux z-index:10 — deux contextes d'empilement
+     de même valeur, donc c'est l'ordre dans le DOM qui tranchait, et
+     .hero (qui vient après le header en HTML) passait PAR-DESSUS tout
+     le header, popup ouvert compris, quel que soit le z-index:1000 posé
+     sur le popup lui-même (il ne peut jamais dépasser le contexte
+     d'empilement de son propre parent). Le header doit toujours être
+     au-dessus du reste de la page pour que ses menus restent lisibles.*/
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 32px;
+  pointer-events:none; /* la scene 3D reste cliquable sous le header */
+}
+.site-header > *{ pointer-events:auto }
+.brand{
+  font-size:14px;font-weight:700;letter-spacing:-0.01em;color:#ffffff;
+  display:flex;align-items:center;gap:10px;
+}
+.brand span{ font-weight:400;color:rgba(255,255,255,0.55) }
+.header-logo{ max-height:40px;width:auto;display:block }
+.cta-small{
+  font-size:12.5px;font-weight:600;color:#0c0a10;
+  background:#ffffff;padding:9px 18px;border-radius:20px;
+  text-decoration:none;transition:opacity 0.15s;
+  border:none;cursor:pointer;font-family:inherit;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.cta-small:hover{ opacity:0.85 }
+/* Icône bulle de contact — visible seulement sur mobile (voir media
+   query plus bas), où le bouton devient rond et perd son texte. */
+.cta-small-icon{ display:none; }
+
+.contact-dropdown-container{
+  position:relative;
+  display:inline-block;
+}
+.contact-popup{
+  display:none;
+  position:absolute;
+  right:0;top:110%;
+  background:rgb(20,20,25);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:14px;
+  padding:12px 16px;
+  flex-direction:column;
+  gap:10px;
+  z-index:1000;
+  box-shadow:0 10px 30px rgba(0,0,0,0.5);
+  white-space:nowrap;
+}
+.contact-popup a{
+  display:flex;align-items:center;gap:10px;
+  color:#ffffff;
+  text-decoration:none;
+  font-family:'Inter',-apple-system,sans-serif;
+  font-size:14px;
+  font-weight:400;
+  transition:color 0.2s ease;
+}
+.contact-popup a svg{ flex-shrink:0;opacity:0.85 }
+.contact-popup a:hover{ color:#ff3b30; }
+/* Affichage uniquement au clic (JS, .is-open) — desktop et tactile.
+   Le survol seul a été retiré : il empêchait la fermeture au reclic,
+   la souris restant sur le bouton pendant le clic. */
+.contact-dropdown-container.is-open .contact-popup{ display:flex; }
+
+.hero{
+  position:absolute;
+  top:8%;left:50%;transform:translateX(-50%);
+  z-index:10;
+  text-align:center;
+  width:80%;max-width:800px;
+  pointer-events:none;
+}
+.hero-sub{ margin-left:auto;margin-right:auto }
+.hero-hint{ margin-left:auto;margin-right:auto }
+/* Retour à la ligne forcé UNIQUEMENT sur mobile — élément vide qui
+   passe en display:block seulement sous 860px, forçant "prennent vie•"
+   sur sa propre ligne comme avant. Sur desktop il reste display:none
+   (invisible, aucun effet), le titre s'affiche sur une seule ligne
+   normalement. Plus fiable qu'un retour à la ligne géré uniquement par
+   le word-wrap naturel, qui changeait de point de coupure selon la
+   largeur exacte de l'écran/la taille de police. */
+.hero-break{ display:none; }
+.hero-eyebrow{
+  font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;
+  color:#c9455f;margin-bottom:14px; /* accent bordeaux — cohérent avec la marque */
+}
+.hero h1{
+  font-size:42px;font-weight:900;line-height:1.05;letter-spacing:-0.03em;
+  margin-bottom:16px;color:#ffffff;
+}
+.hero h1 .dot{
+  position:relative;
+  display:inline-block;
+  width:0.16em;height:0.16em;
+  margin-left:0.22em;
+  border-radius:50%;
+  background:#c9455f;
+  box-shadow:0 0 0 rgba(201,69,95,0.6);
+  animation:dotPulseGlow 2.2s ease-out infinite;
+  vertical-align:middle;
+}
+.hero h1 .dot::after{
+  content:'';
+  position:absolute;inset:0;
+  border-radius:50%;
+  background:#c9455f;
+  animation:dotPulseRing 2.2s ease-out infinite;
+}
+@keyframes dotPulseGlow{
+  0%,100%{ box-shadow:0 0 0 0 rgba(201,69,95,0.5) }
+  50%{ box-shadow:0 0 10px 2px rgba(201,69,95,0.5) }
+}
+@keyframes dotPulseRing{
+  0%{ transform:scale(1);opacity:0.6 }
+  100%{ transform:scale(3.2);opacity:0 }
+}
+.hero-sub{
+  font-size:14.5px;line-height:1.65;color:rgba(255,255,255,0.7);
+  margin-bottom:20px;
+}
+.hero-hint{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:12px;color:rgba(255,255,255,0.6);
+  border:1px solid rgba(255,255,255,0.18);border-radius:20px;
+  padding:8px 16px;
+  animation:hintPulse 2.4s ease-in-out infinite;
+}
+@keyframes hintPulse{ 0%,100%{opacity:0.55} 50%{opacity:1} }
+
+/* Indicateur de scroll — affiché maintenant sur TOUS les devices (avant
+   mobile uniquement ; le drag/molette fonctionnent aussi au clavier-
+   souris sur desktop, donc l'indication reste pertinente partout).
+   Position fixe, au-dessus de tout (footer inclus), avec une marge
+   basse généreuse pour ne jamais se faire recouvrir par le bloc de
+   texte du footer, même quand celui-ci passe sur 3-4 lignes.
+   .mobile-scroll-hint est le conteneur EMPILÉ (flex-column) de 2
+   lignes : le texte "Glissez pour découvrir" (.mobile-scroll-hint-row)
+   et les points de position (.carousel-dots) juste en dessous — les deux
+   imbriqués dans le même bloc positionné une seule fois, donc plus de
+   risque de mauvais alignement/chevauchement entre deux éléments fixes
+   positionnés indépendamment à l'oeil. */
+.mobile-scroll-hint{
+  display:flex;
+  position:fixed;
+  bottom:150px;left:50%;
+  transform:translateX(-50%);
+  z-index:50;
+  flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;
+  pointer-events:none;
+}
+.mobile-scroll-hint-row{
+  display:flex;
+  align-items:center;justify-content:center;gap:12px;
+  font-size:14px;font-weight:600;letter-spacing:0.04em;
+  color:rgba(255,255,255,0.6);
+  white-space:nowrap; /* le texte ne doit jamais passer à la ligne, sinon les flèches se décalent au-dessus/en dessous */
+  animation:scrollHintPulse 1.8s ease-in-out infinite;
+}
+
+/* Indicateur de position (points) — un point par app, le point actif
+   (classe .is-active, posée par main.js) est plein et en accent rose,
+   les autres restent des anneaux discrets. */
+.carousel-dots{
+  display:flex;
+  align-items:center;justify-content:center;gap:0;
+  pointer-events:auto; /* le parent .mobile-scroll-hint est en pointer-events:none (juste un texte informatif), mais les points doivent rester cliquables */
+}
+/* Le point visible reste petit (::before, 7px) mais l'élément cliquable
+   lui-même (.dot-indicator) est plus grand et invisible autour, pour
+   une zone de clic confortable sans changer l'apparence du point. */
+.carousel-dots .dot-indicator{
+  position:relative;
+  width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+}
+.carousel-dots .dot-indicator::before{
+  content:'';
+  width:7px;height:7px;border-radius:50%;
+  background:transparent;
+  border:1.5px solid rgba(255,255,255,0.4);
+  transition:background 0.3s ease,border-color 0.3s ease,transform 0.3s ease;
+}
+.carousel-dots .dot-indicator.is-active::before{
+  background:#c9455f;
+  border-color:#c9455f;
+  transform:scale(1.15);
+}
+
+/* Signature — 2e ligne DANS le même encadré que le texte du bas
+   (.portfolio-footer), pas un élément flottant à part : sa position
+   fixe précédente chevauchait le texte existant (hauteur de l'encadré
+   variable selon le nombre de lignes). En restant dans le flux normal
+   du même bloc, elle ne peut plus jamais se superposer à rien.
+   Couleur accent (même rose que l'eyebrow "PORTFOLIO INTERACTIF"),
+   éclaircie pour rester lisible en petit texte sur fond sombre. */
+.site-credit{
+  margin-top:8px;
+  font-size:12px;font-weight:600;letter-spacing:0.03em;
+  color:#e0637d;
+  text-shadow:0 2px 8px rgba(0,0,0,0.6); /* pas d'encadré propre — juste une ombre pour rester lisible sur le fond direct */
+}
+
+@media(max-width:860px){
+  .hero{ width:92%;top:6%;left:50%;transform:translateX(-50%) }
+  .hero-break{ display:block; }
+  /* Bloc titre resserré sur mobile — le titre + le sous-texte prenaient
+     trop de hauteur (2 lignes de h1 + 2 lignes de sous-texte + marges),
+     poussant le carrousel trop bas. Tailles et marges réduites pour que
+     l'ensemble tienne dans moins d'espace vertical, sans rien supprimer. */
+  .hero-eyebrow{ font-size:10px;margin-bottom:8px; }
+  .hero h1{ font-size:26px;margin-bottom:8px; }
+  .hero-sub{ max-width:none;font-size:13px;margin-bottom:24px; }
+  .mobile-scroll-hint{ display:flex;bottom:135px; }
+  /* Pilule du bas resserrée sur mobile — moins de padding/texte plus
+     petit, pour libérer de la place et une carte moins imposante. */
+  .portfolio-footer p:not(.site-credit){
+    font-size:12px !important;
+    line-height:1.35 !important;
+    padding:8px 14px !important;
+    border-radius:14px !important;
+  }
+  .site-credit{ font-size:10px;margin-top:5px; }
+}
+
+/* Sécurité petits écrans (iPhone SE et similaires, ≤380px) — évite que
+   le point rose après "vie" se retrouve orphelin tout seul sur une 3e
+   ligne, ou trop proche du bord droit du conteneur. */
+@media(max-width:380px){
+  .hero h1{ font-size:23px; }
+}
+
+/* ═══════════════════════════════════════════════════
+   HEADER MOBILE — refonte propre (identité + CTA empilés),
+   sinon le bouton "Me contacter" écrase le nom sur petit écran.
+═══════════════════════════════════════════════════ */
+@media(max-width:600px){
+  /* Header repassé en une seule ligne (logo+nom à gauche, icône contact
+     à droite) — la version empilée précédente prenait 2 lignes de
+     hauteur pour rien, et poussait tout le reste (titre, carrousel)
+     plus bas que nécessaire. */
+  .site-header{
+    flex-direction:row;
+    align-items:center;
+    gap:8px;
+    padding:14px 16px;
+  }
+  .brand{
+    font-size:12px;
+    text-align:left;
+    justify-content:flex-start;
+  }
+  .header-logo{ max-height:28px }
+  /* Bouton "Me contacter" → bulle ronde avec juste l'icône : le texte
+     complet prenait trop de place à côté du logo sur une seule ligne. */
+  .cta-small{
+    padding:0;
+    width:36px;height:36px;
+    border-radius:50%;
+    justify-content:center;
+    flex-shrink:0;
+  }
+  .cta-small-icon{ display:block; }
+  .cta-small-text{
+    position:absolute;width:1px;height:1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap; /* visible pour les lecteurs d'écran, invisible à l'oeil */
+  }
+  .hero{ top:7%; } /* remonté encore (13%→7%) : plus d'espace en dessous pour le téléphone (agrandi) */
+  /* Le popup de contact reprend l'ancrage par défaut (right:0, sous le
+     bouton) défini plus haut — le header n'étant plus centré/empilé
+     mais de nouveau une ligne avec le bouton à droite, l'ancrage par
+     défaut retombe correctement sous l'icône au lieu d'être recentré
+     au milieu de l'écran. */
+}
+.mobile-scroll-arrow{ font-size:18px;line-height:1;color:rgba(201,69,95,0.75); } /* rose accent (même teinte que l'eyebrow/le point actif) au lieu du gris neutre qui détonnait */
+@keyframes scrollHintPulse{
+  0%,100%{ opacity:0.35 }
+  50%{ opacity:0.9 }
+}
+
+/* ═══════════════════════════════════════════════════
+   FOOTER — discret, sous la scène 3D
+═══════════════════════════════════════════════════ */
+.portfolio-footer{
+  position:fixed;
+  bottom:20px;left:50%;
+  transform:translateX(-50%);
+  width:90%;max-width:800px;
+  text-align:center;
+  z-index:10;
+  pointer-events:none; /* Laisse passer les clics si besoin */
+}
+/* :not(.site-credit) — la signature (2e <p>) ne doit PAS avoir sa
+   propre pilule : ce sélecteur générique s'appliquait à CHAQUE <p> de
+   l'encadré indépendamment, donc la signature se retrouvait dans un
+   second encadré empilé sous le premier, au lieu d'être une simple
+   ligne de texte sous le même bloc. */
+.portfolio-footer p:not(.site-credit){
+  font-family:'Inter',-apple-system,sans-serif;
+  font-size:14px; /* Légèrement plus grand */
+  font-weight:500; /* Un poil plus gras pour la lisibilité */
+  color:#ffffff; /* Texte en blanc pur pour un contraste maximal */
+  letter-spacing:0.3px;
+  margin:0;
+  line-height:1.5;
+  background:rgba(20,20,25,0.85); /* Fond un peu plus opaque */
+  backdrop-filter:blur(12px);
+  padding:14px 28px;
+  border-radius:30px;
+  border:1px solid rgba(255,255,255,0.2); /* Bordure beaucoup plus visible */
+  box-shadow:0 10px 30px rgba(0,0,0,0.5); /* Ombre portée pour le détacher du fond */
+}
+
+/* ═══════════════════════════════════════════════════
+   OVERLAY PROJET (panneau détail au clic)
+═══════════════════════════════════════════════════ */
+.project-overlay{
+  position:fixed;inset:0;z-index:50;
+  display:flex;align-items:flex-end;justify-content:center;
+  pointer-events:none; /* activé en JS quand un projet est ouvert */
+}
+.project-overlay.is-open{ pointer-events:auto }
+
+/* Isolation du téléphone actif — pas de calque noir sur le canvas 3D
+   (ça l'assombrissait lui aussi). On masque plutôt l'interface HTML
+   autour (header/hero/footer) via l'opacité ; le téléphone reste
+   pleinement lumineux (voir aussi l'opacité des autres modèles 3D
+   gérée en JS dans main.js). */
+.site-header,.hero,.portfolio-footer,.mobile-scroll-hint,.carousel-dots,.site-credit{
+  transition:opacity 0.4s ease;
+}
+body.modal-open .site-header,
+body.modal-open .hero,
+body.modal-open .portfolio-footer,
+body.modal-open .mobile-scroll-hint,
+body.modal-open .carousel-dots,
+body.modal-open .site-credit{
+  /* !important nécessaire : ces 4 éléments portent la classe .intro-reveal,
+     animée par GSAP (autoAlpha) qui écrit opacity en style inline sur
+     l'élément — un inline style bat toujours une règle de feuille de
+     style, peu importe sa spécificité, sauf à forcer avec !important. */
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+
+.project-panel{
+  width:min(560px,92vw);
+  margin-bottom:0;
+  background:linear-gradient(160deg,#1e2022 0%,#151618 100%);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:26px 26px 0 0;
+  padding:38px 36px 34px;
+  position:relative;
+  box-shadow:0 -30px 80px rgba(0,0,0,0.55);
+  /* état initial masqué — GSAP anime depuis ces valeurs */
+  opacity:0;
+  transform:translateY(40px);
+}
+
+.project-close{
+  position:absolute;top:22px;right:22px;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);
+  color:#ffffff;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:background 0.15s;
+}
+.project-close:hover{ background:rgba(255,255,255,0.16) }
+
+.project-tag{
+  display:inline-block;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+  color:#c9455f;background:rgba(201,69,95,0.14);border:1px solid rgba(201,69,95,0.3);
+  padding:5px 14px;border-radius:20px;margin-bottom:16px;
+  /* Laisse toujours la place au bouton fermer (36px + 22px de marge droite) */
+  max-width:calc(100% - 58px);
+  box-sizing:border-box;
+  white-space:normal;
+}
+.project-title{ font-size:28px;font-weight:800;letter-spacing:-0.02em;margin-bottom:10px;color:#ffffff }
+.project-desc{ font-size:14px;line-height:1.65;color:rgba(255,255,255,0.7);margin-bottom:20px }
+
+.project-features{ list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:9px 16px;margin-bottom:26px }
+.project-features li{
+  font-size:12.5px;color:rgba(255,255,255,0.9);
+  display:flex;align-items:flex-start;gap:8px;line-height:1.4;
+}
+.project-features li::before{
+  content:'';flex-shrink:0;margin-top:6px;
+  width:5px;height:5px;border-radius:50%;background:#c9455f;
+}
+
+.project-footer{ display:flex;justify-content:flex-end;padding-top:18px;border-top:1px solid rgba(255,255,255,0.08) }
+.project-link{
+  font-size:13px;font-weight:700;color:#151618;background:#ffffff;
+  padding:11px 22px;border-radius:22px;text-decoration:none;
+  transition:opacity 0.15s;
+}
+.project-link:hover{ opacity:0.85 }
+
+@media(max-width:600px){
+  .project-panel{ padding:30px 24px 26px }
+  .project-features{ grid-template-columns:1fr }
+}

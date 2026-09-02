@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portfolio - Tiphaine Bénard | PWA sur mesure</title>
+<meta name="description" content="Développeuse PWA freelance — applications web sur mesure pour votre entreprise. Découvrez 4 projets réels en 3D interactive : gestion d'événements, pointage, commandes, tournois.">
+
+<!-- Favicon -->
+<link rel="icon" type="image/x-icon" href="assets/favicon-v2.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32-v2.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16-v2.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon-v2.png">
+
+<!-- Open Graph -->
+<meta property="og:title" content="Tiphaine Bénard — PWA sur mesure">
+<meta property="og:description" content="Des Progressive Web Apps sur mesure. Une organisation optimisée pour votre entreprise. Portfolio interactif en 3D.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/icon-512-v2.png">
+
+<link rel="stylesheet" href="style.css?v=130">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════
+       CINEMATIC LOADER — minimalisme absolu, centré.
+       Rempli/animé par intro.js, masqué en fondu au clic sur
+       #enter-btn.
+  ═══════════════════════════════════════════════════ -->
+  <div id="cinematic-loader">
+    <div id="loader-brand">TIPHAINE BÉNARD</div>
+
+    <div class="loader-dynamic-zone">
+      <h1 id="loader-percentage">0%</h1>
+      <button id="enter-btn">Découvrir le projet <span class="arrow">→</span></button>
+    </div>
+
+    <div class="progress-track"><div id="progress-bar"></div></div>
+
+    <div id="loader-pitch">
+      <p>Des <span class="highlight">Progressive Web Apps</span> sur mesure.<br>Une organisation <span class="highlight">optimisée</span> pour votre entreprise.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       CURSEUR PERSONNALISÉ — cercle lumineux, desktop uniquement
+       (voir main.js pour la logique de suivi/hover)
+  ═══════════════════════════════════════════════════ -->
+  <canvas id="cursor-trail-canvas"></canvas>
+  <div id="custom-cursor"></div>
+
+  <!-- ═══════════════════════════════════════════════════
+       CANVAS WEBGL — plein écran, en fond
+  ═══════════════════════════════════════════════════ -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <!-- ═══════════════════════════════════════════════════
+       EFFETS DE FOND — vignette (assombrit les bords, façon
+       photo produit studio) + grain fin (texture pellicule).
+       Purement CSS, au-dessus du canvas (z-index:2) mais sous
+       toute l'UI (header/hero en z-index:10).
+  ═══════════════════════════════════════════════════ -->
+  <div class="vignette-overlay"></div>
+  <div class="grain-overlay"></div>
+
+  <!-- ═══════════════════════════════════════════════════
+       UI DE SURFACE (HTML/CSS par-dessus le canvas)
+  ═══════════════════════════════════════════════════ -->
+  <header class="site-header intro-reveal">
+    <div class="brand">
+      <img src="assets/logo-icon.png" alt="Logo Tiphaine Bénard" class="header-logo">
+      Tiphaine Bénard <span>· PWA sur mesure</span>
+    </div>
+    <div class="contact-dropdown-container">
+      <button id="contact-btn" class="cta-small" aria-label="Me contacter">
+        <svg class="cta-small-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <span class="cta-small-text">Me contacter</span>
+      </button>
+      <div class="contact-popup">
+        <a href="mailto:contact.tbenard@gmail.com?subject=Contact%20depuis%20le%20portfolio">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="m4 6 8 7 8-7"/></svg>
+          contact.tbenard@gmail.com
+        </a>
+        <a href="tel:0765238704">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          07 65 23 87 04
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-eyebrow intro-reveal">Portfolio interactif</div>
+    <h1 class="intro-reveal">Des applications qui<span class="hero-break" aria-hidden="true"></span> prennent vie<span class="dot" aria-hidden="true"></span></h1>
+    <p class="hero-sub intro-reveal">
+      Cliquez ou touchez l'un des projets pour le découvrir.
+    </p>
+  </section>
+
+  <!-- Indicateur de scroll — mobile uniquement (media query dans
+       style.css). En dehors de .hero volontairement : .hero a un
+       `transform` (translateX), ce qui en ferait le containing block
+       de tout enfant en position:fixed et casserait son positionnement
+       par rapport à l'écran. -->
+  <div class="mobile-scroll-hint intro-reveal">
+    <div class="mobile-scroll-hint-row">
+      <span class="mobile-scroll-arrow">‹</span>
+      Glissez pour découvrir
+      <span class="mobile-scroll-arrow">›</span>
+    </div>
+    <!-- Indicateur de position (● ○ ○ ○) — imbriqué DANS le même bloc
+         que le texte "Glissez pour découvrir" (au lieu d'un élément
+         fixe séparé avec un décalage deviné à l'oeil, qui finissait mal
+         aligné/superposé). Rempli dynamiquement par main.js. -->
+    <div class="carousel-dots" id="carousel-dots"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       OVERLAY PROJET — rempli dynamiquement par main.js
+       et animé en GSAP (fade + translateY)
+  ═══════════════════════════════════════════════════ -->
+  <div class="project-overlay" id="project-overlay">
+    <div class="project-panel">
+      <button class="project-close" id="project-close" aria-label="Fermer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="project-tag" id="project-tag">Secteur</div>
+      <h2 class="project-title" id="project-title">Nom du projet</h2>
+      <p class="project-desc" id="project-desc">Description du projet.</p>
+      <ul class="project-features" id="project-features"></ul>
+      <div class="project-footer">
+        <a class="project-link" id="project-link" href="#" target="_self">Essayer la démo →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       FOOTER — discret, sous la scène 3D
+  ═══════════════════════════════════════════════════ -->
+  <footer class="portfolio-footer intro-reveal">
+    <p>Ces applications sont des exemples présentés à titre indicatif. Je conçois et développe votre application web sur-mesure selon vos besoins spécifiques.</p>
+    <p class="site-credit">Site conçu et développé par Tiphaine Bénard</p>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════════
+       LIBRAIRIES (CDN — cdnjs)
+       ─ Remplacer par `npm install three gsap` + imports ES
+         si vous passez sur un bundler (Vite, etc.)
+  ═══════════════════════════════════════════════════ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Post-processing (depth of field / flou d'arrière-plan) — build
+       "examples/js" classique (pas ES module), même principe que pour
+       RectAreaLight : compatible <script> simple, sans bundler. Ordre
+       important : EffectComposer définit THREE.Pass, dont dépendent
+       RenderPass/ShaderPass/BokehPass (extends THREE.Pass) — doit donc
+       charger AVANT eux. -->
+  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/BokehShader.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/BokehPass.js"></script>
+  <!-- Sol réfléchissant (Reflector) — remis, en version basse résolution
+       volontairement floue (voir scene.js) pour lire comme un reflet de
+       plateau photo, pas comme un miroir qui duplique le texte lisible. -->
+  <script src="https://unpkg.com/three@0.128.0/examples/js/objects/Reflector.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <!-- Code du projet, dans l'ordre de dépendance -->
+  <script src="scene.js?v=129"></script>
+  <script src="intro.js?v=129"></script>
+  <script src="main.js?v=129"></script>
+
+</body>
+</html>
