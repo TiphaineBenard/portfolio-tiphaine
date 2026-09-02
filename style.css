@@ -13,6 +13,12 @@ html,body{
   height:100%;
   width:100%;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  /* Fond noir de secours sur <html> lui-même — certains navigateurs
+     mobiles (Chrome/Android) colorent la barre système du bas en
+     échantillonnant le fond réel de la page tout en bas, et sans ceci
+     le blanc par défaut du navigateur peut apparaître à cet endroit,
+     même si <body> a son propre dégradé sombre. */
+  background:#060606;
 }
 
 /* ═══════════════════════════════════════════════════
