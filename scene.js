@@ -717,7 +717,15 @@ window.Scene = (function () {
     // le code de dessin ci-dessous continue de raisonner en coordonnées
     // LOGIQUES (CW×CH = 512×1024, via ctx.scale), donc aucune valeur de
     // mise en page n'a besoin de changer.
-    const RES_SCALE = 5; // supersampling x5 — palier prudent au-dessus de 4 : au-delà, risque de surcharge mémoire GPU sur mobile (instabilité/écran noir déjà observé avec 4 textures haute résolution simultanées)
+    // RES_SCALE différencié : desktop garde x5 (mémoire GPU large, pas de
+    // contrainte). Mobile redescend à x4 — un Pixel 11 Pro peut gérer x5,
+    // mais 4 écrans à 2560×5120px (~50-70 Mo chacun avec mipmaps) sollicitent
+    // trop la mémoire graphique en cas de pression mémoire (autres apps
+    // ouvertes, chauffe) : le rendu devient alors flou de façon intermittente
+    // (net un jour, flou le lendemain, sur le même appareil) sans qu'aucun
+    // code n'ait changé — signe classique d'un plafond mémoire GPU atteint
+    // par intermittence plutôt qu'un vrai bug de code.
+    const RES_SCALE = IS_MOBILE ? 4 : 5;
     const CW = 512;
     const CH = 1024;
     canvas.width = CW * RES_SCALE;
