@@ -598,16 +598,21 @@ window.Scene = (function () {
   /* ═══════════════════════════════════════════════════════════
      CATALOGUE — 4 applications réelles du portfolio.
   ═══════════════════════════════════════════════════════════ */
+  // 08/09/2026 — ordre volontairement choisi pour que l'app "phare"
+  // (EventPro) tombe en position centrale (index 2) au chargement, le
+  // carrousel s'ouvrant sur l'élément central (voir `track.position.x`
+  // plus bas) plutôt que sur le tout premier : Commandes, Pointage Pro,
+  // EventPro (centre), PadelPro, Tiphaine OS.
   const APPS = [
     {
-      name: 'EventPro',
-      icon: 'EV',
-      sector: 'ÉVÉNEMENTIEL',
-      accent: '#6b2179',
-      tag: 'Boucherie / Traiteur — Événementiel',
-      desc: "Gestion complète des commandes événementielles (Noël, réveillon, mariages, banquets) pour plusieurs magasins en simultané, avec production cuisine synchronisée en temps réel.",
-      features: ['Commandes multi-magasins temps réel', 'Production cuisine synchronisée', 'Étiquettes & bons de préparation', "Dashboard & journal d'audit"],
-      link: 'EventPro_Demo/index.html',
+      name: 'Commandes',
+      icon: 'CO',
+      sector: 'PRODUCTION',
+      accent: '#dc2626',
+      tag: 'Boucherie / Traiteur — 5 magasins',
+      desc: "Bons de commande quotidiens pour 5 magasins boucherie, atelier de production en temps réel, feuilles d'impression par rayon.",
+      features: ['Atelier temps réel (Firebase)', 'Feuilles d’impression par rayon', 'Admin produits & catégories', '5 magasins synchronisés'],
+      link: 'Commandes_Demo/index.html',
     },
     {
       name: 'Pointage Pro',
@@ -620,14 +625,14 @@ window.Scene = (function () {
       link: 'PointagePro_Demo/index.html',
     },
     {
-      name: 'Commandes',
-      icon: 'CO',
-      sector: 'PRODUCTION',
-      accent: '#dc2626',
-      tag: 'Boucherie / Traiteur — 5 magasins',
-      desc: "Bons de commande quotidiens pour 5 magasins boucherie, atelier de production en temps réel, feuilles d'impression par rayon.",
-      features: ['Atelier temps réel (Firebase)', 'Feuilles d’impression par rayon', 'Admin produits & catégories', '5 magasins synchronisés'],
-      link: 'Commandes_Demo/index.html',
+      name: 'EventPro',
+      icon: 'EV',
+      sector: 'ÉVÉNEMENTIEL',
+      accent: '#6b2179',
+      tag: 'Boucherie / Traiteur — Événementiel',
+      desc: "Gestion complète des commandes événementielles (Noël, réveillon, mariages, banquets) pour plusieurs magasins en simultané, avec production cuisine synchronisée en temps réel.",
+      features: ['Commandes multi-magasins temps réel', 'Production cuisine synchronisée', 'Étiquettes & bons de préparation', "Dashboard & journal d'audit"],
+      link: 'EventPro_Demo/index.html',
     },
     {
       name: 'PadelPro',
@@ -1267,18 +1272,15 @@ window.Scene = (function () {
   // gauche) : plus besoin de décaler le carrousel horizontalement. On le
   // descend en revanche verticalement pour dégager la zone de titre.
   const HERO_CLEARANCE = 0;
-  // 08/09/2026 — au chargement, le carrousel doit s'ouvrir sur le TOUT
-  // PREMIER téléphone (l'app phare), centré au milieu de l'écran, avec
-  // la suite à découvrir en glissant. Avant l'ajout de la 5ᵉ carte
-  // (Tiphaine OS), `HERO_CLEARANCE` seul (0, desktop) tombait par
-  // coïncidence près du milieu du groupe pour 4 téléphones (aucun
-  // parfaitement centré) ; avec un nombre impair (5), l'élément
-  // EXACTEMENT centré à x=0 est mathématiquement celui du milieu
-  // (index 2, "Commandes") — d'où le bug remonté ("ça ouvre sur le
-  // 3ème élément"). Un seul calcul maintenant, desktop ET mobile : on
-  // décale le rail de tout `centerOffset` pour amener localX(0) (qui
-  // vaut -centerOffset) pile sur x=0.
-  track.position.x = centerOffset + HERO_CLEARANCE;
+  // 08/09/2026 — retour arrière : centrer le tout premier téléphone au
+  // chargement cassait la symétrie de la scène 3D (grand vide à gauche,
+  // rien à "contrebalancer" le rail vers la droite). Le carrousel
+  // s'ouvre à nouveau sur l'élément CENTRAL du groupe (localX=0 = x=0,
+  // desktop ET mobile) — avec 5 téléphones (nombre impair), ça tombe
+  // mathématiquement sur l'index du milieu (2). L'app "phare" est donc
+  // choisie en la plaçant à cet index dans `APPS` (voir plus bas,
+  // EventPro en position 2) plutôt qu'en déplaçant la caméra.
+  track.position.x = HERO_CLEARANCE;
   track.position.y = CAROUSEL_Y; // constante définie en haut du fichier
 
   const phones = APPS.map((app, i) => {
