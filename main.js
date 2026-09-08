@@ -33,6 +33,13 @@
   const dotEls = APPS.map((app, i) => {
     const d = document.createElement('span');
     d.className = 'dot-indicator';
+    // 08/09/2026 — point de nav distinct pour Tiphaine OS (`dotIcon` dans
+    // APPS, voir scene.js) : signale la carte différente avant même d'y
+    // arriver en swipant, plutôt qu'un rond identique aux 4 offres.
+    if (app.dotIcon) {
+      d.classList.add('dot-indicator-icon');
+      d.textContent = app.dotIcon;
+    }
     d.setAttribute('role', 'button');
     d.setAttribute('aria-label', 'Voir ' + app.name);
     // Cliquable — fait glisser directement vers ce téléphone (centré),

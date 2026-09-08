@@ -1,0 +1,1805 @@
+/* ═══════════════════════════════════════════════════════════
+   TIPHAINE OS — même identité visuelle que le portfolio :
+   noir pur, Inter, sobre. Pas de couleur vive : les accents
+   sont des nuances de gris/blanc (validé avec Tiphaine).
+═══════════════════════════════════════════════════════════ */
+
+*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+
+/* Couleur d'accent de l'appli (boutons principaux, gauges, onglets actifs)
+   — entièrement paramétrable depuis l'onglet Paramétrage (03/09/2026).
+   Blanc par défaut (design d'origine, "pas de couleur vive"), mais
+   Tiphaine peut la changer ; --accent-text bascule automatiquement pour
+   rester lisible (texte noir sur une couleur claire, texte blanc sur une
+   couleur foncée) — voir `parametrage.js` `_appliquerAccent()`. */
+:root{
+  --accent:#f5f5f5;
+  --accent-text:#0a0a0a;
+  /* Fond de l'appli — paramétrable depuis Paramétrage > Apparence
+     (03/09/2026). Noir pur par défaut (design d'origine). --bg-page = fond
+     général (body/topbar), --bg-panel = cartes, --bg-panel-2 = sidebar
+     (légèrement distincte du fond général), --bg-input = champs de
+     saisie, --border-subtle = bordures discrètes. */
+  --bg-page:#000000;
+  --bg-panel:#0a0a0a;
+  --bg-panel-2:#050505;
+  --bg-input:#141414;
+  --border-subtle:#171717;
+  /* Texte — 3 paliers (principal / secondaire / discret), paramétrables
+     avec le fond (03/09/2026) : un fond clair a besoin d'un texte sombre,
+     pas juste d'un fond qui change. Chaque preset de Paramétrage >
+     Apparence fournit ses propres valeurs cohérentes pour ces 3 variables. */
+  --text-primary:#f5f5f5;
+  --text-secondary:#9a9a9a;
+  --text-muted:#6a6a6a;
+}
+
+html,body{
+  height:100%;
+  background:var(--bg-page);
+  color:var(--text-primary);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+
+::-webkit-scrollbar{ width:8px; height:8px; }
+/* Ascenseur codé en dur noir (#2a2a2a) — quasi invisible sur fond sombre
+   (se fond dans le panneau), mais devient une grosse barre noire très
+   présente sur un thème clair (retour de Tiphaine le 03/09/2026, Vue
+   Semaine). Passé sur `--border-subtle`, qui suit le thème comme le
+   reste des séparateurs. */
+::-webkit-scrollbar-thumb{ background:var(--border-subtle); border-radius:8px; }
+::-webkit-scrollbar-track{ background:transparent; }
+
+.hidden{ display:none !important; }
+
+/* ── ÉCRAN DE CONNEXION ─────────────────────────────────── */
+.login-screen{
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(ellipse at 50% 30%, var(--bg-panel) 0%, var(--bg-page) 70%);
+  padding:24px;
+}
+.login-box{
+  width:100%; max-width:360px; text-align:center;
+  padding:40px 32px; border:1px solid var(--border-subtle); border-radius:16px;
+  background:var(--bg-panel);
+}
+.login-brand{ font-size:22px; font-weight:700; letter-spacing:0.08em; margin-bottom:6px; }
+.login-sub{ color:var(--text-secondary); font-size:13px; margin-bottom:28px; }
+#login-form{ display:flex; flex-direction:column; gap:12px; }
+#login-form input{
+  background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:10px;
+  padding:12px 14px; color:var(--text-primary); font-size:14px; font-family:inherit;
+  outline:none; transition:border-color .15s;
+}
+#login-form input:focus{ border-color:#555; }
+#login-form button{
+  margin-top:6px; padding:12px 14px; border-radius:10px; border:none;
+  background:var(--accent); color:var(--accent-text); font-weight:600; font-size:14px;
+  cursor:pointer; transition:opacity .15s; font-family:inherit;
+}
+#login-form button:hover{ opacity:.85; }
+.login-error{ color:#ff6b6b; font-size:12.5px; min-height:16px; }
+.login-note{ color:var(--text-muted); font-size:11.5px; margin-top:22px; }
+
+/* ── LAYOUT GÉNÉRAL ──────────────────────────────────────── */
+.app{ display:flex; min-height:100vh; }
+
+.sidebar{
+  width:220px; flex-shrink:0; background:var(--bg-panel-2); border-right:1px solid var(--border-subtle);
+  display:flex; flex-direction:column; padding:20px 14px;
+  position:sticky; top:0; height:100vh;
+  /* `position:sticky` crée déjà un contexte d'empilement à lui seul — sans
+     z-index explicite ici, il reste "auto" et se fait peindre AVANT
+     `.main-col` (qui vient après dans le DOM), quel que soit le z-index
+     donné à un élément à l'intérieur de la sidebar (ex: `.notif-popover`,
+     z-index:30 — piège classique CSS, ce z-index ne compte que DANS le
+     contexte de la sidebar, il ne peut pas "sortir" pour dépasser un
+     élément d'un autre contexte). Résultat observé par Tiphaine : une
+     carte Kanban de Prospects passait par-dessus le popover de la cloche
+     (03/09/2026). z-index explicite ici pour que toute la sidebar (popover
+     inclus) peigne au-dessus du contenu principal. */
+  z-index:10;
+}
+.sidebar-brand{ display:flex; align-items:center; gap:10px; padding:0 8px 22px; }
+.brand-mark{
+  width:40px; height:40px; border-radius:9px; background:#000; color:#000;
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;
+  overflow:hidden; flex-shrink:0;
+}
+.brand-mark img{ width:100%; height:100%; object-fit:cover; display:block; }
+.brand-text{ font-weight:600; font-size:14.5px; letter-spacing:.01em; }
+
+/* Logo dans la topbar mobile (08/09/2026, "on voit pas mon logo avant
+   la barre de recherche") — la sidebar (qui porte le logo) est
+   entièrement cachée sous 880px (voir plus bas), donc le logo
+   disparaissait purement et simplement sur mobile. Caché par défaut
+   (desktop garde le logo dans la sidebar, pas besoin de le dupliquer),
+   affiché uniquement dans la media query mobile ci-dessous. */
+.topbar-brand-mobile{
+  display:none; flex-shrink:0; width:32px; height:32px; border-radius:8px;
+  overflow:hidden; background:#000;
+}
+.topbar-brand-mobile img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.sidebar-nav{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:2px; }
+.nav-group{ margin-top:16px; }
+.nav-group-label{
+  font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-muted);
+  padding:6px 10px 6px;
+}
+.nav-item{
+  display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:9px;
+  color:var(--text-secondary); text-decoration:none; font-size:13.5px; font-weight:500;
+  transition:background .12s, color .12s;
+}
+.nav-item:hover{ background:var(--bg-input); color:var(--text-primary); }
+.nav-item.active{ background:var(--bg-input); color:var(--text-primary); }
+.nav-icon{ font-size:14px; width:18px; text-align:center; }
+/* Pastille rouge "il y a un truc à traiter" (03/09/2026) — même rouge
+   que `.notif-dot` sur la cloche, poussée à droite de la ligne via
+   `margin-left:auto`. Activée/désactivée par `window.majBadgesNav()`
+   (app.js), lui-même désactivable depuis Paramétrage > Général. */
+.nav-badge-dot{ display:none; width:7px; height:7px; border-radius:50%; background:#ff6b6b; margin-left:auto; flex-shrink:0; }
+.nav-badge-dot.show{ display:block; }
+.nav-disabled{ color:var(--text-muted); cursor:default; font-size:13px; opacity:.7; }
+.nav-group-future .nav-group-label{ color:var(--text-muted); opacity:.7; }
+
+.logout-btn{
+  margin-top:10px; padding:10px; border-radius:9px; border:1px solid var(--border-subtle);
+  background:transparent; color:var(--text-muted); font-size:12.5px; cursor:pointer; font-family:inherit;
+  transition:border-color .15s, color .15s;
+}
+.logout-btn:hover{ border-color:var(--text-muted); color:var(--text-secondary); }
+
+.main-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
+
+.topbar{
+  height:60px; flex-shrink:0; border-bottom:1px solid var(--bg-input);
+  display:flex; align-items:center; justify-content:space-between; padding:0 24px;
+  position:sticky; top:0; background:var(--bg-page); z-index:5;
+}
+.topbar-search{
+  display:flex; align-items:center; gap:8px; background:var(--bg-input); border:1px solid var(--border-subtle);
+  border-radius:9px; padding:8px 12px; width:340px; max-width:46vw;
+}
+.topbar-search input{
+  background:none; border:none; outline:none; color:#eee; font-size:13px; width:100%; font-family:inherit;
+  min-width:0; overflow:hidden; text-overflow:ellipsis;
+}
+.search-icon{ font-size:12px; opacity:.6; }
+.topbar-right{ display:flex; align-items:center; gap:16px; }
+.notif-btn{
+  position:relative; background:none; border:none; font-size:16px; cursor:pointer; color:var(--text-secondary);
+}
+.notif-dot{
+  position:absolute; top:-2px; right:-2px; width:8px; height:8px; border-radius:50%;
+  background:#ff6b6b; display:none;
+}
+.notif-dot.show{ display:block; }
+
+/* Popover de la cloche (03/09/2026) — liste consolidée de tout ce qui
+   allume une pastille ailleurs (voir `window.toutesLesAlertes`,
+   app.js). Même famille visuelle que `.devis-filtre-popover`. */
+.notif-popover{
+  position:absolute; top:calc(100% + 8px); left:0; z-index:30; background:var(--bg-panel);
+  border:1px solid var(--border-subtle); border-radius:12px; padding:6px;
+  box-shadow:0 8px 24px rgba(0,0,0,.3); width:280px; max-height:360px; overflow-y:auto;
+}
+.notif-popover-header{
+  padding:8px 10px 10px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+  color:var(--text-muted); border-bottom:1px solid var(--border-subtle); margin-bottom:4px;
+}
+.notif-popover-item{
+  display:flex; align-items:flex-start; gap:9px; width:100%; text-align:left;
+  padding:9px 10px; border-radius:8px; border:none; background:none; cursor:pointer; font-family:inherit;
+  transition:background .12s;
+}
+.notif-popover-item:hover{ background:var(--bg-input); }
+.notif-popover-text{ display:block; font-size:12.5px; font-weight:600; color:var(--text-primary); }
+.notif-popover-sub{ display:block; font-size:11px; color:var(--text-muted); margin-top:2px; }
+.notif-popover-vide{ padding:16px 10px; text-align:center; font-size:12px; color:var(--text-muted); }
+.notif-popover-footer{
+  display:block; text-align:center; padding:9px 10px; margin-top:4px; border-top:1px solid var(--border-subtle);
+  font-size:11.5px; color:var(--text-secondary); text-decoration:none; transition:color .15s;
+}
+.notif-popover-footer:hover{ color:var(--text-primary); }
+
+/* ── Finances (03/09/2026) — dashboard CA/MRR calculé en direct ─── */
+.finances-cta-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.finances-barre-ligne{ display:flex; align-items:center; gap:10px; padding:7px 0; }
+.finances-barre-label{ width:110px; flex-shrink:0; font-size:12.5px; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.finances-barre-montant{ width:70px; flex-shrink:0; text-align:right; font-size:12.5px; font-weight:600; color:var(--text-primary); }
+.finances-mois-graphe{ display:flex; align-items:flex-end; gap:6px; height:120px; margin-top:10px; }
+.finances-mois-col{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; gap:6px; }
+.finances-mois-barre{ width:100%; min-height:3px; background:var(--accent-ui, var(--accent)); border-radius:4px 4px 0 0; transition:opacity .15s; }
+.finances-mois-barre:hover{ opacity:.75; }
+.finances-mois-label{ font-size:10px; color:var(--text-muted); text-transform:capitalize; }
+
+/* Jauge seuils TVA / plafond micro (04/09/2026) — voir finances.js
+   `_htmlJaugeTva`. Échelle 0 → plafond micro, repères aux 2 seuils TVA. */
+.finances-tva-track{ position:relative; height:10px; border-radius:6px; background:var(--bg-input); overflow:hidden; margin-top:8px; }
+.finances-tva-fill{ height:100%; border-radius:6px; transition:width .2s; }
+.finances-tva-marker{ position:absolute; top:0; bottom:0; width:2px; background:rgba(255,255,255,.35); }
+.finances-tva-marker-label{ position:absolute; top:0; font-size:9.5px; color:var(--text-muted); transform:translateX(-50%); white-space:nowrap; }
+
+/* Infos éducatives auto-entrepreneur (04/09/2026) — voir finances.js,
+   carte "Ce que ça change". */
+.finances-ae-ligne{ display:flex; align-items:flex-start; gap:9px; padding:8px 0; font-size:12.5px; line-height:1.5; color:var(--text-secondary); border-top:1px solid var(--border-subtle); }
+.finances-ae-ligne:first-of-type{ border-top:none; }
+.finances-ae-ligne strong{ color:var(--text-primary); }
+.finances-ae-puce{ width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+/* Note "les deux sont liées" repliable (07/09/2026, "prend trop de
+   place") — <details> natif, résumé sur 1 ligne, texte complet masqué
+   tant qu'on ne tape pas dessus. */
+.finances-ae-details{ border-top:1px solid var(--border-subtle); margin-top:4px; padding-top:8px; font-size:12.5px; color:var(--text-secondary); text-align:center; }
+.finances-ae-summary{ cursor:pointer; list-style:none; color:var(--text-secondary); text-align:center; }
+.finances-ae-summary::-webkit-details-marker{ display:none; }
+.finances-ae-voir-plus{ color:var(--text-muted); text-decoration:underline; }
+.finances-ae-detail-texte{ margin-top:8px; line-height:1.5; }
+.finances-ae-detail-texte strong{ color:var(--text-primary); }
+/* Puces "Ce que ça change" repliables (07/09/2026, "trop de texte
+   ici") — même logique <details> : résumé chiffré (puce + montant en
+   gras) toujours visible, explication masquée tant qu'on ne tape pas
+   dessus. */
+.finances-ae-item{ border-top:1px solid var(--border-subtle); padding:8px 0; font-size:12.5px; color:var(--text-secondary); }
+.finances-ae-item:first-of-type{ border-top:none; }
+.finances-ae-item-summary{ display:flex; align-items:center; gap:9px; cursor:pointer; list-style:none; }
+.finances-ae-item-summary::-webkit-details-marker{ display:none; }
+.finances-ae-item-summary strong{ color:var(--text-primary); }
+.finances-ae-nom{ margin-left:6px; font-size:11px; font-weight:400; color:var(--text-muted); }
+.finances-ae-item-detail{ margin-top:6px; margin-left:17px; line-height:1.5; }
+
+/* Échéances URSSAF / Actualisation (04/09/2026) — la date doit sauter
+   aux yeux, pas être noyée dans une phrase (retour de Tiphaine). Voir
+   finances.js `_htmlEcheances`. */
+.finances-echeance-ligne{ display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 0; border-top:1px solid var(--border-subtle); }
+.finances-echeance-ligne:first-child{ border-top:none; padding-top:2px; }
+.finances-echeance-label{ font-size:13.5px; font-weight:600; color:var(--text-primary); margin-bottom:2px; }
+.finances-echeance-date{ text-align:right; font-size:19px; font-weight:700; color:var(--text-primary); white-space:nowrap; }
+.finances-echeance-jours{ display:block; font-size:11px; font-weight:600; color:var(--text-muted); margin-top:1px; }
+.finances-echeance-urgent{ color:#e0a95c; }
+.finances-echeance-urgent .finances-echeance-jours{ color:#e0a95c; }
+/* Bouton rond générique de la topbar (présence idle/terminée, chrono
+   client idle) — centrage garanti via flex sur le bouton ET sur l'icône
+   (contrairement à `.nav-icon`, pensé pour les lignes de la sidebar, pas
+   pour un bouton circulaire : son `width:18px` fixe décalait visuellement
+   l'icône dans un cercle de 36px — retour de Tiphaine le 03/09/2026). */
+.topbar-icon-btn{
+  width:36px; height:36px; border-radius:50%; flex-shrink:0; border:1px solid #232323;
+  background:var(--bg-input); color:var(--text-secondary); display:inline-flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:transform .15s, background .15s, border-color .15s;
+}
+.topbar-icon-btn:hover{ background:var(--bg-panel-2); border-color:var(--border-subtle); transform:scale(1.06); }
+.topbar-icon-btn-svg{ display:inline-flex; align-items:center; justify-content:center; line-height:0; }
+/* Variante mise en avant (présence idle) — c'est l'action que Tiphaine
+   veut pouvoir lancer en un clic depuis n'importe quel écran. */
+.topbar-icon-btn-accent{ background:var(--accent); border-color:var(--accent); color:var(--accent-text); }
+.topbar-icon-btn-accent:hover{ filter:brightness(.92); }
+
+.content{ flex:1; padding:28px 32px 60px; overflow-y:auto; }
+
+/* ── NAV MOBILE (06/09/2026) ──────────────────────────────────
+   Sous 880px, la sidebar (220px fixes) ne laisse quasiment plus de
+   place au contenu — c'est le bug remonté par Tiphaine (capture d'écran
+   Devis illisible sur son téléphone). Sous ce seuil : sidebar cachée,
+   `.mobile-tabbar` (fixée en bas, 4 raccourcis + "Plus") prend le relais.
+   Cachée par défaut sur desktop, affichée uniquement dans le media query
+   plus bas. Les items reprennent `.nav-item`/`data-route` : l'état actif
+   et les pastilles rouges (`majBadgesNav`, app.js) fonctionnent sans
+   aucun code dédié. */
+.mobile-tabbar{ display:none; }
+.mobile-sheet-overlay{ display:none; }
+/* 08/09/2026 — carte "Raccourcis de la barre mobile" (Paramétrage >
+   Apparence) : n'a de sens que sur l'écran où la barre du bas existe.
+   Cachée par défaut, affichée uniquement dans le media query mobile
+   plus bas (même seuil que `.mobile-tabbar`). */
+.param-card-mobile-only{ display:none; }
+
+/* ── COMPOSANTS PARTAGÉS (cards, grilles) ────────────────── */
+.page-title{ font-size:20px; font-weight:700; margin-bottom:4px; }
+.page-sub{ color:var(--text-muted); font-size:13px; margin-bottom:10px; }
+
+/* En-tête de page (titre+sous-titre à gauche, filtre+bouton "+ Nouveau"
+   à droite) — reprend l'inline style identique répété dans presque tous
+   les modules (Devis, Factures, Projets, Clients...). Défini ici pour
+   Devis (06/09/2026, premier module retravaillé pour mobile) : mêmes
+   classes réutilisables quand on retouchera les autres pages.
+   08/09/2026, retour desktop "resserer aussi au max" — marges du
+   haut de page réduites (22px→14px, sous-titre 24px→10px), pas
+   seulement sur mobile cette fois. */
+.page-header-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.page-header-actions{ display:flex; align-items:center; gap:8px; }
+/* Carte contenant juste le champ de recherche d'une page (Factures,
+   Projets, Clients...) — classe partagée (06/09/2026) pour pouvoir
+   resserrer sa marge en un seul endroit plutôt que dans un style inline
+   répété module par module.
+   08/09/2026, retour desktop "réduire la barre de recherche en plein
+   milieu de bcp" — jusqu'ici seule la version mobile de cette carte
+   était réduite (padding, taille d'input) ; même traitement en
+   desktop maintenant, pas de raison de garder cet écart. */
+.page-search-card{ margin-bottom:10px; padding:10px 14px !important; }
+.page-search-card input[type="text"]{ padding:7px 10px !important; font-size:13px !important; }
+
+/* Documents — en-tête réagencé (08/09/2026, "mettre à droite de
+   'documents' et réduire le texte") : titre seul sur sa ligne, puis
+   le compteur ("2 documents") et le bouton "+ Ajouter" sur la MÊME
+   ligne (au lieu du bouton pleine largeur en dessous, hérité du
+   pattern `.page-header-row` générique qui empile tout sur mobile).
+   Scopé à Documents (`.documents-header-row`/`.documents-header-sub-
+   row`) — ne touche pas les autres écrans qui gardent l'empilement,
+   nécessaire quand le sous-titre est plus long (ex Devis). */
+.documents-header-row{ margin-bottom:4px; }
+.documents-header-sub-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.documents-header-sub-row .page-sub{ margin-bottom:0; }
+.documents-header-sub-row .page-header-actions{ width:auto; }
+.documents-header-sub-row .page-header-actions .btn{ flex:none; }
+
+/* Liste de cartes mobile (Devis, 06/09/2026 ; Factures, même jour) —
+   cachées par défaut, ne s'affichent que sous 880px (voir media query),
+   le tableau desktop reste la vue par défaut au-dessus de ce seuil. */
+.devis-mobile-list{ display:none; }
+.factures-mobile-list{ display:none; }
+.prospects-mobile-list{ display:none; }
+.clients-mobile-list{ display:none; }
+.catalogue-mobile-list{ display:none; }
+.tickets-mobile-list{ display:none; }
+.abos-mobile-list{ display:none; }
+.technique-mobile-list{ display:none; }
+.documents-mobile-list{ display:none; }
+
+.card{
+  background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:14px; padding:20px;
+  transition:border-color .15s, box-shadow .15s;
+}
+.card:hover{ border-color:#2a2a2a; box-shadow:0 0 0 1px rgba(255,255,255,0.02); }
+
+.grid{ display:grid; gap:16px; }
+.grid-4{ grid-template-columns:repeat(4,1fr); }
+.grid-3{ grid-template-columns:repeat(3,1fr); }
+.grid-2{ grid-template-columns:repeat(2,1fr); }
+@media(max-width:1100px){ .grid-4{ grid-template-columns:repeat(2,1fr);} .grid-3{ grid-template-columns:repeat(2,1fr);} }
+@media(max-width:720px){ .grid-4,.grid-3,.grid-2{ grid-template-columns:1fr; } }
+
+.stat-label{ font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin-bottom:8px; }
+.stat-value{ font-size:24px; font-weight:700; }
+.stat-sub{ font-size:12px; color:var(--text-muted); margin-top:4px; }
+
+.gauge-track{ height:8px; border-radius:6px; background:var(--bg-input); overflow:hidden; margin-top:10px; }
+.gauge-fill{ height:100%; border-radius:6px; background:var(--accent); transition:width .3s; }
+.gauge-fill.warn{ background:#e0a94b; }
+.gauge-fill.danger{ background:#e05c5c; }
+
+.badge{ display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:99px; font-size:11.5px; font-weight:600; }
+.badge-red{ background:rgba(224,92,92,.15); color:#f08a8a; }
+.badge-orange{ background:rgba(224,169,75,.15); color:#f0c27f; }
+.badge-green{ background:rgba(110,200,140,.15); color:#8fdba8; }
+.badge-blue{ background:rgba(120,160,230,.15); color:#a8c4f0; }
+/* Sur fond clair, le texte pastel des badges (pensé pour un fond sombre)
+   perd tout contraste sur un fond translucide qui devient quasi blanc.
+   `.theme-clair` est posé sur <html> par `appliquerFond` (app.js) quand un
+   preset clair est actif (03/09/2026) — on fonce le texte et on renforce
+   un peu le fond pour rester lisible sans changer la palette de couleurs. */
+.theme-clair .badge-red{ background:rgba(224,92,92,.16); color:#b23a3a; }
+.theme-clair .badge-orange{ background:rgba(224,169,75,.2); color:#9a6b12; }
+.theme-clair .badge-green{ background:rgba(60,160,95,.18); color:#2d7a4d; }
+.theme-clair .badge-blue{ background:rgba(80,120,210,.16); color:#3457b2; }
+
+.alert-dot{ width:8px; height:8px; border-radius:50%; margin-top:6px; flex-shrink:0; }
+.alert-dot-red{ background:#e05c5c; }
+.alert-dot-orange{ background:#e0a94b; }
+.alert-dot-blue{ background:#78a0e6; }
+.alert-dot-green{ background:#6ec88c; }
+.alert-dot-grey{ background:#4a4a4a; }
+
+.page-title .nav-icon, .section-title .nav-icon{ display:inline-flex; vertical-align:-3px; margin-right:6px; opacity:.85; }
+
+.alert-row{
+  display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid #141414;
+}
+.alert-row:last-child{ border-bottom:none; }
+/* Wrapper pastille+texte (06/09/2026) — permet de faire passer le
+   bouton d'action sous le texte sur mobile (voir media query 880px)
+   sans jamais séparer la pastille de son texte. */
+.alert-row-main{ display:flex; align-items:flex-start; gap:12px; flex:1; min-width:0; }
+.alert-text{ font-size:13.5px; color:var(--text-secondary); }
+.alert-sub{ font-size:12px; color:var(--text-muted); margin-top:2px; }
+.alert-action{
+  margin-left:auto; font-size:12px; color:var(--text-secondary); background:var(--bg-input); border:1px solid var(--border-subtle);
+  border-radius:7px; padding:5px 10px; cursor:pointer; white-space:nowrap; font-family:inherit;
+}
+.alert-action:hover{ background:var(--bg-panel-2); }
+
+.section-title{ font-size:14.5px; font-weight:600; margin-bottom:14px; }
+
+table{ width:100%; border-collapse:collapse; }
+th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); font-weight:600; padding:10px 12px; border-bottom:1px solid var(--border-subtle); }
+/* En-têtes de colonnes cliquables pour trier (03/09/2026, ex : Devis). */
+.th-triable{ cursor:pointer; user-select:none; transition:color .15s; }
+.th-triable:hover{ color:var(--text-secondary); }
+.th-triable-active{ color:var(--text-primary); }
+
+/* Filtre par statut (bouton entonnoir + popover), module Devis (03/09/2026). */
+.devis-filtre-wrap{ position:relative; }
+.devis-filtre-btn{
+  position:relative; width:36px; height:36px; border-radius:9px; border:1px solid var(--border-subtle);
+  background:var(--bg-input); color:var(--text-secondary); display:inline-flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:background .15s, color .15s, border-color .15s;
+}
+/* `.nav-icon` est un span en `display:inline` par défaut : le SVG à
+   l'intérieur se pose sur la ligne de base du texte, avec l'espace du
+   line-height qui reste EN DESSOUS — le flex centrage du bouton centre
+   bien la boîte du span, mais l'icône, elle, reste collée en haut de
+   cette boîte. Repéré par Tiphaine le 03/09/2026 sur le bouton filtre.
+   `display:flex` fait que le span colle exactement au SVG, sans marge
+   fantôme. */
+.devis-filtre-btn .nav-icon{ display:flex; width:auto; }
+.devis-filtre-btn:hover{ background:var(--bg-panel-2); color:var(--text-primary); }
+.devis-filtre-btn-actif{ border-color:var(--accent-ui, var(--accent)); color:var(--text-primary); }
+.devis-filtre-badge{
+  position:absolute; top:-5px; right:-5px; min-width:15px; height:15px; padding:0 3px; border-radius:99px;
+  background:var(--accent-ui, var(--accent)); color:var(--accent-text); font-size:9.5px; font-weight:700;
+  display:flex; align-items:center; justify-content:center; line-height:1;
+}
+.devis-filtre-popover{
+  position:absolute; top:calc(100% + 6px); right:0; z-index:20;
+  background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:12px; padding:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.25); min-width:170px;
+}
+.devis-filtre-ligne{ display:flex; align-items:center; gap:8px; padding:6px 4px; cursor:pointer; border-radius:7px; transition:background .12s; }
+.devis-filtre-ligne:hover{ background:var(--bg-input); }
+.devis-filtre-ligne input{ cursor:pointer; }
+.devis-filtre-actions{ display:flex; gap:6px; margin-top:6px; padding-top:8px; border-top:1px solid var(--border-subtle); }
+.devis-filtre-actions .btn-lien-discret{ flex:1; text-align:center; font-size:11.5px; }
+
+/* Suivi de paiement (03/09/2026) */
+.devis-paiement-tag{ display:block; font-size:10.5px; margin-top:3px; }
+.devis-paiement-ok{ color:#6ec88c; }
+.devis-paiement-retard{ color:#e08a8a; font-weight:600; }
+.devis-paiement-attente{ color:var(--text-muted); }
+.devis-paye-label{ display:flex; flex-direction:row; align-items:center; gap:10px; cursor:pointer; }
+.devis-paye-label input{ width:19px; height:19px; accent-color:var(--accent-ui, var(--accent)); cursor:pointer; flex-shrink:0; }
+
+/* Cases acompte/solde directement sur la carte Projet (03/09/2026) —
+   voir modules/projets.js `_casesPaiement`. */
+.projet-paiement-cases{ display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+
+/* Boutons "Étape suivante" / "Livré" — action rapide sans ouvrir la
+   fiche, calés en bas à droite de la carte (03/09/2026, voir
+   modules/projets.js `_actionsRapides`). Deux styles distincts plutôt
+   que du `.btn-ghost` générique (retour "pas beau" de Tiphaine) : même
+   logique visuelle que les boutons du pointage (`.btn-pointage-finish`
+   / `.btn-pointage-start`) — l'étape suivante reste discrète (action
+   intermédiaire), "Livré" ressort en vert plein (action qui conclut).
+   Bordure toujours présente (jamais `border:none` pur) même règle que
+   `.btn` plus haut — un accent blanc sans contraste deviendrait
+   invisible sur fond clair. */
+.projet-actions-rapides{ display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+.projet-action-etape{
+  padding:7px 13px; border-radius:9px; border:1px solid var(--border-subtle); background:transparent;
+  color:var(--text-secondary); font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;
+  transition:background .15s, color .15s;
+}
+.projet-action-etape:hover{ background:var(--bg-panel-2); color:var(--text-primary); }
+.projet-action-livre{
+  padding:7px 14px; border-radius:9px; border:1px solid rgba(110,200,140,.4); background:rgba(110,200,140,.16);
+  color:#6ec88c; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; transition:background .15s;
+}
+.projet-action-livre:hover{ background:rgba(110,200,140,.26); }
+.theme-clair .projet-action-livre{ color:#1f7a45; background:rgba(110,200,140,.22); border-color:rgba(110,200,140,.55); }
+.theme-clair .projet-action-livre:hover{ background:rgba(110,200,140,.32); }
+td{ padding:12px; font-size:13.5px; border-bottom:1px solid #121212; color:var(--text-secondary); }
+tr:hover td{ background:var(--bg-panel-2); }
+
+.btn{
+  display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:9px;
+  /* Bordure discrète toujours présente (pas juste `border:none`) : un
+     accent blanc (le défaut) sur un thème clair donnerait un bouton
+     "plein" sans aucun contraste de fond ni de bordure, donc invisible
+     — retour de Tiphaine le 03/09/2026 ("Démarrer un chrono" fondu dans
+     la page). `var(--border-subtle)` se fond dans le bouton quand
+     l'accent contraste déjà bien avec la page, et le sauve dans le cas
+     contraire. */
+  border:1px solid var(--border-subtle); background:var(--accent); color:var(--accent-text); font-weight:600; font-size:13px;
+  cursor:pointer; font-family:inherit; transition:opacity .15s;
+}
+.btn:hover{ opacity:.85; }
+/* Passé à un fond plein (option A) le 04/09/2026 : l'option B (juste
+   une bordure plus marquée) avait été appliquée mais restait trop
+   subtile pour vraiment se sentir différente sur un petit bouton réel
+   — Tiphaine ne voyait pas de changement malgré un fichier CSS
+   correct (vérifié ligne par ligne avec elle). Repart sur un vrai
+   changement de forme plutôt qu'un ajustement de nuance : fond plein
+   (`--bg-input`, déjà utilisé pour les champs de saisie donc cohérent
+   avec le reste de l'UI), plus de bordure. `var(--bg-input)` /
+   `var(--text-primary)` suivent le thème choisi dans Paramétrage >
+   Apparence, comme avant. */
+.btn-ghost{ background:transparent; border:1px solid var(--text-muted); color:var(--text-primary); border-radius:7px; padding:5px 10px; display:inline-flex; align-items:center; gap:5px; font-family:inherit; font-size:12.5px; cursor:pointer; }
+.btn-ghost:hover{ background:var(--bg-input); opacity:1; }
+
+/* Actions rapides sur une carte Prospect (Kanban) — 04/09/2026, retour
+   de Tiphaine ("plus joli") sur le duo "Avancer →" / ❄ qui utilisait le
+   `.btn-ghost` générique et faisait "carré". Même logique que les
+   boutons de Projets juste au-dessus : deux styles distincts plutôt
+   qu'un seul style neutre réutilisé partout. "Avancer" ressort en bleu
+   doux (action principale, positive, fait progresser) ; le bouton froid
+   reste un petit carré discret à part, qui ne prend que la place d'une
+   icône et ne rentre pas en compétition visuelle avec "Avancer". */
+.prospect-action-avancer{
+  flex:1; padding:7px 10px; border-radius:8px; border:1px solid rgba(120,170,235,.4);
+  background:rgba(120,170,235,.16); color:#78aaeb; font-size:12px; font-weight:700;
+  cursor:pointer; font-family:inherit; transition:background .15s;
+}
+.prospect-action-avancer:hover{ background:rgba(120,170,235,.26); }
+.theme-clair .prospect-action-avancer{ color:#2a5ea8; background:rgba(120,170,235,.2); border-color:rgba(120,170,235,.5); }
+.theme-clair .prospect-action-avancer:hover{ background:rgba(120,170,235,.3); }
+.prospect-action-froid{
+  width:32px; height:30px; flex-shrink:0; border-radius:8px; border:1px solid rgba(230,90,90,.35);
+  background:transparent; color:#e65a5a; font-size:16px; cursor:pointer;
+  font-family:inherit; transition:background .15s, color .15s;
+}
+.prospect-action-froid:hover{ background:rgba(230,90,90,.16); border-color:rgba(230,90,90,.55); }
+.theme-clair .prospect-action-froid{ color:#c53030; border-color:rgba(197,48,48,.4); }
+.theme-clair .prospect-action-froid:hover{ background:rgba(197,48,48,.14); }
+
+/* Bouton "Convertir en client" sur les cartes Prospects (05/09/2026) —
+   même gabarit que .prospect-action-froid (icône seule, carrée), en vert
+   pour marquer une action positive/création plutôt qu'un abandon. */
+.prospect-action-client{
+  width:32px; height:30px; flex-shrink:0; border-radius:8px; border:1px solid rgba(110,200,140,.35);
+  background:transparent; color:#6ec88c; font-size:14px; cursor:pointer;
+  font-family:inherit; transition:background .15s, color .15s;
+}
+.prospect-action-client:hover{ background:rgba(110,200,140,.16); border-color:rgba(110,200,140,.55); }
+.theme-clair .prospect-action-client{ color:#2d7a4d; border-color:rgba(45,122,77,.4); }
+.theme-clair .prospect-action-client:hover{ background:rgba(45,122,77,.14); }
+
+/* Catalogue (Tarifs) — bandes de titre par groupe catégorie/type
+   (04/09/2026, voir modules/catalogue.js `_htmlLignesGroupees`) : rend
+   la distinction Site/Application et Forfait/Abonnement visible d'un
+   coup d'œil, la couleur de la bordure/badge vient du JS (rgb inline,
+   cyclée par catégorie) donc rien à coder ici pour une couleur
+   spécifique. */
+.catalogue-groupe-titre{
+  padding:10px 14px; background:var(--bg-panel-2);
+}
+.catalogue-groupe-titre-inner{ display:flex; align-items:baseline; gap:10px; }
+.catalogue-groupe-cat{
+  font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
+  padding:3px 9px; border-radius:6px; white-space:nowrap;
+}
+.catalogue-groupe-type{ font-size:12.5px; color:var(--text-muted); font-weight:600; }
+
+/* ── Calendrier (module `calendrier.js`, 04/09/2026) ─────────── */
+.calendrier-entete-jours{ display:grid; grid-template-columns:repeat(7,1fr); gap:1px; margin-bottom:6px; }
+.calendrier-jour-label{ font-size:11px; color:var(--text-muted); text-align:center; text-transform:uppercase; letter-spacing:.03em; }
+.calendrier-grille{ display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:var(--border-subtle); border:1px solid var(--border-subtle); border-radius:10px; overflow:hidden; }
+.calendrier-jour{ position:relative; background:var(--bg-panel); min-height:86px; padding:6px; cursor:pointer; transition:background .12s; }
+.calendrier-jour:hover{ background:var(--bg-input); }
+.calendrier-jour-hors-mois{ opacity:.35; cursor:default; }
+.calendrier-jour-hors-mois:hover{ background:var(--bg-panel); }
+.calendrier-jour-numero{ font-size:12px; color:var(--text-secondary); margin-bottom:4px; }
+/* Astérisque de repère léger (07/09/2026, "style FamilyWall" demandé
+   par Tiphaine) — plus de texte dans la case, juste ce petit marqueur
+   orange à droite du numéro du jour ; le texte complet s'affiche en
+   haut de la fiche du jour au clic, même couleur (voir `_htmlJour`). */
+.calendrier-jour-astx{ color:#e0a95c; font-weight:700; font-size:12px; margin-left:2px; }
+.calendrier-jour-astx-fait{ color:var(--text-muted); font-weight:400; }
+.calendrier-jour-aujourdhui .calendrier-jour-numero{
+  display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px;
+  border-radius:50%; background:var(--accent-ui, var(--accent)); color:var(--accent-text); font-weight:600;
+}
+.calendrier-evt-pill{ font-size:10.5px; padding:1.5px 5px; border-radius:5px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.calendrier-evt-plus{ font-size:10px; color:var(--text-muted); margin-top:2px; }
+.calendrier-picker-grille{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.calendrier-picker-mois{
+  background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:8px;
+  color:var(--text-primary); font-family:inherit; font-size:13px; padding:12px 4px;
+  cursor:pointer; transition:background .12s, border-color .12s;
+}
+.calendrier-picker-mois:hover{ background:var(--bg-panel); border-color:var(--text-muted); }
+.calendrier-picker-mois-actif{
+  background:var(--accent-ui, var(--accent)); border-color:var(--accent-ui, var(--accent));
+  color:var(--accent-text); font-weight:600;
+}
+@media (max-width:720px){
+  .calendrier-jour{ min-height:56px; max-height:84px; padding:3px; overflow:hidden; }
+  /* 07/09/2026, plusieurs allers-retours sur cette case :
+     1) repères légers en toutes lettres → cases inégales, corrigé en
+        les réduisant à un astérisque (voir `.calendrier-jour-astx`).
+     2) pavés texte masqués sur mobile → "on voit rien", remis.
+     3) pavés tronqués à 2 caractères ("URS…") → raccourcis au 1er mot
+        clé ("URSSAF", voir `_htmlGrille`).
+     4) "cases un peu plus hautes" tenté avec retour à la ligne
+        (`white-space:normal`) → "c'est horrible" : sur une case de
+        ~50px de large, même "URSSAF" cassait en plein milieu du mot
+        ("URSS" / "AF") au lieu de rester lisible. Reverti au nowrap.
+     5) "toujours pas, enlève l'agrandissement automatique" : le
+        `overflow:hidden` retiré de `.calendrier-jour` à l'étape 4
+        avait un effet de bord invisible sur le coup — en grille CSS,
+        un item a `min-width:auto` par défaut, donc SANS overflow:hidden
+        sur la case elle-même, le texte `nowrap` du pavé forçait la
+        case (et toute la colonne de la grille) à s'élargir pour le
+        contenir en entier au lieu d'être tronqué — le pavé débordait
+        largement sur les jours suivants au lieu de rester dans sa
+        case. `overflow:hidden` + `max-height` remis sur `.calendrier-
+        jour` : la case retrouve une taille fixe, et SEULEMENT là le
+        `text-overflow:ellipsis` du pavé (déjà en place) peut vraiment
+        tronquer au lieu de pousser la case. */
+  .calendrier-jour-numero{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* `.calendrier-jour-numero` est aussi un <div>, donc `nth-of-type`
+     compterait TOUS les div frères (numéro inclus) et masquerait le
+     1er pavé au lieu des suivants — bug repéré le 07/09/2026 ("y'a plus
+     rien"). Sélecteur de frères adjacents à la place : ne cible que les
+     `.calendrier-evt-pill` précédés d'un AUTRE `.calendrier-evt-pill`,
+     donc uniquement le 2e et au-delà, peu importe les autres divs. */
+  .calendrier-evt-pill ~ .calendrier-evt-pill ~ .calendrier-evt-pill{ display:none; }
+  /* 07/09/2026, retour "réduit un peu le texte des puces rouges... pour
+     voir un peu mieux le texte" — pavé et case encore resserrés (police
+     8.5px, padding 1px 3px, case 3px au lieu de 4px) pour gagner
+     quelques px de large et laisser "URSSAF" tenir sans être coupé. */
+  .calendrier-evt-pill{ font-size:8.5px; padding:1px 3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* "+N" (07/09/2026, "un marqueur quand y'a plus de puces", puis
+     "rends-le un peu plus visible... et attention les cases sont plus
+     grandes, ça ne doit pas changer la taille") : en flux normal (3e
+     ligne sous les pavés), il ajoutait de la hauteur et agrandissait la
+     case au-delà des autres jours malgré le `max-height`. Passé en
+     badge positionné en absolu, sorti du flux normal (ne compte plus
+     dans la hauteur de la case). Retour "c'est moche" : en bas-à-droite
+     il tombait pile sur le texte du 2e pavé ("Actua...") et les deux se
+     chevauchaient. Déplacé en HAUT-à-droite à la place — cet espace
+     est toujours vide (le numéro du jour + son astérisque ne prennent
+     que la partie gauche de la ligne), donc plus aucun chevauchement
+     avec les pavés en dessous. */
+  /* Couleur du "+N" (07/09/2026) — après orange puis bleu rejetés,
+     question posée : Tiphaine a choisi "blanc/gris clair" mais a
+     signalé un point important — si l'app passe un jour en thème
+     clair, un blanc en dur s'inverserait (invisible sur fond clair).
+     `var(--text-primary)` au lieu d'un hex fixe : c'est la variable
+     déjà utilisée pour le texte principal de l'app, donc elle suit
+     automatiquement le thème (foncé ou clair) sans jamais disparaître. */
+  .calendrier-evt-plus{
+    position:absolute; top:2px; right:2px; font-size:9px; font-weight:700;
+    color:var(--text-primary);
+  }
+}
+
+/* ── Modal (formulaires d'ajout/édition) ─────────────────── */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex;
+  align-items:center; justify-content:center; z-index:100; padding:20px;
+}
+.modal-box{
+  background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:14px;
+  width:100%; max-width:440px; padding:22px 24px; max-height:88vh; overflow-y:auto;
+}
+.modal-title{ font-size:16px; font-weight:700; margin-bottom:16px; }
+.modal-field{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; min-width:0; }
+.modal-field label{ font-size:12px; color:var(--text-secondary); font-weight:600; }
+.modal-field input, .modal-field select, .modal-field textarea{
+  background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:9px;
+  padding:10px 12px; color:var(--text-primary); font-size:13.5px; font-family:inherit; outline:none;
+  /* 08/09/2026 — la vraie cause du débordement "Seuils fiscaux" sur
+     mobile : sans `width:100%`, un `<input>` sans attribut `width`
+     garde une largeur/min-content par défaut du navigateur (~20
+     caractères) qui remonte dans le calcul min-content du `.modal-
+     field` parent et empêche `flex:1` de rétrécir, même avec
+     `align-items:stretch`. `min-width:0` complète : un item flex ne
+     rétrécit JAMAIS sous son contenu par défaut, quoi que dise `flex`. */
+  width:100%; box-sizing:border-box; min-width:0;
+}
+.modal-field textarea{ resize:vertical; min-height:70px; }
+
+/* Ligne de créneau répétable (formulaire "Ajouter une présence" du
+   planning — plusieurs créneaux dans un même jour, ex : matin + pause +
+   après-midi, voir modules/temps.js `_ouvrirAjoutPresence`). */
+.presence-add-ligne{
+  display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:6px;
+  padding-bottom:10px; border-bottom:1px solid #171717;
+}
+.presence-add-ligne .presence-add-ligne-suppr{ margin-bottom:14px; }
+.modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus{ border-color:#555; }
+.modal-actions{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:20px; }
+
+/* Pills colorées "Type de tâche" (modale "Démarrer un chrono") — même
+   code couleur que les blocs de la Vue Semaine, + un bouton "+ Autre"
+   dédié en gris neutre pour taper un type libre (03/09/2026). */
+.timer-type-pills{ display:flex; flex-wrap:wrap; gap:7px; }
+.timer-type-pills.disabled{ opacity:.45; pointer-events:none; }
+.timer-type-pill{
+  padding:7px 13px; border-radius:99px; font-size:12.5px; font-weight:600; cursor:pointer;
+  font-family:inherit; background:transparent; transition:transform .1s, filter .1s;
+}
+.timer-type-pill:hover{ filter:brightness(1.2); }
+.timer-type-pill.active{ transform:scale(1.03); box-shadow:0 0 0 1.5px currentColor inset; }
+/* Couleurs des pills de type désormais paramétrables (onglet Paramétrage)
+   — appliquées en style inline depuis `timer-global.js`. Seul "+ Autre"
+   garde un style fixe (pointillé gris, c'est un déclencheur, pas un vrai
+   type). */
+.timer-type-pill-autre{ background:rgba(140,140,140,.16); border:1px dashed #8a8a8a; color:#c9c9c9; }
+
+/* Toggle "Mode Interne" dans la modale de démarrage du chrono */
+.timer-toggle-interne{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:9px; padding:10px 14px;
+  cursor:pointer; font-size:13.5px; color:var(--text-secondary); font-weight:600; margin:0;
+}
+.timer-toggle-interne input[type="checkbox"]{ width:18px; height:18px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
+
+/* ── Minuteur global (window.TimerGlobal) ────────────────────
+   Vit dans la topbar (à côté de la cloche/notif et de l'avatar), donc
+   toujours visible pendant la navigation dans toute l'appli sans
+   prendre toute la largeur — rendu dans #global-timer (hors #content,
+   jamais écrasé par le routeur, voir index.html). Format compact pour
+   tenir dans les 60px de hauteur de la topbar. */
+#global-timer{ display:flex; align-items:center; }
+
+/* Chrono client : maintenant secondaire dans la topbar (la présence,
+   ci-dessous, est mise en avant) — reprend le style neutre de
+   `.topbar-icon-btn` sans variante accent. */
+
+.timer-widget-running{
+  display:flex; align-items:center; gap:9px; background:var(--bg-input); border:1px solid var(--border-subtle);
+  border-radius:12px; padding:6px 10px; max-width:260px;
+}
+
+.timer-widget-dot{
+  width:8px; height:8px; border-radius:50%; flex-shrink:0; background:#6ec88c;
+  box-shadow:0 0 0 0 rgba(110,200,140,.6);
+  animation:timer-pulse 1.8s ease-in-out infinite;
+}
+.timer-widget-warn .timer-widget-dot{ background:#e0a94b; box-shadow:0 0 0 0 rgba(224,169,75,.6); }
+.timer-widget-danger .timer-widget-dot{ background:#e05c5c; box-shadow:0 0 0 0 rgba(224,92,92,.6); animation-duration:1s; }
+.timer-widget-paused .timer-widget-dot{ background:#5a5a5a; box-shadow:none; animation:none; }
+
+@keyframes timer-pulse{
+  0%{ box-shadow:0 0 0 0 rgba(110,200,140,.55); }
+  70%{ box-shadow:0 0 0 8px rgba(110,200,140,0); }
+  100%{ box-shadow:0 0 0 0 rgba(110,200,140,0); }
+}
+.timer-widget-warn.timer-widget-running .timer-widget-dot{ animation-name:timer-pulse-warn; }
+.timer-widget-danger.timer-widget-running .timer-widget-dot{ animation-name:timer-pulse-danger; }
+@keyframes timer-pulse-warn{
+  0%{ box-shadow:0 0 0 0 rgba(224,169,75,.55); }
+  70%{ box-shadow:0 0 0 8px rgba(224,169,75,0); }
+  100%{ box-shadow:0 0 0 0 rgba(224,169,75,0); }
+}
+@keyframes timer-pulse-danger{
+  0%{ box-shadow:0 0 0 0 rgba(224,92,92,.6); }
+  70%{ box-shadow:0 0 0 9px rgba(224,92,92,0); }
+  100%{ box-shadow:0 0 0 0 rgba(224,92,92,0); }
+}
+
+.timer-widget-infos{ display:flex; flex-direction:column; line-height:1.2; }
+.timer-widget-client{ font-size:10.5px; color:var(--text-secondary); max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.timer-widget-chrono{ font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+.timer-widget-warn .timer-widget-chrono{ color:#f0c27f; }
+.timer-widget-danger .timer-widget-chrono{ color:#f08a8a; }
+
+.timer-widget-actions{ display:flex; gap:4px; margin-left:auto; }
+.timer-widget-actions button{
+  width:24px; height:24px; border-radius:7px; border:1px solid var(--border-subtle); background:var(--bg-input);
+  color:var(--text-secondary); display:flex; align-items:center; justify-content:center; cursor:pointer;
+  transition:background .15s;
+}
+.timer-widget-actions button:hover{ background:#1f1f1f; }
+#timer-widget-stop:hover{ background:#241414; border-color:#3a1f1f; color:#e0a0a0; }
+
+@media(max-width:720px){
+  .timer-widget-client{ display:none; }
+  .timer-widget-running{ max-width:none; }
+}
+
+/* ── Widget de présence global (window.PresenceWidget) ───────
+   Pastille topbar pour lancer/pauser sa journée depuis n'importe quel
+   écran — rouge, même couleur que le rail de présence de la Vue Semaine
+   (`.semaine-amplitude`, changé de bleu à rouge le 03/09/2026 sur
+   demande de Tiphaine : le bleu se confondait avec le type "Création")
+   pour rester cohérent partout où la présence est représentée, et bien
+   distinct du chrono client (vert). */
+#presence-widget{ display:flex; align-items:center; }
+
+.presence-widget-actif{
+  display:flex; align-items:center; gap:9px; background:var(--bg-input); border:1px solid var(--border-subtle);
+  border-radius:12px; padding:6px 12px; cursor:pointer; transition:background .15s;
+}
+.presence-widget-actif:hover{ background:var(--bg-panel-2); }
+.presence-widget-dot{
+  width:8px; height:8px; border-radius:50%; flex-shrink:0; background:#e05c5c;
+  box-shadow:0 0 0 0 rgba(224,92,92,.6); animation:presence-widget-pulse 1.8s ease-in-out infinite;
+}
+@keyframes presence-widget-pulse{
+  0%{ box-shadow:0 0 0 0 rgba(224,92,92,.55); }
+  70%{ box-shadow:0 0 0 8px rgba(224,92,92,0); }
+  100%{ box-shadow:0 0 0 0 rgba(224,92,92,0); }
+}
+.presence-widget-chrono{ font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; color:#c25f5f; letter-spacing:.02em; }
+
+/* Pastille "en pause" — même souci que `.btn-pointage-pause` (fond ambre
+   codé en dur pour un fond noir, invisible sur un thème clair) : passée
+   en semi-transparent + variante `.theme-clair` (03/09/2026). */
+.presence-widget-pause{ background:rgba(224,169,75,.14); border-color:rgba(224,169,75,.35); }
+.presence-widget-pause .presence-widget-dot{ background:#e0b04a; box-shadow:none; animation:none; }
+.presence-widget-pause:hover{ background:rgba(224,169,75,.22); }
+.theme-clair .presence-widget-chrono{ color:#a83b3b; }
+
+.presence-widget-terminee{ opacity:.55; }
+.presence-widget-terminee:hover{ opacity:.85; }
+
+/* ── Rangée d'actions (ex : boutons en tête de page Temps) ─── */
+.temps-actions{ display:flex; gap:10px; }
+.temps-actions .btn, .temps-actions .btn-ghost{ border-radius:11px; padding:10px 18px; }
+.temps-actions .nav-icon{ display:inline-flex; margin-right:2px; opacity:.9; }
+
+/* ── Suppression rapide (✕) sur les lignes de tableau / cartes ── */
+.row-delete-btn{
+  background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:13px;
+  width:26px; height:26px; border-radius:7px; display:inline-flex; align-items:center;
+  justify-content:center; transition:background .15s, color .15s; font-family:inherit;
+}
+.row-delete-btn:hover{ background:#241414; color:#e0a0a0; }
+
+.card-delete-btn{
+  position:absolute; top:8px; right:8px; background:transparent; border:none; color:var(--text-muted);
+  cursor:pointer; font-size:12px; width:22px; height:22px; border-radius:6px; display:inline-flex;
+  align-items:center; justify-content:center; transition:background .15s, color .15s; z-index:2;
+  font-family:inherit;
+}
+.card-delete-btn:hover{ background:#241414; color:#e0a0a0; }
+.modal-actions-right{ display:flex; gap:8px; margin-left:auto; }
+.btn-danger{ background:transparent; border:1px solid #3a1f1f; color:#e0a0a0; }
+.btn-danger:hover{ background:#1a0d0d; }
+
+/* ── Documents : grille de dossiers (04/09/2026) ─────────────────
+   Un dossier par client + "Général" — retour de Tiphaine : le simple
+   filtre sur une liste à plat ne rendait pas "chaque client a son
+   dossier", il fallait une vraie notion de dossier à ouvrir/télécharger. */
+.documents-dossiers-grille{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:12px; }
+.documents-dossier-carte{
+  background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:12px;
+  padding:16px; cursor:pointer; transition:border-color .12s, background .12s;
+  display:flex; flex-direction:column; gap:6px;
+}
+.documents-dossier-carte:hover{ border-color:var(--text-muted); background:var(--bg-input); }
+.documents-dossier-icone{ opacity:.8; margin-bottom:2px; }
+.documents-dossier-nom{ font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.documents-dossier-meta{ font-size:11.5px; color:var(--text-muted); margin-bottom:6px; }
+.documents-dossier-telecharger{ align-self:flex-start; font-size:11.5px; padding:4px 9px; }
+.documents-dossier-telecharger:disabled{ opacity:.4; cursor:default; }
+
+/* ── Documents : combobox client recherche + liste (04/09/2026) ── */
+.documents-combo{ position:relative; }
+.documents-combo-trigger{
+  display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; box-sizing:border-box;
+  min-width:220px; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:9px;
+  color:var(--text-primary); font-family:inherit; font-size:13.5px; padding:10px 12px; cursor:pointer;
+}
+.documents-combo-trigger:hover{ border-color:var(--text-muted); }
+.documents-combo-fleche{ color:var(--text-muted); font-size:11px; }
+.documents-combo-panel{
+  position:absolute; top:calc(100% + 6px); left:0; min-width:260px; z-index:20;
+  background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:8px;
+  box-shadow:0 8px 24px rgba(0,0,0,.4); padding:8px;
+}
+.documents-combo-recherche{
+  width:100%; box-sizing:border-box; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:6px;
+  color:var(--text-primary); font-family:inherit; font-size:12.5px; padding:6px 8px; margin-bottom:6px;
+}
+.documents-combo-liste{ max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:1px; }
+.documents-combo-item{ padding:7px 8px; border-radius:5px; font-size:13px; cursor:pointer; color:var(--text-primary); }
+.documents-combo-item:hover{ background:var(--bg-input); }
+
+/* ── Onglet Paramétrage (03/09/2026) ─────────────────────────── */
+.param-liste{ display:flex; flex-direction:column; gap:2px; margin-bottom:14px; }
+.param-bloc-type{ border-bottom:1px solid #171717; }
+.param-bloc-type:last-child{ border-bottom:none; }
+.param-ligne{ display:flex; align-items:center; gap:10px; padding:8px 0; }
+.param-nom{ flex:1; font-size:13.5px; color:var(--text-secondary); }
+.param-swatch{
+  width:20px; height:20px; border-radius:50%; border:1px solid rgba(255,255,255,.25); cursor:pointer;
+  flex-shrink:0; padding:0; transition:transform .12s;
+}
+.param-swatch:hover{ transform:scale(1.15); }
+.param-palette-row{ display:flex; gap:8px; padding:2px 0 10px 30px; flex-wrap:wrap; }
+/* 08/09/2026, Apparence, "resserre à gauche les couleurs" — le
+   `padding-left:30px` ci-dessus n'a de sens que pour la palette
+   repliable sous un type de tâche (Temps, indentée sous son rond de
+   couleur) ; réutilisée telle quelle pour la palette Accent/Fond
+   (autonome, pas indentée), ce padding gaspillait de la largeur et
+   faisait retomber la dernière couleur toute seule à la ligne plus
+   tôt que nécessaire. */
+.param-palette-row-flush{ padding-left:0; }
+.param-palette-swatch{
+  width:22px; height:22px; border-radius:50%; border:1px solid rgba(255,255,255,.2); cursor:pointer;
+  padding:0; transition:transform .12s;
+}
+.param-palette-swatch:hover{ transform:scale(1.2); }
+.param-palette-swatch-actif{ box-shadow:0 0 0 2px #000, 0 0 0 4px #fff; }
+/* 08/09/2026, "ici ça va pas c'est pas sur la même ligne" — la ligne
+   nom+2 champs+unités+suppr (5-6 éléments) sur une seule rangée
+   `flex-wrap` cassait n'importe où, laissant parfois juste "h
+   incluses ✕" orphelin en dessous. Restructuré en 2 rangées propres :
+   nom+suppr en haut, les 2 champs (chacun avec son unité collée) en
+   bas — chaque paire input+unité ne se sépare plus jamais l'une de
+   l'autre car elles sont maintenant un seul groupe flex. */
+.param-ligne-formule{ flex-direction:column; align-items:stretch; gap:6px; }
+.param-formule-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.param-formule-champs{ display:flex; gap:16px; flex-wrap:wrap; }
+.param-formule-champ{ display:flex; align-items:center; gap:6px; }
+.param-input-inline{
+  width:70px; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:7px;
+  padding:5px 8px; color:var(--text-primary); font-size:12.5px; font-family:inherit; outline:none;
+}
+.param-input-inline:focus{ border-color:#555; }
+.param-unite{ font-size:11px; color:var(--text-muted); }
+/* Sous-onglets V2 (Finances/Technique/Calendrier/Documents) — sur la MÊME
+   ligne que les onglets actifs (à droite, séparés par un petit trait),
+   pas une deuxième rangée en dessous (retour de Tiphaine le 03/09/2026).
+   Style grisé + badge "bientôt" ; cliquables (mènent à un simple message
+   d'attente), pas désactivés en dur, pour rester cohérents avec la
+   structure finale prévue. */
+.param-tabs-separateur{ width:1px; height:20px; background:var(--border-subtle); margin:0 4px; align-self:center; }
+.param-tab-v2{ color:#4a4a4a; }
+.param-tab-v2:hover{ color:var(--text-secondary); }
+.param-tab-v2.active{ color:var(--text-secondary); border-bottom-color:#3d3d3d; }
+.param-badge-bientot{
+  font-size:9px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted);
+  background:var(--bg-input); border-radius:99px; padding:1px 6px; margin-left:4px; vertical-align:1px;
+}
+.param-ajout-ligne{ display:flex; gap:8px; }
+.param-ajout-ligne input{
+  flex:1; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:9px;
+  padding:9px 12px; color:var(--text-primary); font-size:13px; font-family:inherit; outline:none;
+}
+.param-ajout-ligne input:focus{ border-color:#555; }
+
+/* 05/09/2026 : colonnes élastiques (flex:1) plutôt qu'une largeur fixe
+   de 240px — avec moins de colonnes (retrait de "Nouveau") et un grand
+   écran, les cartes restaient collées à gauche avec beaucoup de vide à
+   droite. `min-width` évite que ça devienne trop étroit sur petit écran
+   (le scroll horizontal prend le relais si les colonnes ne tiennent
+   plus). */
+.kanban{ display:flex; gap:14px; overflow-x:auto; padding-bottom:8px; }
+.kanban-col{ flex:1 1 240px; min-width:240px; background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:12px; padding:12px; }
+.kanban-col-title{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-secondary); margin-bottom:10px; padding:0 2px; }
+/* 04/09/2026 : plafonne la hauteur d'une colonne (utile dès qu'une
+   étape accumule beaucoup de prospects) — défilement interne à la
+   colonne plutôt que de faire grandir toute la page indéfiniment. */
+.kanban-col-cartes{ max-height:60vh; overflow-y:auto; padding-right:2px; }
+.kanban-card{
+  background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:9px; padding:10px 12px; margin-bottom:8px;
+  font-size:13px; cursor:grab;
+}
+.kanban-card:hover{ border-color:#333; }
+.kanban-card-title{ font-weight:600; margin-bottom:3px; }
+.kanban-card-sub{ font-size:11.5px; color:var(--text-muted); }
+
+.empty-state{ text-align:center; padding:60px 20px; color:var(--text-muted); }
+.empty-state-icon{ margin-bottom:10px; display:flex; align-items:center; justify-content:center; opacity:.6; }
+
+/* ── Bandeau de nettoyage des chevauchements (doublons post-fusion) ─── */
+.chevauchements-card{ border-color:#3a2410; }
+.chevauchements-titre{ font-size:12.5px; color:#e0b04a; font-weight:600; margin-bottom:8px; }
+.chevauchement-ligne{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:7px 0; border-bottom:1px solid #1c1c1c; font-size:12px; color:var(--text-secondary); flex-wrap:wrap;
+}
+.chevauchement-ligne:last-child{ border-bottom:none; }
+.chevauchement-actions{ display:flex; gap:6px; flex-shrink:0; }
+.chevauchement-actions .btn-ghost{ padding:4px 10px; font-size:11.5px; border-radius:7px; }
+
+/* ── Pointage du jour (v2 — barre de journée visuelle + pause dédiée) ── */
+.pointage-card{ padding:18px 22px; }
+
+.pointage-header{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+
+.pointage-status{ display:flex; align-items:center; gap:10px; min-height:24px; }
+.pointage-status-dot{ width:9px; height:9px; border-radius:50%; background:#4a4a4a; flex-shrink:0; }
+.pointage-status-dot.actif{ background:#6ec88c; animation:pointagePulseDot 2s infinite; }
+.pointage-status-dot.pause{ background:#e0b04a; }
+.pointage-status-dot.terminee{ background:#5a5a5a; }
+@keyframes pointagePulseDot{
+  0%{ box-shadow:0 0 0 0 rgba(110,200,140,.45); }
+  70%{ box-shadow:0 0 0 7px rgba(110,200,140,0); }
+  100%{ box-shadow:0 0 0 0 rgba(110,200,140,0); }
+}
+.pointage-status-text{ font-size:13.5px; color:var(--text-secondary); }
+.pointage-status-text strong{ color:var(--text-primary); font-weight:700; }
+.pointage-status-clic{ cursor:pointer; border-bottom:1px dashed var(--border-subtle); padding-bottom:1px; transition:border-color .15s; }
+.pointage-status-clic:hover{ border-color:var(--text-muted); }
+.pointage-chrono-inline{ font-variant-numeric:tabular-nums; color:#6ec88c; font-weight:700; margin-left:8px; }
+
+.pointage-actions{ display:flex; gap:8px; flex-shrink:0; }
+.btn-pointage-start, .btn-pointage-resume{
+  padding:9px 20px; border-radius:10px; border:none; background:var(--accent); color:var(--accent-text);
+  font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit; transition:transform .15s, opacity .15s;
+}
+.btn-pointage-start:hover, .btn-pointage-resume:hover{ transform:scale(1.02); opacity:.9; }
+.btn-pointage-pause{
+  padding:9px 18px; border-radius:10px; border:1px solid rgba(224,169,75,.35); background:rgba(224,169,75,.14); color:#e0c078;
+  font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s;
+}
+.btn-pointage-pause:hover{ background:rgba(224,169,75,.22); }
+/* Sur fond clair, le jaune-amiante pastel (#e0c078) prévu pour ressortir
+   sur noir devient trop pâle — foncé pour rester lisible (même logique
+   que `.theme-clair .badge-*`, voir plus haut). */
+.theme-clair .btn-pointage-pause{ color:#8a6212; background:rgba(224,169,75,.22); border-color:rgba(224,169,75,.5); }
+.theme-clair .btn-pointage-pause:hover{ background:rgba(224,169,75,.3); }
+.btn-pointage-finish{
+  padding:9px 18px; border-radius:10px; border:1px solid var(--border-subtle); background:transparent; color:var(--text-secondary);
+  font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s, color .15s;
+}
+.btn-pointage-finish:hover{ background:var(--bg-panel-2); color:var(--text-primary); }
+.btn-pointage-reopen{
+  background:none; border:none; color:var(--text-muted); font-size:12px; cursor:pointer; font-family:inherit;
+  text-decoration:underline; padding:0;
+}
+.btn-pointage-reopen:hover{ color:var(--text-secondary); }
+/* Annuler un clic accidentel (Pause / Terminer ma journée) — accent rouge
+   discret pour signaler "correction d'erreur", visible seulement dans la
+   fenêtre de 90s après l'action (voir _peutAnnulerDerniereAction). */
+.btn-pointage-annuler{
+  padding:9px 14px; border-radius:10px; border:1px solid rgba(224,92,92,.35); background:rgba(224,92,92,.14); color:#e0a0a0;
+  font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s;
+}
+.theme-clair .btn-pointage-annuler{ color:#a83b3b; background:rgba(224,92,92,.16); border-color:rgba(224,92,92,.4); }
+.btn-pointage-annuler:hover{ background:rgba(224,92,92,.24); }
+
+/* Barre de journée visuelle (7h → 20h) : chaque créneau = un segment
+   cliquable (édition/suppression), le trait orange = l'heure actuelle. */
+.pointage-daybar-wrap{ display:flex; align-items:center; gap:8px; margin-top:14px; }
+.pointage-daybar-label{ font-size:10.5px; color:var(--text-muted); flex-shrink:0; width:24px; }
+.pointage-daybar-label.fin{ text-align:right; }
+.pointage-daybar{ position:relative; flex:1; height:20px; background:var(--bg-input); border-radius:6px; overflow:hidden; }
+.pointage-daybar-segment{
+  position:absolute; top:0; bottom:0; background:#3a7a52; cursor:pointer; border-radius:3px;
+  transition:filter .15s;
+}
+.pointage-daybar-segment:hover{ filter:brightness(1.3); }
+.pointage-daybar-segment.en-cours{ background:#6ec88c; animation:pointagePulseBar 2s infinite; }
+@keyframes pointagePulseBar{ 0%,100%{ opacity:1; } 50%{ opacity:.6; } }
+.pointage-daybar-now{ position:absolute; top:-2px; bottom:-2px; width:2px; background:#e0a04a; }
+
+.pointage-footer{ display:flex; align-items:center; justify-content:space-between; margin-top:10px; gap:10px; flex-wrap:wrap; }
+.pointage-footer-total{ font-size:11.5px; color:var(--text-muted); }
+
+.pointage-manuel-zone{ margin-top:2px; }
+.btn-lien-discret{
+  background:none; border:none; color:var(--text-muted); font-size:12.5px; cursor:pointer; font-family:inherit;
+  padding:2px 0; transition:color .15s;
+}
+.btn-lien-discret:hover{ color:var(--text-secondary); }
+.pointage-manuel-row{ display:none; gap:8px; margin-top:12px; flex-wrap:wrap; align-items:center; }
+.pointage-manuel-row.visible{ display:flex; }
+.pointage-manuel-row input{
+  background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 10px;
+  color:var(--text-primary); font-size:13px; font-family:inherit; outline:none;
+}
+.pointage-manuel-row input:focus{ border-color:#555; }
+
+/* ── Onglets (ex : Vue Liste / Vue Semaine dans Temps) ───────── */
+.temps-tabs{
+  display:flex; gap:4px; margin-bottom:16px; border-bottom:1px solid #171717;
+  overflow-x:auto; scrollbar-width:none;
+}
+.temps-tabs::-webkit-scrollbar{ display:none; }
+.temps-tab{
+  padding:8px 14px; font-size:13px; color:var(--text-secondary); cursor:pointer; background:none;
+  border:none; border-bottom:2px solid transparent; font-family:inherit; margin-bottom:-1px;
+  transition:color .15s, border-color .15s; white-space:nowrap; flex-shrink:0;
+}
+.temps-tab:hover{ color:var(--text-secondary); }
+.temps-tab.active{ color:var(--accent-ui, var(--accent)); border-bottom-color:var(--accent-ui, var(--accent)); font-weight:600; }
+
+/* Technique — 4 onglets, un libellé trop long pour tenir sur une seule
+   ligne mobile (08/09/2026). Après 3 tentatives ratées sur `.temps-tabs`
+   en général (défilement caché, fondu invisible, puis un `flex-wrap`
+   qui laissait "Accès" tout seul sur une 2e ligne moche) — solution
+   scopée à Technique seulement (`.technique-tabs-grid`, ajoutée en plus
+   de `.temps-tabs` dans le HTML) : sur mobile, grille 2×2 de vraies
+   "puces" avec bordure, plus un style d'onglet souligné qui ne marche
+   que sur une seule ligne. Les autres écrans (Temps, Catalogue,
+   Paramétrage) gardent `.temps-tabs` tel quel, inchangés. */
+@media (max-width:880px){
+  .technique-tabs-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:5px; border-bottom:none;
+    margin-top:-6px; margin-bottom:12px;
+  }
+  .technique-tabs-grid .temps-tab{
+    border:1px solid var(--border-subtle); border-radius:8px; text-align:center;
+    padding:6px 6px; margin-bottom:0; font-size:12px;
+  }
+  .technique-tabs-grid .temps-tab.active{
+    background:var(--bg-input); border-color:var(--accent-ui, var(--accent));
+  }
+  /* Boutons "+ Nouveau..." (08/09/2026, "trop trop grosse") — taille
+     par défaut de `.btn` (9px 16px, 13px) pensée pour un bouton isolé
+     dans un en-tête ; ici la rangée est vide autour, ce qui le fait
+     paraître énorme. Même traitement compact que les boutons de fiche
+     (`.abo-mcard-facturer` etc.) */
+  .technique-add-row .btn, .technique-add-row .btn-ghost{ padding:7px 12px; font-size:12px; }
+  .technique-add-row .btn-ghost{ padding:6px 10px; }
+
+  /* Paramétrage — 9 sous-onglets (08/09/2026, "ça j'aime pas et y'a
+     trop de texte") : même souci que Technique en pire (9 au lieu de
+     4), le `flex-wrap:wrap` posé en style inline créait 3 lignes
+     aérées à gauche, façon liste de liens plutôt qu'un vrai sélecteur
+     d'onglets. Même traitement que `.technique-tabs-grid` (grille de
+     puces bordées) mais en 3 colonnes — 9 onglets tiennent pile en 3
+     lignes de 3, compact et net. Le séparateur avant les onglets
+     "bientôt" (V2, vide pour l'instant) est masqué en grille : avec 9
+     items qui remplissent exactement 3×3, un 10e élément casserait
+     l'alignement pour rien tant qu'il n'y a aucun onglet V2 à séparer. */
+  .parametrage-tabs-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; border-bottom:none;
+    margin-top:-6px; margin-bottom:12px;
+  }
+  .parametrage-tabs-grid .temps-tab{
+    border:1px solid var(--border-subtle); border-radius:8px; text-align:center;
+    padding:6px 6px; margin-bottom:0; font-size:12px;
+  }
+  .parametrage-tabs-grid .temps-tab.active{
+    background:var(--bg-input); border-color:var(--accent-ui, var(--accent));
+  }
+  .parametrage-tabs-grid .param-tabs-separateur{ display:none; }
+
+  /* Paramétrage — espacements resserrés au max (08/09/2026, "réduit au
+     max les espacements partout... sur tous les onglets"). Chaque
+     carte de réglage gardait des marges pensées pour du desktop
+     (18-20px entre blocs, 14px de texte d'intro) répétées presque
+     identiques dans les 9 sous-onglets. */
+  .parametrage-header{ margin-bottom:8px !important; }
+  #param-contenu .card{ padding:10px 12px; }
+  #param-contenu .card + .card{ margin-top:6px !important; }
+  #param-contenu .section-title{ margin-bottom:6px; font-size:13.5px; }
+  #param-contenu .stat-sub{ margin-bottom:6px !important; margin-top:2px; }
+  /* 08/09/2026, "resserre encore" — les champs eux-mêmes (label + input)
+     gardaient un padding/gap pensé pour du desktop. */
+  #param-contenu .modal-field{ margin-bottom:5px; gap:3px; }
+  #param-contenu .modal-field label{ font-size:11px; }
+  #param-contenu .modal-field input, #param-contenu .modal-field select{ padding:7px 10px; font-size:13px; }
+  /* 08/09/2026, "réduit les texte là aussi" — labels de checkbox
+     ("Inclure l'année...", "Activer les pastilles...") en taille
+     normale de corps de texte (~14-15px), trop gros dans ce contexte
+     dense. */
+  #param-contenu .devis-paye-label{ font-size:12.5px; gap:8px; }
+  #param-contenu .devis-paye-label input{ width:16px; height:16px; }
+  /* 08/09/2026, "resserre bcp" (formules d'abonnement) — chaque bloc
+     nom+champs gardait le padding vertical pensé pour une ligne de
+     tableau simple (8px 0), trop généreux répété 6-7 fois d'affilée. */
+  #param-contenu .param-ligne-formule{ padding:5px 0; gap:3px; }
+  #param-contenu .param-formule-champs{ gap:10px; }
+  #param-contenu .param-nom{ font-size:12.5px; }
+
+  /* Paires de champs de formulaire côte à côte (08/09/2026, Paramétrage
+     "Seuils fiscaux" coupé à droite, débordait de l'écran) — motif
+     `style="display:flex; gap:14px;"` répété tel quel dans 5 fichiers
+     (Technique, Calendrier, Paramétrage, Prospects, Documents) pour
+     mettre 2 `.modal-field` (chacun `flex:1`) côte à côte dans un
+     formulaire. Sur un écran étroit, deux champs avec des `<input
+     type="number">` (largeur minimum non nulle par défaut du
+     navigateur) ne rétrécissent pas assez pour tenir à deux, et
+     débordent silencieusement du formulaire — remarqué ici parce que
+     c'est posé directement dans une carte de page (donc visible sans
+     avoir à ouvrir un formulaire), mais le même bug existe forcément
+     dans les modals (Technique, Documents...) qui utilisent le même
+     motif. Sélecteur d'attribut plutôt que 5 corrections séparées :
+     cible le style inline exact, passe les 2 champs en colonne
+     (empilés) sur mobile, où qu'il apparaisse dans l'appli — modals
+     compris. */
+  /* 08/09/2026, suite — remplacé le `flex-direction:column` forcé
+     (retour "met les préfixe et chiffres à côté", des paires à
+     libellés courts comme Préfixe/Chiffres n'avaient pas besoin d'être
+     empilées, seules les paires à libellés longs façon "Seuil TVA de
+     base (€)" débordaient). La vraie cause était `width:100%` manquant
+     sur l'`<input>` (voir `.modal-field input` plus haut) — corrigée à
+     la source, donc chaque paire tient côte à côte quand elle a la
+     place, et retombe à la ligne seulement si elle déborde vraiment. */
+  div[style*="display:flex; gap:14px;"]{ flex-wrap:wrap; row-gap:10px !important; }
+}
+
+/* ── Vue Semaine (agenda Lundi-Dimanche, module Temps) ───────── */
+/* Navigation semaine par semaine + mini-calendrier maison pour sauter à
+   une semaine lointaine, façon Google Agenda (03/09/2026 — remplace un
+   premier essai avec un `<input type="date">` natif invisible, pas assez
+   fiable au clic selon les navigateurs). */
+.semaine-nav{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.semaine-nav-btn{
+  width:26px; height:26px; border-radius:7px; border:1px solid var(--border-subtle); background:var(--bg-input);
+  color:var(--text-secondary); font-size:15px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:background .15s, color .15s;
+}
+.semaine-nav-btn:hover{ background:var(--bg-panel-2); color:var(--text-primary); }
+.semaine-nav-label-wrap{ position:relative; }
+.semaine-nav-label{
+  font-size:13px; font-weight:600; color:var(--text-primary); cursor:pointer; background:none; border:none;
+  font-family:inherit; padding:4px 8px; border-radius:7px; transition:background .15s;
+}
+.semaine-nav-label:hover{ background:var(--bg-input); }
+.semaine-nav-today{ font-size:11.5px; }
+/* Nav "jour précédent/suivant" de la Vue Semaine mobile — remplace
+   ENTIÈREMENT la nav semaine sur mobile (07/09/2026, retour "recentre
+   et fais un truc plus esthétique" : deux rangées de nav empilées et
+   mal centrées). Le bloc flèches+libellé est centré (`justify-content:
+   center`) ; "Aujourd'hui" est sorti du flux normal (position absolue,
+   ancré à droite) pour ne jamais désaxer ce centrage selon qu'il est
+   affiché ou non. Ce bloc n'est rendu que sur mobile (voir
+   `_htmlVueSemaine`), jamais sur desktop, donc pas besoin de le mettre
+   dans la media query. */
+.semaine-nav-jour{ position:relative; justify-content:center; }
+.semaine-nav-jour .semaine-nav-today{ position:absolute; right:0; top:50%; transform:translateY(-50%); }
+
+/* En-tête de colonne mobile : jour/date sont déjà dans la nav du
+   dessus, donc plus besoin de les répéter ici — juste un bouton
+   d'ajout, aligné à droite, en toutes lettres (plus lisible que le "+"
+   minuscule perdu au-dessus de la grille sur desktop). */
+.semaine-entetes-mobile{ display:flex; justify-content:flex-end; margin-bottom:10px; }
+.semaine-entete-plus-mobile{ display:flex; align-items:center; gap:5px; padding:6px 12px; font-size:12.5px; border-radius:8px; }
+
+/* Popover mini-calendrier */
+.semaine-mini-cal{
+  position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%); z-index:20;
+  background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:12px; padding:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.25); width:240px;
+}
+.semaine-mini-cal-entete{ display:flex; align-items:center; justify-content:center; gap:4px; margin-bottom:10px; }
+.semaine-mini-cal-titre{ flex:1; text-align:center; font-size:12.5px; font-weight:600; color:var(--text-primary); text-transform:capitalize; }
+.semaine-mini-cal-titre-clic{
+  background:none; border:none; font-family:inherit; cursor:pointer; border-radius:5px; padding:2px 4px; transition:background .15s;
+}
+.semaine-mini-cal-titre-clic:hover{ background:var(--bg-input); }
+.semaine-mini-cal-mois-grille{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:4px; }
+.semaine-mini-cal-mois-case{
+  padding:10px 4px; border:none; border-radius:7px; background:var(--bg-input); color:var(--text-secondary);
+  font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s, color .15s;
+}
+.semaine-mini-cal-mois-case:hover{ background:var(--bg-panel-2); color:var(--text-primary); }
+.semaine-mini-cal-mois-case.semaine-active{ background:rgba(224,92,92,.22); color:var(--text-primary); }
+.semaine-mini-cal-nav-btn{
+  width:20px; height:20px; border-radius:5px; border:none; background:none; color:var(--text-secondary);
+  font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s, color .15s;
+}
+.semaine-mini-cal-nav-btn:hover{ background:var(--bg-input); color:var(--text-primary); }
+.semaine-mini-cal-jours-entete{ display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:2px; }
+.semaine-mini-cal-jours-entete span{ text-align:center; font-size:10px; color:var(--text-muted); }
+.semaine-mini-cal-grille{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+.semaine-mini-cal-jour{
+  aspect-ratio:1; border:none; background:none; color:var(--text-secondary); font-size:11.5px; border-radius:6px;
+  cursor:pointer; font-family:inherit; transition:background .12s, color .12s;
+}
+.semaine-mini-cal-jour:hover{ background:var(--bg-input); color:var(--text-primary); }
+.semaine-mini-cal-jour.hors-mois{ color:var(--text-muted); opacity:.5; }
+.semaine-mini-cal-jour.aujourdhui{ font-weight:700; color:var(--accent-ui, var(--accent)); }
+.semaine-mini-cal-jour.semaine-active{ background:rgba(224,92,92,.18); color:var(--text-primary); font-weight:600; }
+.semaine-mini-cal-aujourdhui{ display:block; margin:10px auto 0; font-size:11px; }
+
+.semaine-totaux{ display:flex; padding-left:50px; margin-top:8px; padding-top:8px; border-top:1px solid var(--border-subtle); }
+.semaine-total-label{ font-size:11px; font-weight:600; color:var(--text-muted); display:flex; align-items:center; }
+.semaine-total-jour{ flex:1; text-align:center; font-size:12px; font-weight:600; color:var(--text-secondary); }
+
+.semaine-legende{ display:flex; gap:16px; flex-wrap:wrap; font-size:11.5px; color:var(--text-secondary); margin-bottom:16px; }
+.semaine-dot{ display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+.semaine-dot-presence{ background:rgba(224,92,92,.65); border:1px dashed rgba(224,92,92,.9); }
+
+.semaine-entetes{ display:flex; padding-left:50px; margin-bottom:6px; }
+.semaine-entete-jour{ flex:1; text-align:center; font-size:12px; font-weight:600; color:var(--text-secondary); position:relative; padding-top:2px; }
+.semaine-entete-date{ font-size:10.5px; color:var(--text-muted); font-weight:400; }
+.semaine-gouttiere-entete{ width:50px; flex-shrink:0; }
+/* Bouton "+" par colonne (façon calendrier classique) : ajoute un créneau
+   précis sur ce jour indépendamment de ce qui couvre déjà le planning —
+   permet de préciser "1h avec M. X, 30 min avec Mme Y" à l'intérieur d'un
+   bloc de présence, sans avoir à viser un pixel vide (retour de Tiphaine
+   le 03/09/2026). */
+.semaine-entete-plus{
+  position:absolute; top:-2px; right:6px; width:18px; height:18px; border-radius:50%;
+  border:1px solid var(--border-subtle); background:var(--bg-input); color:var(--text-secondary); font-size:12px; line-height:1;
+  cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-family:inherit;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.semaine-entete-plus:hover{ background:var(--bg-panel-2); color:var(--text-primary); border-color:var(--border-subtle); }
+
+/* Hauteur bornée + scroll interne : la semaine reste toujours entièrement
+   contenue dans sa carte, jamais coupée en bas de la page — on scrolle
+   à l'intérieur du planning plutôt que sur toute la page. */
+.semaine-corps-scroll{ max-height:70vh; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none; }
+.semaine-corps-scroll::-webkit-scrollbar{ display:none; }
+.semaine-corps{ display:flex; position:relative; }
+.semaine-gouttiere{ width:50px; flex-shrink:0; position:relative; }
+.semaine-heure-label{ position:absolute; left:0; width:44px; text-align:right; padding-right:6px; font-size:10px; color:var(--text-muted); }
+
+.semaine-jour{ flex:1; position:relative; border-left:1px solid var(--border-subtle); cursor:pointer; transition:background-color .1s; }
+.semaine-jour:last-child{ border-right:1px solid var(--border-subtle); }
+.semaine-jour:hover{ background-color:rgba(255,255,255,.035); }
+.semaine-jour-actif{ background-color:rgba(255,255,255,.02); }
+
+.semaine-bloc{
+  position:absolute; left:10px; right:3px; border-radius:6px; padding:3px 6px;
+  overflow:hidden; z-index:1; cursor:pointer; font-size:11px; line-height:1.3;
+  transition:filter .1s; min-height:25px; box-sizing:border-box;
+}
+.semaine-bloc:hover{ filter:brightness(1.25); }
+.semaine-bloc-titre{ font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.semaine-bloc-sub{ font-size:10px; opacity:.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* Couleur des blocs catégorisés : plus de classes fixes par type — chaque
+   type de tâche a sa propre couleur paramétrable (onglet Paramétrage),
+   appliquée en style inline depuis `temps.js` (`_couleurType`). Seule la
+   forme/structure reste ici. */
+.semaine-bloc{ border-left:3px solid transparent; }
+/* Présence pas encore catégorisée (modèle unifié, 03/09/2026) — même
+   traitement visuel sobre que les autres types (fond translucide, fine
+   bordure gauche), pas un bloc plein rouge/pointillé qui devient criard
+   sur une longue plage horaire (retour de Tiphaine le 03/09/2026 : "c'est
+   moche"). Le rouge reste discret, juste un repère de couleur. */
+.semaine-bloc-presence{
+  /* Ancien fond gris neutre (rgba(140,140,140,.16)) : correct sur fond
+     sombre, mais donne un pavé gris "sale" et plat sur un thème clair —
+     retour de Tiphaine le 03/09/2026 ("c'est moche en blanc"). Remplacé
+     par un lavis de la même teinte rouge que la bordure (cohérent avec
+     les blocs catégorisés, qui sont tous des teintes de leur couleur),
+     beaucoup plus discret et élégant quel que soit le thème. */
+  background:rgba(224,92,92,.09); border-left:3px solid rgba(224,92,92,.6); color:var(--text-secondary);
+  /* Toujours derrière les créneaux catégorisés : quand une présence brute
+     chevauche un travail déjà catégorisé (ex : doublon issu de l'ancienne
+     migration), elle ne doit jamais intercepter le clic destiné au bloc
+     catégorisé qui est par-dessus (retour de Tiphaine le 03/09/2026, cas
+     concret sur M. Martin). */
+  z-index:0;
+}
+.semaine-bloc-presence .semaine-bloc-titre{ color:#c25f5f; font-weight:500; }
+.semaine-bloc-presence .semaine-bloc-sub{ font-style:italic; opacity:.85; color:var(--text-muted); }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE MOBILE (06/09/2026)
+   Avant ce chantier, la sidebar restait à 220px fixes quel que soit
+   l'écran : sur téléphone elle mangeait quasiment tout l'écran et le
+   contenu (ex : tableau Devis) se retrouvait écrasé sur une bande de
+   quelques dizaines de pixels — capture d'écran de Tiphaine. Seuil choisi
+   à 880px (pas 720px comme les media queries existantes) : la sidebar de
+   220px + un contenu lisible ont besoin d'un peu plus de largeur avant de
+   basculer, on préfère basculer un peu tôt plutôt que de laisser un entre-
+   deux étriqué sur les tablettes portrait.
+═══════════════════════════════════════════════════════════ */
+@media (max-width:880px){
+  /* Sidebar remplacée par la barre du bas — voir .mobile-tabbar. */
+  .sidebar{ display:none; }
+  .app{ display:block; } /* plus besoin du flex sidebar+colonne */
+  .main-col{ min-height:100vh; }
+
+  /* Topbar : la recherche prend toute la largeur dispo, l'icône de
+     notif/le chrono restent visibles mais sans le texte client (déjà
+     masqué par la media query existante sur .timer-widget-client). */
+  .topbar{ padding:0 14px; gap:10px; }
+  .topbar-brand-mobile{ display:flex; }
+  .topbar-search{ width:auto; max-width:none; flex:1; gap:6px; padding:7px 10px; }
+  /* 08/09/2026, "on voit pas tout le texte" (placeholder coupé) —
+     réduit un peu la taille du texte pour que les placeholders les
+     plus longs (Technique, Devis...) tiennent dans la largeur
+     disponible sur mobile. */
+  .topbar-search input{ font-size:12px; }
+  .topbar-right{ gap:8px; }
+
+  /* Espace en bas pour ne jamais laisser la barre fixe recouvrir le
+     dernier élément de la page (bouton "Enregistrer" d'une carte, etc.). */
+  .content{ padding:12px 14px calc(84px + env(safe-area-inset-bottom)); }
+
+  /* ── Haut de page resserré (06/09/2026, retour de Tiphaine sur
+     Devis/Factures/Projets) ── Le haut de chaque page (titre, sous-
+     titre, en-tête, carte de recherche) était pensé pour du desktop où
+     l'espace ne manque pas — sur un petit écran il fallait scroller
+     avant même d'arriver à la 1ère ligne de contenu. */
+  .page-title{ margin-bottom:2px; }
+  .page-sub{ margin-bottom:4px; }
+  /* 08/09/2026, retour "trop trop grosse" — resserré une 2e fois, et
+     cette fois aussi le padding horizontal de la carte + le padding de
+     l'`<input>` lui-même (posé en style inline dans chaque module,
+     d'où le `!important` pour le sous-cerner ici en un seul endroit
+     plutôt que dans chaque fichier). Baisse générale, pas juste
+     Technique — touche Devis/Factures/Clients/Prospects/Projets/
+     Tickets/Abonnements/Technique d'un coup. */
+  .page-search-card{ margin-bottom:8px; padding:8px 10px !important; }
+  .page-search-card input[type="text"]{ padding:6px 9px !important; font-size:13px !important; }
+
+  /* Un tableau (Devis, Factures, Clients...) n'a jamais de wrapper dédié
+     dans le HTML de chaque module — plutôt que de retoucher chaque
+     module un par un, on rend directement la carte qui le contient
+     défilable horizontalement : aucune colonne n'est jamais coupée ou
+     écrasée, on scrolle le tableau au lieu du reste de la page. */
+  .card{ overflow-x:auto; padding:15px 16px; }
+
+  .grid{ gap:10px; }
+
+  /* ── Dashboard (06/09/2026, écran par écran avec Tiphaine) ──
+     Les 4 cartes-chiffres (CA/MRR/CA annuel/Clients) en 1 colonne
+     obligeaient à scroller longtemps avant d'arriver à "À ne pas
+     oublier", la carte la plus actionnable de la page. En 2×2 elles
+     tiennent sur ~1 écran et le contenu (un montant + une ligne) reste
+     très lisible même dans une carte deux fois plus étroite. */
+  .dash-kpis{ grid-template-columns:1fr 1fr; gap:10px; }
+  .dash-kpis .stat-value{ font-size:19px; }
+  .dash-kpis .stat-label{ margin-bottom:5px; }
+
+  /* Légende couleurs de la Vue Semaine (07/09/2026, "réduis l'espacement
+     ici") : sur mobile la légende passe systématiquement sur 2 lignes
+     (5 types + présence dans une largeur étroite) — le gap desktop
+     (16px) laissait un espace vertical entre les deux lignes bien trop
+     grand pour du simple texte. Resserré horizontalement ET verticalement. */
+  .semaine-legende{ gap:6px 14px; margin-bottom:12px; }
+
+  /* Grille horaire mobile (07/09/2026, "enlève le défilement du
+     calendrier") : le double scroll (page + zone interne limitée à
+     70vh) était gênant au doigt — un scroll dans le scroll. Sur mobile
+     on affiche la grille en entier (7h-20h tient en ~360px avec la
+     hauteur d'heure réduite à 28px, voir `_htmlVueSemaine`) et on
+     laisse la page défiler normalement, comme le reste de l'écran. */
+  .semaine-corps-scroll{ max-height:none; overflow-y:visible; }
+
+  /* Temps — les 3 cartes "Aujourd'hui / Cette semaine / Ce mois-ci"
+     (06/09/2026, retour de Tiphaine : "fais un effort tu bacles" sur le
+     premier passage qui les laissait empilées en pleine largeur, comme
+     le problème déjà résolu sur le Dashboard). Même traitement : grille
+     compacte sur une seule ligne (3 colonnes serrées plutôt que 3
+     cartes pleine largeur empilées), padding et police réduits, et la
+     phrase d'explication sous "Aujourd'hui" masquée sur mobile (déjà
+     redondante avec l'onglet "Forfaits & projets" juste en dessous). */
+  .temps-kpis{ grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px; }
+  .temps-kpis .card{ padding:12px 10px; }
+  .temps-kpis .stat-label{ font-size:10px; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .temps-kpis .stat-value{ font-size:17px; }
+  .temps-kpi-detail{ display:none; }
+
+  /* Finances (07/09/2026, écran par écran) — mêmes 4 cartes-chiffres
+     (CA encaissé/facturé/prévisionnel/MRR) que le Dashboard, même
+     traitement : grille 2×2 compacte au lieu de 4 cartes empilées. */
+  .finances-kpis{ grid-template-columns:1fr 1fr; gap:10px; }
+  .finances-kpis .stat-value{ font-size:19px; }
+  .finances-kpis .stat-label{ margin-bottom:5px; }
+  /* "Ce que ça change" : titre + lien externe côte à côte débordaient
+     sur mobile (titre déjà long : "Ce que ça change (auto-entrepreneur,
+     valeurs 2026)") — empilés à la place. */
+  .finances-cta-row{ flex-direction:column; align-items:flex-start; gap:4px; }
+
+  /* Ligne d'alerte "À ne pas oublier" : sur desktop le bouton d'action
+     tient à droite du texte sur une seule ligne. Sur mobile le texte
+     (souvent une phrase complète avec une date) prend toute la largeur
+     — passe en colonne (texte, puis bouton en dessous). Historique des
+     essais (06/09/2026, retours de Tiphaine) : bouton pleine largeur
+     (trop haut) → bouton compact en boîte (encore trop haut) → simple
+     lien texte gris (trop discret, "on ne voit pas assez que c'est un
+     bouton"). Version actuelle : petit chip avec un fond léger (assez
+     de contraste pour se voir comme cliquable, sans le poids d'une vraie
+     bordure), aligné à DROITE (`align-self:flex-end`) comme sur desktop
+     plutôt qu'à gauche sous le texte. La pastille reste toujours collée
+     à son texte (`.alert-row-main`, jamais séparée par le wrap). */
+  .alert-row{ flex-direction:column; align-items:stretch; padding:7px 0; }
+  .alert-row-main{ gap:8px; }
+  .alert-row .alert-text{ font-size:13px; }
+  .alert-row .alert-sub{ font-size:11.5px; line-height:1.3; }
+  .alert-row .alert-action{
+    margin:-6px 0 0; align-self:flex-end; background:rgba(255,255,255,.09); border:none;
+    padding:2px 9px; border-radius:6px; color:var(--text-primary); font-size:11.5px; font-weight:600;
+  }
+  .alert-row .alert-action:active{ background:rgba(255,255,255,.16); }
+
+  /* ── En-tête de page (06/09/2026, Devis) ──
+     Sur desktop, titre à gauche / filtre+bouton à droite tiennent sur
+     une ligne. Sur mobile le sous-titre ("4 devis — 3 200 € en attente
+     de réponse") est trop long : passe en colonne (titre puis actions,
+     chacun pleine largeur) plutôt que de laisser le bouton "+ Nouveau
+     devis" se faire écraser et voir son texte passer à la ligne. */
+  .page-header-row{ flex-direction:column; align-items:stretch; gap:8px; margin-bottom:12px; }
+  /* Documents (08/09/2026, "ne met pas d'espace comme ça") — cette
+     règle mobile arrivait APRÈS `.documents-header-row{margin-bottom:
+     4px}` plus haut dans le fichier, donc l'écrasait silencieusement
+     (même spécificité, la dernière règle du fichier gagne). Sélecteur
+     combiné pour repasser devant sans dépendre de l'ordre. */
+  .page-header-row.documents-header-row{ margin-bottom:0; gap:0; }
+  .documents-header-row .page-title{ margin-bottom:0; }
+  .page-header-actions{ width:100%; justify-content:flex-end; }
+  /* 08/09/2026, "fait pareil que Devis... pour tous les autres écrans"
+     — le `flex:1` pleine largeur (essayé plus tôt le même jour) donnait
+     une grosse puce étirée bord à bord. Repris sur le modèle Devis :
+     bouton compact à sa taille naturelle, groupé à droite (le parent
+     `.page-header-actions` est déjà en `justify-content:flex-end`).
+     Touche tous les boutons "+ Nouveau..." en en-tête de page (Devis,
+     Factures, Clients, Prospects, Projets, Tickets, Abonnements,
+     Documents...) — sur les pages à 2 boutons (Prospects "Prospects
+     froids" + "+ Nouveau", Abonnements "Résiliés" + "+ Nouvel
+     abonnement"), les deux redeviennent compacts et se regroupent à
+     droite, comme le duo filtre+bouton de Devis. */
+  .page-header-actions .btn{ flex:none; white-space:nowrap; padding:8px 12px; font-size:12.5px; }
+  /* Pages avec 2 boutons dans l'en-tête (Prospects "Prospects froids" +
+     "+ Nouveau", Abonnements "Résiliés" + "+ Nouvel abonnement",
+     Temps "Ajouter un créneau" + "Démarrer un chrono") — même
+     traitement pleine largeur que `.page-header-actions`. */
+  .temps-actions{ width:100%; }
+  .temps-actions .btn, .temps-actions .btn-ghost{ flex:1; white-space:nowrap; padding:10px 8px; }
+
+  /* ── Devis : liste de cartes au lieu du tableau (06/09/2026) ──
+     Voir commentaire dans devis.js `_htmlCarteMobile` — un tableau à 11
+     colonnes en scroll horizontal faisait perdre le nom du client dès
+     qu'on voulait voir le statut ou facturer. */
+  .devis-table-wrap{ display:none; }
+  .devis-mobile-list{ display:flex; flex-direction:column; gap:8px; }
+  .devis-mcard{
+    background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:14px;
+    padding:12px 14px; cursor:pointer;
+  }
+  .devis-mcard-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+  .devis-mcard-client{ font-size:14px; font-weight:600; color:var(--text-primary); }
+  .devis-mcard-offre{ font-size:12px; color:var(--text-secondary); margin-top:1px; }
+  .devis-mcard-montant{ font-size:16px; font-weight:700; margin-top:4px; }
+  .devis-mcard-section{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin-top:7px; padding-top:7px; border-top:1px solid var(--border-subtle);
+  }
+  .devis-mcard-label{ font-size:10.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; flex-shrink:0; }
+  .devis-mcard-fact-actions{ display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end; }
+  /* `_celluleJustificatif` (devis.js) est codée en `white-space:nowrap`
+     pour la colonne de tableau desktop, où il y a toujours assez de
+     place. Dans la carte mobile, plus étroite, ce même contenu doit
+     pouvoir passer à la ligne (ex : "+ Ajouter" + case "Signé"). */
+  .devis-mcard-section [style*="white-space:nowrap"]{ white-space:normal !important; flex-wrap:wrap; }
+  .devis-mcard-footer{
+    display:flex; align-items:center; justify-content:space-between; gap:6px;
+    margin-top:8px; padding-top:8px; border-top:1px solid var(--border-subtle);
+  }
+  .devis-mcard-footer .btn-ghost{ padding:4px 9px; font-size:11px; border-radius:7px; }
+  /* Boutons/chips internes aux sections (Signé, Acompte/Solde...) —
+     mêmes classes `.btn-ghost` que partout ailleurs, mais un peu plus
+     petits ici : la carte est déjà dense, pas besoin de la même taille
+     de bouton que dans un formulaire pleine page. */
+  .devis-mcard-section .btn-ghost{ padding:4px 9px !important; font-size:11px !important; }
+
+  /* ── Factures : liste de cartes au lieu du tableau (06/09/2026) ──
+     Même pattern/raisons que Devis (13 colonnes en scroll horizontal,
+     mauvais sur mobile). Réutilise `.devis-mcard-footer`/`.devis-mcard-
+     label` pour ne pas dupliquer ces styles. */
+  .factures-table-wrap{ display:none; }
+  .factures-mobile-list{ display:flex; flex-direction:column; gap:8px; }
+  .facture-mcard{
+    background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:14px;
+    padding:12px 14px; cursor:pointer;
+  }
+  .facture-mcard-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+  .facture-mcard-client{ font-size:14px; font-weight:600; color:var(--text-primary); }
+  .facture-mcard-libelle{ font-size:12px; color:var(--text-secondary); margin-top:1px; }
+  .facture-mcard-montants{
+    display:flex; gap:14px; margin-top:8px; padding-top:8px; border-top:1px solid var(--border-subtle);
+  }
+  .facture-mcard-montant{ font-size:14px; font-weight:700; margin-top:2px; }
+  .facture-mcard-payee{
+    display:block; width:100%; margin-top:8px; text-align:center; color:#6ec88c !important;
+    padding:6px 9px !important; font-size:11.5px !important;
+  }
+
+  /* ── Prospects : sections empilées, toutes repliées par défaut
+     (06/09/2026, 3e essai) ──
+     Le Kanban en swipe horizontal coupait les colonnes suivantes hors
+     écran ("EN ATTENT..." illisible sans scroller) — pas naturel au
+     doigt. 2e essai en onglets : retour de Tiphaine, pas envie de
+     scroller les onglets + le style pilule ne lui plaisait pas. Retour
+     aux sections empilées (1er essai) mais TOUTES repliées par défaut
+     cette fois (le 1er essai les avait presque toutes ouvertes,
+     prenait de la hauteur pour rien). Les cartes (`.kanban-card`) sont
+     réutilisées telles quelles à l'intérieur. */
+  .kanban-desktop-wrap{ display:none; }
+  .prospects-mobile-list{ display:flex; flex-direction:column; gap:8px; }
+  .prospects-section{
+    background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:14px; overflow:hidden;
+  }
+  .prospects-section-header{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    background:none; border:none; padding:13px 14px; color:var(--text-primary);
+    font-family:inherit; font-size:13.5px; font-weight:600; cursor:pointer;
+  }
+  .prospects-section-chevron{ color:var(--text-muted); transition:transform .15s; font-size:12px; }
+  .prospects-section-chevron.ouvert{ transform:rotate(180deg); }
+  .prospects-section-cartes{ display:flex; flex-direction:column; gap:8px; padding:0 14px 14px; }
+  .prospects-section-cartes .kanban-card{ width:auto; }
+
+  /* ── Clients : liste de cartes au lieu du tableau (06/09/2026) ──
+     Même pattern/raisons que Devis/Factures (7 colonnes en scroll
+     horizontal, mauvais sur mobile). Réutilise `.devis-mcard-section`/
+     `.devis-mcard-label` pour ne pas dupliquer ces styles. */
+  .clients-table-wrap{ display:none; }
+  .clients-mobile-list{ display:flex; flex-direction:column; gap:8px; }
+  .client-mcard{
+    position:relative; background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:14px;
+    padding:12px 14px; cursor:pointer;
+  }
+  .client-mcard-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding-right:26px; }
+  .client-mcard-nom{ font-size:14px; font-weight:600; color:var(--text-primary); }
+  .client-mcard-entreprise{ font-size:12px; color:var(--text-secondary); margin-top:1px; }
+
+  /* ── Tarifs : cartes au lieu du tableau groupé (06/09/2026) ──
+     Retour de Tiphaine : les lignes de prix n'étaient pas assez
+     clairement cliquables, et le badge de catégorie coloré + bordure
+     gauche n'était pas terrible visuellement sur mobile. En-tête de
+     groupe simplifié en texte sobre (sans badge ni couleur — cohérent
+     avec le reste de l'appli, la couleur vive n'est jamais utilisée
+     ailleurs), cartes avec prix mis en avant et toute la carte
+     cliquable pour modifier. */
+  .catalogue-table-wrap{ display:none; }
+  .catalogue-mobile-list{ display:flex; flex-direction:column; gap:2px; }
+  .catalogue-groupe-titre-mobile{
+    font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--text-muted); padding:10px 2px 4px;
+  }
+  .catalogue-mobile-list > .catalogue-groupe-titre-mobile:first-child{ padding-top:2px; }
+  .catalogue-mobile-cartes{ display:flex; flex-direction:column; gap:6px; margin-bottom:4px; }
+  /* Carte compacte en ligne (06/09/2026, 2e passe — retour de Tiphaine :
+     "trop gros") : nom+description à gauche, prix à droite, tout sur
+     une seule ligne au lieu d'empiler le prix en dessous en gros. */
+  .catalogue-mcard{
+    display:flex; align-items:center; gap:8px; background:var(--bg-panel);
+    border:1px solid var(--border-subtle); border-radius:11px; padding:9px 8px 9px 12px; cursor:pointer;
+  }
+  .catalogue-mcard-info{ flex:1; min-width:0; }
+  .catalogue-mcard-nom{ font-size:13px; font-weight:600; color:var(--text-primary); }
+  .catalogue-mcard-desc{ font-size:11px; color:var(--text-secondary); margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .catalogue-mcard-prix{ font-size:13.5px; font-weight:700; white-space:nowrap; flex-shrink:0; }
+  .catalogue-mcard .row-delete-btn{ flex-shrink:0; }
+
+  /* ── Tickets : cartes au lieu du tableau (06/09/2026) ──
+     Même pattern que Devis/Factures/Clients (6 colonnes en scroll
+     horizontal, mauvais sur mobile). */
+  .tickets-table-wrap{ display:none; }
+  .tickets-mobile-list{ display:flex; flex-direction:column; gap:8px; }
+  .ticket-mcard{
+    position:relative; background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:14px;
+    padding:12px 14px; cursor:pointer;
+  }
+  .ticket-mcard-delete{ position:absolute; top:10px; right:10px; }
+  .ticket-mcard-sujet{ font-size:14px; font-weight:600; color:var(--text-primary); padding-right:26px; }
+  .ticket-mcard-client{ font-size:12px; color:var(--text-secondary); margin-top:2px; }
+  .ticket-mcard-bottom{ display:flex; align-items:center; gap:8px; margin-top:9px; }
+  .ticket-mcard-date{ font-size:11px; color:var(--text-muted); margin-left:auto; }
+  /* Bouton "✓ Marquer résolu" (06/09/2026) — pleine largeur sous la
+     carte, même logique que "Marquer payée" sur les factures : l'action
+     la plus fréquente doit être atteignable en un tap sans ouvrir la fiche. */
+  .ticket-mcard-resoudre{
+    display:block; width:100%; margin-top:10px; padding:8px 0; border-radius:8px;
+    font-size:12.5px; font-weight:600; color:#6ec88c; text-align:center;
+    background:rgba(110,200,140,.1); border:1px solid rgba(110,200,140,.25);
+  }
+
+  /* ── Abonnements : cartes au lieu du tableau (07/09/2026) ──
+     Même pattern que Tickets — 7 colonnes en scroll horizontal,
+     illisible sur mobile. */
+  .abos-table-wrap{ display:none; }
+  .abos-mobile-list{ display:flex; flex-direction:column; gap:8px; }
+  .abo-mcard{
+    position:relative; background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:14px;
+    padding:12px 14px; cursor:pointer;
+  }
+  .abo-mcard-delete{ position:absolute; top:10px; right:10px; }
+  .abo-mcard-client{ font-size:14px; font-weight:600; color:var(--text-primary); padding-right:26px; }
+  .abo-mcard-formule{ font-size:12px; color:var(--text-secondary); margin-top:2px; }
+  .abo-mcard-bottom{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:9px; font-size:11.5px; color:var(--text-muted); }
+  .abo-mcard-mrr{ font-weight:600; color:var(--text-primary); }
+  .abo-mcard-depuis{ margin-left:auto; }
+  /* Bouton "Facturer [mois]" — même traitement plein-largeur que
+     "Marquer payée"/"✓ Marquer résolu" : l'action la plus fréquente
+     doit être atteignable en un tap sans ouvrir la fiche. */
+  .abo-mcard-facturer{
+    display:block; width:100%; margin-top:10px; padding:8px 0; border-radius:8px;
+    font-size:12.5px; font-weight:600; color:var(--text-primary); text-align:center;
+    background:var(--bg-input); border:1px solid var(--border-subtle);
+  }
+  .abo-mcard-a-jour{ margin-top:10px; font-size:12px; font-weight:600; color:#6ec88c; text-align:center; }
+
+  /* Technique — Domaines/Hébergement/Accès techniques (08/09/2026,
+     mêmes tableaux à 6-10 colonnes qu'Abonnements/Devis, illisibles en
+     scroll horizontal sur mobile). Une seule carte réutilisée pour les
+     3 sous-onglets plutôt que 3 variantes quasi identiques. */
+  .technique-table-wrap{ display:none; }
+  .technique-mobile-list{ display:flex; flex-direction:column; gap:8px; }
+  .technique-mcard{
+    position:relative; background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:14px;
+    padding:12px 14px; cursor:pointer;
+  }
+  .technique-mcard-delete{ position:absolute; top:10px; right:10px; }
+  .technique-mcard-titre{ font-size:14px; font-weight:600; color:var(--text-primary); padding-right:26px; }
+  .technique-mcard-sub{ font-size:12px; color:var(--text-secondary); margin-top:2px; }
+  .technique-mcard-bottom{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:9px; font-size:11.5px; color:var(--text-muted); }
+  .technique-mcard-cout{ font-weight:600; color:var(--text-primary); margin-left:auto; }
+
+  /* Documents — tableau du contenu d'un dossier (7 colonnes, 08/09/2026,
+     même traitement table→carte que les autres écrans). */
+  .documents-table-wrap{ display:none; }
+  .documents-mobile-list{ display:flex; flex-direction:column; gap:8px; }
+  .documents-mcard{
+    background:var(--bg-panel); border:1px solid var(--border-subtle); border-radius:14px;
+    padding:12px 14px; cursor:pointer;
+  }
+  .documents-mcard-top{ display:flex; align-items:center; gap:8px; }
+  .documents-mcard-nom{ font-size:14px; font-weight:600; color:var(--text-primary); }
+  .documents-mcard-bottom{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:8px; font-size:11.5px; color:var(--text-muted); }
+  .documents-mcard-actions{ display:flex; align-items:center; gap:8px; margin-top:10px; }
+  .documents-mcard-actions .btn-ghost{ flex:1; justify-content:center; }
+
+  /* Cartes dossiers (08/09/2026, "beaucoup plus petites") — passent
+     d'un empilement vertical (icône/nom/meta/bouton, ~110px de haut
+     chacune) à une ligne horizontale compacte (icône · nom+meta ·
+     bouton), comme une ligne de liste plutôt qu'une carte pleine. */
+  .documents-dossiers-grille{ grid-template-columns:1fr; gap:6px; }
+  .documents-dossier-carte{
+    flex-direction:row; align-items:center; gap:10px; padding:9px 12px;
+  }
+  .documents-dossier-icone{ margin-bottom:0; flex-shrink:0; }
+  .documents-dossier-icone .nav-icon svg{ width:17px; height:17px; }
+  .documents-dossier-info{ flex:1; min-width:0; }
+  .documents-dossier-nom{ font-size:13px; }
+  .documents-dossier-meta{ margin-bottom:0; font-size:10.5px; }
+  .documents-dossier-telecharger{ flex-shrink:0; padding:6px 8px; }
+  .documents-dossier-telecharger-texte{ display:none; }
+
+  /* Carte "Stockage navigateur utilisé" (08/09/2026, "réduit ça") —
+     même sur-dimensionnement que la barre de recherche avant son
+     correctif : padding desktop (20px→15/16px mobile) trop généreux
+     pour 3 lignes de contenu. */
+  .documents-stockage-card{ padding:10px 12px !important; margin-bottom:10px !important; }
+
+  /* Modals plein écran sur mobile — plus confortable qu'une boîte
+     centrée avec des marges de 20px de chaque côté sur un petit écran. */
+  .modal-overlay{ padding:0; align-items:flex-end; }
+  .modal-box{ max-width:none; width:100%; border-radius:16px 16px 0 0; max-height:92vh; }
+
+  .param-card-mobile-only{ display:block; }
+
+  /* ── Barre de nav fixée en bas ── */
+  .mobile-tabbar{
+    display:flex; position:fixed; left:0; right:0; bottom:0; z-index:40;
+    background:var(--bg-panel-2); border-top:1px solid var(--border-subtle);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  }
+  .mobile-tab{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:3px; padding:6px 2px; border-radius:10px; border:none; background:none; cursor:pointer;
+    color:var(--text-secondary); font-family:inherit; position:relative;
+  }
+  .mobile-tab .nav-icon{ font-size:18px; width:auto; }
+  .mobile-tab.active{ color:var(--text-primary); }
+  .mobile-tab-label{ font-size:10px; font-weight:600; }
+  /* La pastille rouge se recale en haut à droite de l'icône plutôt qu'en
+     bout de ligne (place bien plus contrainte que dans la sidebar). */
+  .mobile-tab .nav-badge-dot{ position:absolute; top:2px; right:calc(50% - 16px); margin-left:0; }
+
+  /* ── Tiroir "Plus" ── */
+  .mobile-sheet-overlay{
+    display:block; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:50;
+    opacity:0; pointer-events:none; transition:opacity .18s;
+  }
+  .mobile-sheet-overlay.open{ opacity:1; pointer-events:auto; }
+  .mobile-sheet{
+    position:absolute; left:0; right:0; bottom:0; background:var(--bg-panel-2);
+    border-top:1px solid var(--border-subtle); border-radius:16px 16px 0 0;
+    padding:10px 16px calc(18px + env(safe-area-inset-bottom));
+    transform:translateY(100%); transition:transform .2s;
+    max-height:75vh; overflow-y:auto;
+  }
+  .mobile-sheet-overlay.open .mobile-sheet{ transform:translateY(0); }
+  .mobile-sheet-handle{ width:36px; height:4px; border-radius:99px; background:var(--border-subtle); margin:2px auto 14px; }
+  .mobile-sheet-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .mobile-sheet-item{
+    display:flex; align-items:center; gap:9px; padding:12px 10px; border-radius:10px;
+    font-size:13px; font-weight:500;
+  }
+  .mobile-sheet-item .nav-badge-dot{ margin-left:auto; }
+  .mobile-sheet-logout{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-top:14px;
+    padding:12px; border-radius:10px; border:1px solid var(--border-subtle); background:transparent;
+    color:var(--text-muted); font-size:13px; cursor:pointer; font-family:inherit;
+  }
+}
+
+/* En dessous de 880px, `.nav-item` est réutilisé par 3 endroits différents
+   (sidebar desktop, tabbar mobile, tiroir "Plus") — le style `.active`
+   défini plus haut (fond gris) ne convient qu'à la sidebar. Neutralisé
+   pour la tabbar (qui a son propre `.mobile-tab.active`, texte blanc sans
+   fond) et le tiroir (une page ouverte n'a pas besoin d'y être signalée,
+   on la ferme dès qu'on clique dessus). */
+@media (max-width:880px){
+  .mobile-tab.active{ background:none; }
+  .mobile-sheet-item.active{ background:var(--bg-input); }
+}

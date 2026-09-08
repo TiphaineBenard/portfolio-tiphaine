@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Tiphaine OS</title>
+<link rel="icon" type="image/png" href="assets/logo-sf.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+
+<!-- PWA (06/09/2026) — installable sur mobile ("Ajouter à l'écran
+     d'accueil"), plein écran sans barre d'adresse. -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- Tags historiques Apple : Safari iOS ignore `manifest.json` pour le
+     mode plein écran et lit encore ces meta-là spécifiquement. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tiphaine OS">
+<link rel="stylesheet" href="style.css?v=164">
+</head>
+<body>
+
+<!-- ═══════════════════ DEMO BANNER ═══════════════════
+     Copie publique uniquement (jamais dans l'app réelle de Tiphaine) —
+     même bandeau que les autres démos du portfolio (PadelPro_Demo,
+     EventPro_Demo, Commandes_Demo...) : fixe en haut, fond orange,
+     bouton pour repartir de zéro.
+     08/09/2026, "la barre démo en version téléphone ça va pas" — sur
+     mobile, le texte descriptif + les séparateurs faisaient passer le
+     bandeau sur 3 lignes, recouvrant le haut de l'app (padding-top fixe
+     de 26px insuffisant). Texte du milieu masqué sous 640px (seul
+     l'essentiel — "VERSION DÉMO" + bouton reset — reste), et le
+     padding-top du body est calculé en JS à partir de la HAUTEUR RÉELLE
+     du bandeau (plutôt qu'une valeur fixe) pour rester juste quel que
+     soit le nombre de lignes sur un écran donné. -->
+<div id="demo-banner" style="position:fixed;top:0;left:0;right:0;z-index:10000;background:#f59e0b;color:#1c1917;padding:5px 16px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:14px;font-size:12px;font-weight:700;letter-spacing:0.03em;box-shadow:0 1px 4px rgba(0,0,0,0.15)">
+  <span>🖥️ VERSION DÉMO</span>
+  <span class="demo-banner-detail" style="font-weight:400;opacity:0.8">|</span>
+  <span class="demo-banner-detail">Business OS interne de Tiphaine — données fictives</span>
+  <span class="demo-banner-detail" style="font-weight:400;opacity:0.8">|</span>
+  <button id="btn-reset-demo" style="background:rgba(0,0,0,0.12);border:1px solid rgba(0,0,0,0.15);color:#1c1917;font:inherit;font-weight:600;padding:2px 10px;border-radius:20px;cursor:pointer;font-size:11px;">↺ Réinitialiser la démo</button>
+</div>
+<style>
+  @media (max-width:640px){
+    #demo-banner{ font-size:11px; gap:8px; padding:6px 10px; }
+    .demo-banner-detail{ display:none; }
+  }
+</style>
+<script>
+  (function () {
+    function ajusterPaddingBody() {
+      var banniere = document.getElementById('demo-banner');
+      if (banniere) document.body.style.paddingTop = banniere.offsetHeight + 'px';
+    }
+    ajusterPaddingBody();
+    window.addEventListener('resize', ajusterPaddingBody);
+    window.addEventListener('load', ajusterPaddingBody);
+  })();
+</script>
+<script>
+  document.getElementById('btn-reset-demo').addEventListener('click', function () {
+    if (confirm('Réinitialiser cette démo et repartir de zéro ?')) {
+      Object.keys(localStorage).filter(function (k) { return k.indexOf('tos_') === 0; }).forEach(function (k) { localStorage.removeItem(k); });
+      location.reload();
+    }
+  });
+</script>
+
+  <!-- ═══════════════════════════════════════════════════
+       ÉCRAN DE CONNEXION — visible tant que l'utilisateur
+       n'est pas authentifié (voir app.js / onAuthStateChanged)
+  ═══════════════════════════════════════════════════ -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-box">
+      <div class="login-brand">TIPHAINE OS</div>
+      <p class="login-sub">Ton système d'exploitation professionnel.</p>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="Email" autocomplete="username" required>
+        <input type="password" id="login-password" placeholder="Mot de passe" autocomplete="current-password" required>
+        <button type="submit" id="login-submit">Se connecter</button>
+        <p id="login-error" class="login-error"></p>
+      </form>
+      <p class="login-note">Accès privé — réservé à Tiphaine Bénard.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       APPLICATION — masquée tant que non connecté
+  ═══════════════════════════════════════════════════ -->
+  <div id="app" class="app hidden">
+
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-mark"><img src="assets/logo-icon.png" alt="TB"></span>
+        <span class="brand-text">Tiphaine OS</span>
+        <button class="notif-btn" id="notif-btn" style="margin-left:auto;"><span data-icon="bell"></span><span class="notif-dot" id="notif-dot"></span></button>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav">
+        <a href="#/dashboard" class="nav-item" data-route="dashboard">
+          <span class="nav-icon" data-icon="home"></span> Dashboard
+        </a>
+
+        <div class="nav-group">
+          <div class="nav-group-label">Commercial</div>
+          <a href="#/prospects" class="nav-item" data-route="prospects"><span class="nav-icon" data-icon="briefcase"></span> Prospects</a>
+          <a href="#/devis" class="nav-item" data-route="devis"><span class="nav-icon" data-icon="fileText"></span> Devis<span class="nav-badge-dot"></span></a>
+          <a href="#/factures" class="nav-item" data-route="factures"><span class="nav-icon" data-icon="receipt"></span> Factures<span class="nav-badge-dot"></span></a>
+          <a href="#/clients" class="nav-item" data-route="clients"><span class="nav-icon" data-icon="users"></span> Clients</a>
+          <a href="#/tarifs" class="nav-item" data-route="tarifs"><span class="nav-icon" data-icon="tag"></span> Tarifs</a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">Production</div>
+          <a href="#/projets" class="nav-item" data-route="projets"><span class="nav-icon" data-icon="grid"></span> Projets<span class="nav-badge-dot"></span></a>
+          <a href="#/tickets" class="nav-item" data-route="tickets"><span class="nav-icon" data-icon="ticket"></span> Tickets<span class="nav-badge-dot"></span></a>
+          <a href="#/temps" class="nav-item" data-route="temps"><span class="nav-icon" data-icon="clock"></span> Temps</a>
+        </div>
+
+        <a href="#/abonnements" class="nav-item" data-route="abonnements"><span class="nav-icon" data-icon="refresh"></span> Abonnements</a>
+        <a href="#/calendrier" class="nav-item" data-route="calendrier"><span class="nav-icon" data-icon="calendar"></span> Calendrier</a>
+
+        <div class="nav-group">
+          <div class="nav-group-label">Administration</div>
+          <a href="#/finances" class="nav-item" data-route="finances"><span class="nav-icon" data-icon="wallet"></span> Finances</a>
+          <a href="#/technique" class="nav-item" data-route="technique"><span class="nav-icon" data-icon="wrench"></span> Technique<span class="nav-badge-dot"></span></a>
+          <a href="#/documents" class="nav-item" data-route="documents"><span class="nav-icon" data-icon="folder"></span> Documents</a>
+        </div>
+
+        <div class="nav-group" style="margin-top:auto;">
+          <a href="#/parametrage" class="nav-item" data-route="parametrage"><span class="nav-icon" data-icon="settings"></span> Paramétrage</a>
+        </div>
+      </nav>
+
+      <button id="logout-btn" class="logout-btn"><span class="nav-icon" data-icon="logout"></span> Déconnexion</button>
+    </aside>
+
+    <div class="main-col">
+      <header class="topbar">
+        <a href="#/dashboard" class="topbar-brand-mobile"><img src="assets/logo-icon.png" alt="Tiphaine OS"></a>
+        <div class="topbar-search">
+          <span class="search-icon" data-icon="search"></span>
+          <input type="text" id="global-search" placeholder="Rechercher...">
+        </div>
+        <div class="topbar-right">
+          <div id="presence-widget"></div>
+          <div id="global-timer"></div>
+        </div>
+      </header>
+
+      <main id="content" class="content">
+        <!-- Rempli dynamiquement par app.js selon la route -->
+      </main>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         NAV MOBILE (06/09/2026) — sous 880px, la sidebar
+         disparaît (voir style.css) et cette barre fixée en bas
+         d'écran la remplace : les 4 pages les plus utilisées au
+         pouce + un bouton "Plus" qui ouvre le tiroir avec tout
+         le reste (même liste que la sidebar). Les items qui ont
+         `data-route` sont reconnus automatiquement par
+         `setActiveNav`/`majBadgesNav` dans app.js — rien à
+         dupliquer côté JS pour l'état actif ou les pastilles.
+    ═══════════════════════════════════════════════════ -->
+    <nav class="mobile-tabbar" id="mobile-tabbar">
+      <a href="#/dashboard" class="nav-item mobile-tab" data-route="dashboard">
+        <span class="nav-icon" data-icon="home"></span><span class="mobile-tab-label">Accueil</span>
+      </a>
+      <div id="mobile-tabbar-middle" style="display:contents;"></div>
+      <button type="button" class="mobile-tab" id="mobile-plus-btn">
+        <span class="nav-icon" data-icon="menu"></span><span class="mobile-tab-label">Plus</span>
+      </button>
+    </nav>
+
+    <!-- Tiroir "Plus" — le reste des pages, ouvert/fermé via app.js -->
+    <div class="mobile-sheet-overlay" id="mobile-sheet-overlay">
+      <div class="mobile-sheet" id="mobile-sheet" onclick="event.stopPropagation()">
+        <div class="mobile-sheet-handle"></div>
+        <!-- 08/09/2026 — contenu (re)généré par `window.appliquerTabbar()`
+             (app.js) : toutes les pages SAUF les 3 déjà en raccourci direct
+             dans la barre du bas, + Paramétrage toujours en dernier. -->
+        <div class="mobile-sheet-grid" id="mobile-sheet-grid"></div>
+        <button type="button" class="mobile-sheet-logout" id="mobile-sheet-logout"><span class="nav-icon" data-icon="logout"></span> Déconnexion</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase (compat, simple à charger sans bundler — même logique que
+       Three.js/GSAP dans le portfolio) -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+  <!-- jsPDF, pour générer le PDF des devis directement dans le navigateur -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- JSZip, pour télécharger le dossier complet d'un client en un seul .zip (module Documents) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <script src="icons.js?v=10"></script>
+  <script src="firebase-config.js?v=1"></script>
+  <script src="logo-data.js?v=1"></script>
+  <script src="modules/dashboard.js?v=19"></script>
+  <script src="modules/clients.js?v=13"></script>
+  <script src="modules/prospects.js?v=20"></script>
+  <script src="modules/catalogue.js?v=32"></script>
+  <script src="modules/devis.js?v=42"></script>
+  <script src="modules/factures.js?v=13"></script>
+  <script src="modules/projets.js?v=22"></script>
+  <script src="modules/tickets.js?v=12"></script>
+  <script src="modules/abonnements.js?v=15"></script>
+  <script src="modules/technique.js?v=10"></script>
+  <script src="modules/calendrier.js?v=26"></script>
+  <script src="modules/finances.js?v=17"></script>
+  <script src="modules/documents.js?v=15"></script>
+  <script src="modules/temps.js?v=50"></script>
+  <script src="modules/timer-global.js?v=11"></script>
+  <script src="modules/presence-widget.js?v=3"></script>
+  <script src="modules/parametrage.js?v=31"></script>
+  <script src="app.js?v=29"></script>
+</body>
+</html>

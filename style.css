@@ -375,6 +375,18 @@ body.has-custom-cursor *{ cursor:none !important; }
   border-color:#c9455f;
   transform:scale(1.15);
 }
+/* 08/09/2026 — point de nav de Tiphaine OS (5ᵉ carte) : icône ⚙ à la
+   place du rond ::before, pour se distinguer des 4 offres avant même
+   d'y arriver en swipant. */
+.carousel-dots .dot-indicator-icon::before{ display:none; }
+.carousel-dots .dot-indicator-icon{
+  font-size:11px; line-height:1; color:rgba(255,255,255,0.4);
+  transition:color 0.3s ease,transform 0.3s ease;
+}
+.carousel-dots .dot-indicator-icon.is-active{
+  color:#c9455f;
+  transform:scale(1.15);
+}
 
 /* Signature — 2e ligne DANS le même encadré que le texte du bas
    (.portfolio-footer), pas un élément flottant à part : sa position

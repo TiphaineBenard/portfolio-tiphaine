@@ -639,6 +639,40 @@ window.Scene = (function () {
       features: ['Joueurs, équipes, poules & tableaux', 'Planning terrains & scores en direct', 'Classements barème FFT 2026', 'Historique & statistiques'],
       link: 'PadelPro_Demo/index.html',
     },
+    /* 5ᵉ carte, statut volontairement secondaire (08/09/2026) —
+       Tiphaine OS n'est PAS une offre commerciale comme les 4
+       précédentes : c'est l'outil interne que Tiphaine a construit
+       pour piloter sa propre activité. `sector` reprend cette
+       distinction ("OUTIL INTERNE" au lieu d'un secteur métier), et
+       `accent` est volontairement neutre/gris plutôt qu'une couleur
+       vive de secteur, pour une petite différence visuelle sans
+       toucher au rendu 3D (générique, piloté par ce tableau). */
+    {
+      name: 'Tiphaine OS',
+      // 08/09/2026 — icône ⚙ (glyphe unicode, pas un monogramme 2 lettres
+      // comme les 4 offres commerciales) : casse le pattern répétitif
+      // "EV/PO/CO/PA" au premier coup d'œil, cohérent avec "outil" plutôt
+      // qu'"offre". Reprise aussi sur le point de nav (voir `dotIcon` +
+      // main.js) pour signaler cette carte avant même d'y arriver.
+      icon: '⚙',
+      dotIcon: '⚙',
+      sector: 'OUTIL INTERNE',
+      accent: '#57606f',
+      tag: 'Mon propre Business OS — usage interne',
+      desc: "L'outil que j'ai conçu pour piloter ma propre activité : prospects, clients, devis, projets, facturation, abonnements, support et finances réunis dans une seule application. Mobile & PC — adaptable à votre activité.",
+      features: ['Prospects → devis → projet → facture, tout relié', 'Facturation & abonnements récurrents', 'Support, documents & suivi technique', 'Finances & tableau de bord en temps réel'],
+      // 08/09/2026 — repositionné comme argument de vente fort ("mon outil
+      // perso, je peux vous l'adapter") plutôt qu'un outil interne discret
+      // : garde le vocabulaire par défaut ("FONCTIONNALITÉ CLÉ"), CTA
+      // personnalisé, et un texte plus long → taille/interligne réduits
+      // + jusqu'à 4 lignes pour qu'il tienne en entier sans coupure "…"
+      // (voir `createScreenTexture` : 2 lignes par défaut sinon).
+      ctaLabel: 'VOIR MON OUTIL >>',
+      highlightFontSize: 22,
+      highlightLineHeight: 28,
+      highlightMaxLines: 4,
+      link: 'TiphaineOS_Demo/index.html',
+    },
   ];
 
   /* ═══════════════════════════════════════════════════════════
@@ -700,13 +734,19 @@ window.Scene = (function () {
     'Pointage Pro': "Suivi des heures et plannings terrain, heures sup. calculées automatiquement.",
     'Commandes': "Bons de commande quotidiens et atelier de production pour 5 magasins.",
     'PadelPro': "Tournois, poules et classements de padel gérés en direct.",
+    // 08/09/2026 — repositionné comme argument de vente fort ("mon outil
+    // perso, adaptable pour vous") plutôt qu'un simple outil interne
+    // discret. Texte plus long que les 4 autres → voir `highlightFontSize`/
+    // `highlightLineHeight`/`highlightMaxLines` sur cette app (APPS) pour
+    // qu'il tienne sans coupure dans la carte.
+    'Tiphaine OS': "L'ERP/CRM sur-mesure que j'ai développé pour piloter mon activité (Mobile & PC). Envie du vôtre ?",
   };
 
   // Registre des textures d'écran actives — permet de les redessiner
   // périodiquement (horloge en temps réel) sans tout reconstruire.
   const screenTextureInstances = [];
 
-  function createScreenTexture(appName, bgColor, icon, sector) {
+  function createScreenTexture(appName, bgColor, icon, sector, featureLabel, ctaLabel, highlightFontSize, highlightLineHeight, highlightMaxLines) {
     const canvas = document.createElement('canvas');
     // Texte "un peu flou" signalé sur les écrans (mobile + desktop) —
     // le canvas source ne faisait que 512×1024px. Une fois mappé sur un
@@ -718,14 +758,20 @@ window.Scene = (function () {
     // LOGIQUES (CW×CH = 512×1024, via ctx.scale), donc aucune valeur de
     // mise en page n'a besoin de changer.
     // RES_SCALE différencié : desktop garde x5 (mémoire GPU large, pas de
-    // contrainte). Mobile redescend à x4 — un Pixel 11 Pro peut gérer x5,
-    // mais 4 écrans à 2560×5120px (~50-70 Mo chacun avec mipmaps) sollicitent
-    // trop la mémoire graphique en cas de pression mémoire (autres apps
-    // ouvertes, chauffe) : le rendu devient alors flou de façon intermittente
-    // (net un jour, flou le lendemain, sur le même appareil) sans qu'aucun
-    // code n'ait changé — signe classique d'un plafond mémoire GPU atteint
-    // par intermittence plutôt qu'un vrai bug de code.
-    const RES_SCALE = IS_MOBILE ? 4 : 5;
+    // contrainte). Mobile redescend — un Pixel 11 Pro peut gérer x4, mais
+    // au-delà d'un certain nombre d'écrans à cette résolution (~50-70 Mo
+    // chacun avec mipmaps), ça sollicite trop la mémoire graphique en cas
+    // de pression mémoire (autres apps ouvertes, chauffe) : le rendu
+    // devient alors flou de façon intermittente (net un jour, flou le
+    // lendemain, sur le même appareil) sans qu'aucun code n'ait changé —
+    // signe classique d'un plafond mémoire GPU atteint par intermittence
+    // plutôt qu'un vrai bug de code.
+    // 08/09/2026 — passage de 4 à 5 téléphones (ajout de Tiphaine OS) :
+    // budget mémoire total en hausse de 25% sur mobile à résolution égale,
+    // donc x4 redescendu à x3.5 pour repasser sous le même budget qu'avant
+    // (4 × 4² ≈ 5 × 3.5², cf. calcul ci-dessus) plutôt que de laisser le
+    // flou intermittent réapparaître.
+    const RES_SCALE = IS_MOBILE ? 3.5 : 5;
     const CW = 512;
     const CH = 1024;
     canvas.width = CW * RES_SCALE;
@@ -873,30 +919,43 @@ window.Scene = (function () {
       const cardMaxWidth = CW - PAD * 2 - 40; // marge interne, ne touche jamais les bords
       ctx.textAlign = 'center';
 
+      // 08/09/2026 — label personnalisable par app (`featureLabel`, voir
+      // APPS) : "FONCTIONNALITÉ CLÉ" par défaut pour les offres
+      // commerciales, remplacé pour Tiphaine OS (ton plus personnel,
+      // cohérent avec "outil interne" plutôt que "offre").
+      const labelCarte1 = featureLabel || 'FONCTIONNALITÉ CLÉ';
       ctx.fillStyle = 'rgba(255,255,255,0.5)';
       ctx.font = '700 15px Inter, sans-serif';
       if ('letterSpacing' in ctx) {
         ctx.letterSpacing = '2px';
-        ctx.fillText('FONCTIONNALITÉ CLÉ', centerX, CARD1_Y + 42);
+        ctx.fillText(labelCarte1, centerX, CARD1_Y + 42);
         ctx.letterSpacing = '0px';
       } else {
-        fillTextSpaced(ctx, 'FONCTIONNALITÉ CLÉ', centerX, CARD1_Y + 42, 2, true);
+        fillTextSpaced(ctx, labelCarte1, centerX, CARD1_Y + 42, 2, true);
       }
 
+      // 08/09/2026 — taille/interligne/nb de lignes personnalisables par
+      // app (voir Tiphaine OS dans APPS) : son texte est plus long que les
+      // 4 offres, donc plus petit + jusqu'à 4 lignes plutôt que 2, pour
+      // tenir en entier sans coupure "…". Défauts inchangés pour les
+      // autres cartes.
+      const hlFontSize = highlightFontSize || 26;
+      const hlLineHeight = highlightLineHeight || 34;
+      const hlMaxLines = highlightMaxLines || 2;
       ctx.fillStyle = '#ffffff';
-      ctx.font = '400 26px Inter, sans-serif';
+      ctx.font = `400 ${hlFontSize}px Inter, sans-serif`;
       const highlight = APP_HIGHLIGHTS[appName] || '';
-      const lines = wrapText(ctx, highlight, cardMaxWidth, 2);
-      const lineHeight = 34;
+      const lines = wrapText(ctx, highlight, cardMaxWidth, hlMaxLines);
       const startY = CARD1_Y + 42 + 42;
       lines.forEach((line, i) => {
-        ctx.fillText(line, centerX, startY + i * lineHeight);
+        ctx.fillText(line, centerX, startY + i * hlLineHeight);
       });
 
-      // 8. Contenu de la carte "DÉVERROUILLER" — CTA centré
+      // 8. Contenu de la carte "DÉVERROUILLER" — CTA centré (personnalisable
+      // par app via `ctaLabel`, voir APPS — "DÉCOUVRIR >>" par défaut).
       ctx.fillStyle = '#ffffff';
       ctx.font = '600 18px Inter, sans-serif';
-      ctx.fillText('DÉCOUVRIR >>', centerX, CARD2_Y + CARD2_H / 2 + 6);
+      ctx.fillText(ctaLabel || 'DÉCOUVRIR >>', centerX, CARD2_Y + CARD2_H / 2 + 6);
 
       // 9. Reflet de verre — bande diagonale, mode 'screen' (n'assombrit
       // jamais, n'éclaircit que). C'est ça qui vend le "verre" en vue de
@@ -1134,7 +1193,7 @@ window.Scene = (function () {
     // affecté par l'éclairage), mais une fine couche "verre" par-dessus
     // (clearcoat élevé, roughness très basse) capte maintenant les reflets
     // de la lumière de studio, comme un vrai écran de smartphone.
-    const screenTexture = createScreenTexture(app.name, app.accent, app.icon, app.sector); // app.accent est un hex complet, ex '#7a1f3d'
+    const screenTexture = createScreenTexture(app.name, app.accent, app.icon, app.sector, app.featureLabel, app.ctaLabel, app.highlightFontSize, app.highlightLineHeight, app.highlightMaxLines); // app.accent est un hex complet, ex '#7a1f3d'
     const screenGeometry = new THREE.PlaneGeometry(1.34, 3.04);
     const screenMaterial = new THREE.MeshPhysicalMaterial({
       map: screenTexture, // pilote aussi la transparence des coins (alpha du canvas)
