@@ -190,8 +190,14 @@ window.Scene = (function () {
   const keyLight = new THREE.DirectionalLight(0xffffff, 1.9); // 1.5→1.9 : modelé plus marqué
   keyLight.position.set(4.5, 6.5, 3.5); // plus latéral qu'avant (2,8,4) : vraies ombres portées lisibles, pas juste zénithal
   keyLight.castShadow = true;
-  keyLight.shadow.mapSize.width = 2048;
-  keyLight.shadow.mapSize.height = 2048;
+  // 08/09/2026 — réduit sur mobile (marge mémoire GPU supplémentaire,
+  // voir RES_SCALE_FOCUS/BLUR plus bas) : une shadow map 2048² pèse
+  // environ 4x plus qu'une 1024² (mémoire ∝ résolution²), pour un flou
+  // déjà adouci par `shadow.radius`/`blurSamples` — la perte de netteté
+  // n'est pas perceptible, contrairement au budget mémoire libéré.
+  const SHADOW_MAP_SIZE = IS_MOBILE ? 1024 : 2048;
+  keyLight.shadow.mapSize.width = SHADOW_MAP_SIZE;
+  keyLight.shadow.mapSize.height = SHADOW_MAP_SIZE;
   keyLight.shadow.radius = 22; // légèrement resserré (28→22) : ombre encore douce mais moins "brumeuse"
   keyLight.shadow.blurSamples = 20;
   keyLight.shadow.bias = -0.0015;
@@ -778,17 +784,28 @@ window.Scene = (function () {
   const screenTextureInstances = [];
 
   // 08/09/2026 — résolution ADAPTATIVE au lieu d'une résolution fixe pour
-  // les 5 téléphones en même temps : c'est ce qui causait le flou
-  // intermittent (budget mémoire GPU trop juste sous pression). Seul le
-  // téléphone centré/actif a besoin d'être net (profondeur de champ —
-  // les 4 autres sont déjà flous à l'écran) : lui seul tourne en pleine
-  // résolution (`RES_SCALE_FOCUS`, valeurs inchangées) ; les autres
-  // tournent à résolution moitié (`RES_SCALE_BLUR`, donc ~4x moins de
-  // mémoire chacun, la mémoire d'une texture scale au carré). Le total
-  // pour 5 téléphones passe ainsi sous le budget d'avant (1 plein + 4
-  // quart), avec une marge bien plus confortable qu'un simple ajustement
-  // uniforme — voir `setPhoneFocus` plus bas pour le bascule au scroll.
-  const RES_SCALE_FOCUS = IS_MOBILE ? 3.5 : 5;
+  // les 5 téléphones en même temps : seul le téléphone centré/actif a
+  // besoin d'être net (profondeur de champ — les 4 autres sont déjà
+  // flous à l'écran), lui seul tourne en pleine résolution
+  // (`RES_SCALE_FOCUS`) ; les autres tournent à résolution moitié
+  // (`RES_SCALE_BLUR`, ~4x moins de mémoire chacun, la mémoire d'une
+  // texture scale au carré) — voir `setPhoneFocus` plus bas pour la
+  // bascule au scroll.
+  //
+  // Ce premier passage (3.5 sur mobile, valeur historique inchangée)
+  // a réduit le flou intermittent SANS l'éliminer : "flou aléatoire dès
+  // le chargement, avec plusieurs apps ouvertes sur le téléphone, pas
+  // toujours les mêmes" — cohérent avec un plafond mémoire GPU encore
+  // trop juste : la pression mémoire réelle (fragmentation, réclamation
+  // du driver en arrière-plan) est invisible et non déterministe même à
+  // état d'apps ouvertes identique, donc "aléatoire" ne contredit PAS
+  // l'explication mémoire, ça la confirme. Seul un vrai levier agit
+  // dessus : réduire encore le besoin mémoire pour se donner une marge
+  // large plutôt que de rester à la limite. RES_SCALE_FOCUS mobile
+  // rebaissé 3.5→2.5 (mémoire ∝ résolution², donc ≈ moitié moins pour le
+  // téléphone net, et pareil en proportion pour les 4 flous). Desktop
+  // inchangé (jamais de flou signalé là-bas).
+  const RES_SCALE_FOCUS = IS_MOBILE ? 2.5 : 5;
   const RES_SCALE_BLUR = RES_SCALE_FOCUS / 2;
 
   function createScreenTexture(appName, bgColor, icon, sector, featureLabel, ctaLabel, highlightFontSize, highlightLineHeight, highlightMaxLines, initialResScale) {
