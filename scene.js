@@ -74,6 +74,32 @@ window.Scene = (function () {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0x000000, 0); // transparent — le fond vient du CSS du body
+
+  // 08/09/2026 — PERTE DE CONTEXTE WEBGL, jamais gérée jusqu'ici. Sur
+  // mobile, "fermer puis rouvrir Chrome" ne recharge pas forcément la
+  // page : le navigateur suspend souvent juste l'onglet sous pression
+  // mémoire (surtout avec plein d'autres onglets ouverts), et le driver
+  // GPU peut alors couper le contexte WebGL de cet onglet en arrière-plan
+  // pour libérer la mémoire. Sans écouteur, deux problèmes : (1) sans
+  // `preventDefault()` sur 'webglcontextlost', le navigateur ne tente
+  // même pas de restaurer le contexte — l'onglet reste cassé ; (2) une
+  // fois restauré, toutes les textures (miroir, écrans des téléphones,
+  // mur de fond...) doivent être ré-uploadées au GPU, sans quoi elles
+  // restent floues/vides — c'est exactement le symptôme observé ("j'ai
+  // juste fermé Chrome puis rouvert, c'est reflou"), qui n'était pas
+  // reproductible par un simple rechargement de page (qui, lui, repart
+  // toujours d'un contexte neuf). Reconstruire à la main tout l'état 3D
+  // (miroir, DOF, textures adaptatives par téléphone...) après une
+  // restauration serait fragile et risquerait d'introduire de nouveaux
+  // bugs pour un évènement rare — un rechargement complet est plus sûr,
+  // et correspond exactement à ce qu'on a déjà vérifié comme fonctionnel
+  // (vider le cache = page fraîche = net).
+  canvas3d.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+  }, false);
+  canvas3d.addEventListener('webglcontextrestored', () => {
+    location.reload();
+  }, false);
   renderer.shadowMap.enabled = true;
   // VSMShadowMap → PCFSoftShadowMap. VSM fait un blur en 2 passes sur des
   // render targets séparés (moments de variance) — support/precision
