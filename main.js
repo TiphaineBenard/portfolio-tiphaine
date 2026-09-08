@@ -7,7 +7,7 @@
   const {
     camera, canvas, phones, hitboxes, track,
     SPACING, SLIDER_BOUNDS, APPS, DEFAULT_CAMERA_POS, animate, bokehPass,
-    IS_MOBILE, SCREEN_FOCUS_Z,
+    IS_MOBILE, SCREEN_FOCUS_Z, setPhoneFocus,
   } = window.Scene;
 
   /* ═══════════════════════════════════════════════════════════
@@ -66,6 +66,11 @@
       if (dotEls[activeDotIndex]) dotEls[activeDotIndex].classList.remove('is-active');
       dotEls[nearestIndex].classList.add('is-active');
       activeDotIndex = nearestIndex;
+      // 08/09/2026 — résolution adaptative (voir scene.js) : le téléphone
+      // qui devient actif remonte en pleine résolution, l'ancien redescend
+      // — mêmes déclencheurs que le point de nav actif, pas besoin d'un
+      // second suivi séparé.
+      if (setPhoneFocus) setPhoneFocus(nearestIndex);
     }
   }
   updateActiveDot(); // état initial correct dès le chargement (1er point actif)

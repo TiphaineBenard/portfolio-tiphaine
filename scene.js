@@ -751,7 +751,21 @@ window.Scene = (function () {
   // périodiquement (horloge en temps réel) sans tout reconstruire.
   const screenTextureInstances = [];
 
-  function createScreenTexture(appName, bgColor, icon, sector, featureLabel, ctaLabel, highlightFontSize, highlightLineHeight, highlightMaxLines) {
+  // 08/09/2026 — résolution ADAPTATIVE au lieu d'une résolution fixe pour
+  // les 5 téléphones en même temps : c'est ce qui causait le flou
+  // intermittent (budget mémoire GPU trop juste sous pression). Seul le
+  // téléphone centré/actif a besoin d'être net (profondeur de champ —
+  // les 4 autres sont déjà flous à l'écran) : lui seul tourne en pleine
+  // résolution (`RES_SCALE_FOCUS`, valeurs inchangées) ; les autres
+  // tournent à résolution moitié (`RES_SCALE_BLUR`, donc ~4x moins de
+  // mémoire chacun, la mémoire d'une texture scale au carré). Le total
+  // pour 5 téléphones passe ainsi sous le budget d'avant (1 plein + 4
+  // quart), avec une marge bien plus confortable qu'un simple ajustement
+  // uniforme — voir `setPhoneFocus` plus bas pour le bascule au scroll.
+  const RES_SCALE_FOCUS = IS_MOBILE ? 3.5 : 5;
+  const RES_SCALE_BLUR = RES_SCALE_FOCUS / 2;
+
+  function createScreenTexture(appName, bgColor, icon, sector, featureLabel, ctaLabel, highlightFontSize, highlightLineHeight, highlightMaxLines, initialResScale) {
     const canvas = document.createElement('canvas');
     // Texte "un peu flou" signalé sur les écrans (mobile + desktop) —
     // le canvas source ne faisait que 512×1024px. Une fois mappé sur un
@@ -772,17 +786,20 @@ window.Scene = (function () {
     // signe classique d'un plafond mémoire GPU atteint par intermittence
     // plutôt qu'un vrai bug de code.
     // 08/09/2026 — passage de 4 à 5 téléphones (ajout de Tiphaine OS) :
-    // budget mémoire total en hausse de 25% sur mobile à résolution égale,
-    // donc x4 redescendu à x3.5 pour repasser sous le même budget qu'avant
-    // (4 × 4² ≈ 5 × 3.5², cf. calcul ci-dessus) plutôt que de laisser le
-    // flou intermittent réapparaître.
-    const RES_SCALE = IS_MOBILE ? 3.5 : 5;
+    // budget mémoire total en hausse de 25% sur mobile à résolution égale.
+    // Plutôt que de rebaisser la résolution de TOUS les écrans (moins net
+    // partout, tout le temps), seul le téléphone focus tourne à cette
+    // résolution pleine — les autres démarrent à `RES_SCALE_BLUR` (voir
+    // plus haut) et ne montent en pleine résolution que lorsqu'ils
+    // deviennent le téléphone actif (`resize()`, appelée par
+    // `setPhoneFocus`).
+    let resScale = initialResScale || RES_SCALE_BLUR;
     const CW = 512;
     const CH = 1024;
-    canvas.width = CW * RES_SCALE;
-    canvas.height = CH * RES_SCALE;
+    canvas.width = CW * resScale;
+    canvas.height = CH * resScale;
     const ctx = canvas.getContext('2d');
-    ctx.scale(RES_SCALE, RES_SCALE);
+    ctx.scale(resScale, resScale);
     // 60→72 : la coque (CASE_RADIUS) est passée à 0.22 world (avant 0.15),
     // donc le masque arrondi de l'écran doit grandir en proportion pour
     // rester visuellement niché dedans (sinon écran presque carré à
@@ -1014,7 +1031,24 @@ window.Scene = (function () {
     texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
     texture.needsUpdate = true;
 
-    screenTextureInstances.push({ texture, draw });
+    // 08/09/2026 — change la résolution RÉELLE du canvas source (pas
+    // juste un upscale du rendu 3D) : redimensionner canvas.width/height
+    // efface le buffer ET réinitialise la matrice de transformation à
+    // l'identité (comportement natif du <canvas>), donc `ctx.scale()` doit
+    // être réappliqué avant de redessiner. Pas besoin de recréer la
+    // THREE.Texture : on redessine sur le MÊME canvas puis `needsUpdate`
+    // suffit à réuploader la nouvelle image au GPU.
+    function resize(newScale) {
+      if (newScale === resScale) return;
+      resScale = newScale;
+      canvas.width = CW * resScale;
+      canvas.height = CH * resScale;
+      ctx.scale(resScale, resScale);
+      draw();
+      texture.needsUpdate = true;
+    }
+
+    screenTextureInstances.push({ texture, draw, resize });
 
     return texture;
   }
@@ -1154,7 +1188,7 @@ window.Scene = (function () {
                        texte coupé) + MeshStandardMaterial, posé
                        légèrement devant la coque sur l'axe Z.
   ═══════════════════════════════════════════════════════════ */
-  function createPhone(app, index, localX) {
+  function createPhone(app, index, localX, initialResScale) {
     const group = new THREE.Group();
     group.position.set(localX, 0, 0);
 
@@ -1198,7 +1232,7 @@ window.Scene = (function () {
     // affecté par l'éclairage), mais une fine couche "verre" par-dessus
     // (clearcoat élevé, roughness très basse) capte maintenant les reflets
     // de la lumière de studio, comme un vrai écran de smartphone.
-    const screenTexture = createScreenTexture(app.name, app.accent, app.icon, app.sector, app.featureLabel, app.ctaLabel, app.highlightFontSize, app.highlightLineHeight, app.highlightMaxLines); // app.accent est un hex complet, ex '#7a1f3d'
+    const screenTexture = createScreenTexture(app.name, app.accent, app.icon, app.sector, app.featureLabel, app.ctaLabel, app.highlightFontSize, app.highlightLineHeight, app.highlightMaxLines, initialResScale); // app.accent est un hex complet, ex '#7a1f3d'
     const screenGeometry = new THREE.PlaneGeometry(1.34, 3.04);
     const screenMaterial = new THREE.MeshPhysicalMaterial({
       map: screenTexture, // pilote aussi la transparence des coins (alpha du canvas)
@@ -1283,15 +1317,40 @@ window.Scene = (function () {
   track.position.x = HERO_CLEARANCE;
   track.position.y = CAROUSEL_Y; // constante définie en haut du fichier
 
+  // 08/09/2026 — résolution adaptative (voir RES_SCALE_FOCUS/BLUR plus
+  // haut) : il faut savoir AVANT de créer les téléphones lequel démarre
+  // centré (sinon on le crée flou puis on le repasse net juste après,
+  // un aller-retour inutile). Même calcul "plus proche de x=0" que
+  // `updateActiveDot` dans main.js, qui prendra le relais à chaque
+  // changement de téléphone actif via `setPhoneFocus`.
+  let initialFocusIndex = 0;
+  let initialFocusDist = Infinity;
+  for (let i = 0; i < n; i++) {
+    const d = Math.abs((i * SPACING - centerOffset) + track.position.x);
+    if (d < initialFocusDist) { initialFocusDist = d; initialFocusIndex = i; }
+  }
+
   const phones = APPS.map((app, i) => {
     const localX = i * SPACING - centerOffset;
-    const group = createPhone(app, i, localX);
+    const group = createPhone(app, i, localX, i === initialFocusIndex ? RES_SCALE_FOCUS : RES_SCALE_BLUR);
     track.add(group);
     return group;
   });
 
   const hitboxes = phones.map((g) => g.userData.hitbox);
   const SLIDER_BOUNDS = { min: -centerOffset + HERO_CLEARANCE, max: centerOffset + HERO_CLEARANCE };
+
+  // 08/09/2026 — bascule la résolution plein/réduit quand le téléphone
+  // actif change (appelée par main.js `updateActiveDot`, qui sait déjà
+  // quel index est le plus proche du centre à chaque frame — pas besoin
+  // de dupliquer cette détection ici).
+  let currentFocusIndex = initialFocusIndex;
+  function setPhoneFocus(newIndex) {
+    if (newIndex === currentFocusIndex || !screenTextureInstances[newIndex]) return;
+    if (screenTextureInstances[currentFocusIndex]) screenTextureInstances[currentFocusIndex].resize(RES_SCALE_BLUR);
+    screenTextureInstances[newIndex].resize(RES_SCALE_FOCUS);
+    currentFocusIndex = newIndex;
+  }
 
   /* ═══════════════════════════════════════════════════════════
      PROFONDEUR DE CHAMP (depth of field) — flou léger sur ce qui
@@ -1511,6 +1570,7 @@ window.Scene = (function () {
     bokehPass, // exposé pour ajuster `focus` quand main.js zoome sur un projet (sinon le téléphone actif sortirait lui-même du plan net)
     IS_MOBILE, // exposé pour activer le snap au swipe (main.js), uniquement sur mobile
     SCREEN_FOCUS_Z, // exposé pour que main.js revienne exactement sur ce plan net (écran net) après fermeture d'un projet, au lieu de la distance caméra brute
+    setPhoneFocus, // 08/09/2026 — résolution adaptative : main.js l'appelle depuis `updateActiveDot` à chaque changement de téléphone actif
   };
 
 })();
