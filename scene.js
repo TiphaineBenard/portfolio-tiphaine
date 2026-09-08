@@ -1267,14 +1267,18 @@ window.Scene = (function () {
   // gauche) : plus besoin de décaler le carrousel horizontalement. On le
   // descend en revanche verticalement pour dégager la zone de titre.
   const HERO_CLEARANCE = 0;
-  // Sur mobile, le champ de vision (FOV fixe, mais écran étroit) ne
-  // montre plus qu'un seul téléphone à la fois. Avec un centrage
-  // symétrique (comme sur desktop, où les 4 téléphones sont tous
-  // visibles), la caméra démarre pile entre les 2 téléphones du milieu
-  // — "toujours entre deux tel". Sur mobile, on démarre plutôt centré
-  // sur le PREMIER téléphone (EventPro), comme un vrai carrousel qui
-  // commence à son premier élément.
-  track.position.x = IS_MOBILE ? centerOffset + HERO_CLEARANCE : HERO_CLEARANCE;
+  // 08/09/2026 — au chargement, le carrousel doit s'ouvrir sur le TOUT
+  // PREMIER téléphone (l'app phare), centré au milieu de l'écran, avec
+  // la suite à découvrir en glissant. Avant l'ajout de la 5ᵉ carte
+  // (Tiphaine OS), `HERO_CLEARANCE` seul (0, desktop) tombait par
+  // coïncidence près du milieu du groupe pour 4 téléphones (aucun
+  // parfaitement centré) ; avec un nombre impair (5), l'élément
+  // EXACTEMENT centré à x=0 est mathématiquement celui du milieu
+  // (index 2, "Commandes") — d'où le bug remonté ("ça ouvre sur le
+  // 3ème élément"). Un seul calcul maintenant, desktop ET mobile : on
+  // décale le rail de tout `centerOffset` pour amener localX(0) (qui
+  // vaut -centerOffset) pile sur x=0.
+  track.position.x = centerOffset + HERO_CLEARANCE;
   track.position.y = CAROUSEL_Y; // constante définie en haut du fichier
 
   const phones = APPS.map((app, i) => {
