@@ -90,12 +90,14 @@ window.Modules.prospects = {
   // le Kanban desktop et la liste par sections mobile — mêmes data-*,
   // mêmes actions, un seul endroit à maintenir).
   _htmlCarteProspect(p, col) {
+    const relancer = this._aRelancer(p);
     return `
       <div class="kanban-card" data-open="${p.id}" style="position:relative;">
         <button class="card-delete-btn" data-delete="${p.id}" title="Supprimer">✕</button>
         <div class="kanban-card-title">${p.entreprise}</div>
         <div class="kanban-card-sub">${p.contact} · ${p.valeur.toLocaleString('fr-FR')} €</div>
-        ${p.moyenContact ? `<div style="margin-top:3px; font-size:11px; color:var(--text-muted);">${this._iconMoyen(p.moyenContact)} Contacté par ${p.moyenContact.toLowerCase()}</div>` : ''}
+        ${p.moyenContact ? `<div style="margin-top:3px; font-size:11px; color:var(--text-muted);">${this._iconMoyen(p.moyenContact)} Contacté par ${p.moyenContact.toLowerCase()}${p.dateContact ? ` · ${this._fmtDepuis(p.dateContact)}` : ''}</div>` : ''}
+        ${relancer ? `<div style="margin-top:3px; font-size:11px; color:#e0a94b; font-weight:600;">🔔 À relancer</div>` : ''}
         <div style="display:flex; gap:6px; margin-top:8px;">
           ${col !== 'Gagné' ? `<button class="prospect-action-avancer" data-advance="${p.id}">Avancer →</button>` : '<span style="flex:1;"></span>'}
           ${p.convertiEnClient
@@ -166,9 +168,39 @@ window.Modules.prospects = {
     return '';
   },
 
+  // Nombre de jours de relance au-delà duquel un prospect déjà contacté
+  // mais sans nouvelle est signalé "à relancer" (09/09/2026, demande de
+  // Tiphaine : savoir depuis quand ça date pour ne pas laisser un
+  // prospect filer sans retour).
+  _SEUIL_RELANCE_JOURS: 7,
+
+  // "Aujourd'hui" / "Hier" / "il y a N jours" à partir d'une date
+  // "YYYY-MM-DD" — même format que les autres modules (temps.js).
+  _joursDepuis(dateStr) {
+    if (!dateStr) return null;
+    const debut = new Date(dateStr + 'T00:00:00');
+    const auj = new Date(); auj.setHours(0, 0, 0, 0);
+    return Math.round((auj - debut) / 86400000);
+  },
+  _fmtDepuis(dateStr) {
+    const jours = this._joursDepuis(dateStr);
+    if (jours == null) return '';
+    if (jours <= 0) return "aujourd'hui";
+    if (jours === 1) return 'hier';
+    return `il y a ${jours} jours`;
+  },
+  // Un prospect a besoin d'être relancé s'il a une date de premier
+  // contact, qu'il n'est ni gagné ni froid, et qu'il n'a pas bougé
+  // depuis plus de `_SEUIL_RELANCE_JOURS` jours.
+  _aRelancer(p) {
+    if (!p.dateContact || p.perdu || p.col === 'Gagné') return false;
+    const jours = this._joursDepuis(p.dateContact);
+    return jours != null && jours >= this._SEUIL_RELANCE_JOURS;
+  },
+
   _formHtml(p) {
     const isEdit = !!p;
-    p = p || { entreprise:'', contact:'', email:'', telephone:'', moyenContact:'', valeur:0, col:'À contacter' };
+    p = p || { entreprise:'', contact:'', email:'', telephone:'', moyenContact:'', dateContact:'', valeur:0, col:'À contacter' };
     return `
       <div class="modal-overlay" id="prospect-modal-overlay">
         <div class="modal-box">
@@ -198,6 +230,10 @@ window.Modules.prospects = {
                 <option value="">— Pas encore contacté —</option>
                 ${this._MOYENS_CONTACT.map(m => `<option value="${m}" ${m === p.moyenContact ? 'selected' : ''}>${m}</option>`).join('')}
               </select>
+            </div>
+            <div class="modal-field">
+              <label>Date de premier contact</label>
+              <input type="date" name="dateContact" value="${p.dateContact || ''}">
             </div>
             <div class="modal-field">
               <label>Valeur potentielle (€)</label>
@@ -255,6 +291,7 @@ window.Modules.prospects = {
         email: (fd.get('email') || '').trim(),
         telephone: (fd.get('telephone') || '').trim(),
         moyenContact: fd.get('moyenContact') || '',
+        dateContact: fd.get('dateContact') || '',
         valeur: parseInt(fd.get('valeur') || '0', 10),
         col: fd.get('col'),
       };
@@ -326,7 +363,7 @@ window.Modules.prospects = {
                 <div>
                   <div style="font-weight:600; font-size:13.5px;">${p.entreprise}</div>
                   <div style="color:var(--text-muted); font-size:12px;">${p.contact || ''} · ${p.valeur.toLocaleString('fr-FR')} €</div>
-                  ${p.moyenContact ? `<div style="color:var(--text-muted); font-size:11px; margin-top:2px;">${this._iconMoyen(p.moyenContact)} Contacté par ${p.moyenContact.toLowerCase()}</div>` : ''}
+                  ${p.moyenContact ? `<div style="color:var(--text-muted); font-size:11px; margin-top:2px;">${this._iconMoyen(p.moyenContact)} Contacté par ${p.moyenContact.toLowerCase()}${p.dateContact ? ` · ${this._fmtDepuis(p.dateContact)}` : ''}</div>` : ''}
                 </div>
                 <div style="display:flex; gap:6px;">
                   <button class="btn-ghost" style="font-size:11px; padding:5px 9px; border-radius:6px;" data-reactiver="${p.id}">Réactiver</button>
