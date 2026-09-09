@@ -255,6 +255,15 @@ window.Modules.temps = {
     return m ? `${h}h${String(m).padStart(2, '0')}` : `${h}h`;
   },
 
+  // Formatte une durée en minutes en heures DÉCIMALES (ex : 50h49 → "50,8h")
+  // — utilisé pour l'historique mensuel (09/09/2026, demande de Tiphaine :
+  // le format h/min est illisible pour comparer des mois entre eux, elle
+  // veut une valeur décimale unique par mois).
+  _fmtDecimal(minutes) {
+    if (!minutes) return '0h';
+    return `${(minutes / 60).toFixed(1).replace('.', ',')}h`;
+  },
+
   // ── Présence / pointage rapide ("Commencer ma journée" etc.) ────────
   // Ce ne sont plus des enregistrements à part : ce sont des créneaux du
   // modèle unifié, simplement créés SANS client/type (catégorisables
@@ -444,6 +453,26 @@ window.Modules.temps = {
     return (this._data || this._getEntries())
       .filter(t => t.minutes != null && t.date.slice(0, 7) === periode)
       .reduce((s, t) => s + t.minutes, 0) + this._minutesEnCoursAujourdhui();
+  },
+
+  // Historique mensuel (09/09/2026) — regroupe TOUTE la présence
+  // enregistrée par mois ("YYYY-MM"), triée du plus récent au plus
+  // ancien. Sert au popup "Historique" ouvert depuis la carte "Ce
+  // mois-ci". Le mois en cours inclut aussi le créneau en cours s'il y
+  // en a un (même logique que `_minutesPresenceMois`).
+  _minutesParMois() {
+    const periodeActuelle = this._periodeActuelle();
+    const parMois = {};
+    (this._data || this._getEntries()).forEach(t => {
+      if (t.minutes == null || !t.date) return;
+      const periode = t.date.slice(0, 7);
+      parMois[periode] = (parMois[periode] || 0) + t.minutes;
+    });
+    if (!(periodeActuelle in parMois)) parMois[periodeActuelle] = 0;
+    parMois[periodeActuelle] += this._minutesEnCoursAujourdhui();
+    return Object.keys(parMois)
+      .sort((a, b) => b.localeCompare(a))
+      .map(periode => ({ periode, minutes: parMois[periode] }));
   },
 
   // Total du jour `dateStr` — utilisé par le footer de totaux de la Vue
@@ -864,6 +893,58 @@ window.Modules.temps = {
     });
   },
 
+  // Popup "Historique" (09/09/2026) — ouvert depuis la carte "Ce mois-ci",
+  // liste tous les mois où de la présence a été enregistrée, en heures
+  // DÉCIMALES (`_fmtDecimal`) pour comparer facilement d'un mois à
+  // l'autre — contrairement aux stats du haut de page qui restent en
+  // format h/min (plus lisible au jour le jour).
+  _ouvrirHistoriqueMois() {
+    const MOIS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    const lignes = this._minutesParMois();
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+      <div class="modal-overlay" id="historique-mois-overlay">
+        <div class="modal-box">
+          <div class="modal-title">Historique — heures par mois</div>
+          <p style="font-size:12px; color:#7a7a7a; margin:-8px 0 16px;">Toute la présence enregistrée, mois par mois (heures décimales).</p>
+          <div style="max-height:360px; overflow-y:auto;">
+            <table style="width:100%; border-collapse:collapse;">
+              <thead><tr>
+                <th style="text-align:left; padding:6px 4px; font-size:12px; color:#7a7a7a;">Mois</th>
+                <th style="text-align:right; padding:6px 4px; font-size:12px; color:#7a7a7a;">Heures</th>
+              </tr></thead>
+              <tbody>
+                ${lignes.length ? lignes.map(l => {
+                  const [annee, mois] = l.periode.split('-').map(Number);
+                  const estMoisActuel = l.periode === this._periodeActuelle();
+                  return `
+                    <tr style="border-top:1px solid var(--border-subtle);">
+                      <td style="padding:8px 4px; ${estMoisActuel ? 'font-weight:600;' : ''}">${MOIS_FR[mois - 1]} ${annee}${estMoisActuel ? ' (en cours)' : ''}</td>
+                      <td style="padding:8px 4px; text-align:right; ${estMoisActuel ? 'font-weight:600;' : ''}">${this._fmtDecimal(l.minutes)}</td>
+                    </tr>
+                  `;
+                }).join('') : `<tr><td colspan="2" style="padding:12px 4px; color:#7a7a7a;">Aucune présence enregistrée pour l'instant.</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-actions" style="margin-top:16px;">
+            <span></span>
+            <div class="modal-actions-right">
+              <button type="button" class="btn" id="historique-mois-fermer-btn">Fermer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(wrap.firstElementChild);
+    const overlay = document.getElementById('historique-mois-overlay');
+    const close = () => overlay.remove();
+    let mousedownSurOverlay = false;
+    overlay.addEventListener('mousedown', (e) => { mousedownSurOverlay = (e.target === overlay); });
+    overlay.addEventListener('click', (e) => { if (e.target === overlay && mousedownSurOverlay) close(); });
+    document.getElementById('historique-mois-fermer-btn').addEventListener('click', close);
+  },
+
   // Détecte les VRAIS doublons : deux créneaux qui se chevauchent sur une
   // même date ET dont AUCUN n'est de la présence pure. Un chevauchement
   // entre présence et travail catégorisé est normal et attendu (c'est le
@@ -1049,7 +1130,10 @@ window.Modules.temps = {
           <div class="stat-value" style="font-size:20px;" id="stat-temps-semaine">${this._fmtDuree(minutesPresenceSemaineAffiche)}</div>
         </div>
         <div class="card">
-          <div class="stat-label">Ce mois-ci</div>
+          <div class="stat-label" style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <span>Ce mois-ci</span>
+            <button type="button" class="btn-lien-discret" id="ouvrir-historique-mois-btn" style="font-size:11px;">Historique</button>
+          </div>
           <div class="stat-value" style="font-size:20px;" id="stat-temps-mois">${this._fmtDuree(minutesPresenceMois)}</div>
         </div>
       </div>
@@ -1263,6 +1347,13 @@ window.Modules.temps = {
     // (toujours sur la vraie semaine/mois en cours, voir `_debutSemaine`).
     const libelleSemaine = `Semaine du ${dates[0].toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })} au ${dates[6].toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
 
+    // Total de la semaine AFFICHÉE (09/09/2026, demande de Tiphaine :
+    // "en haut à droite" le temps de travail de la semaine, pour toutes
+    // les semaines, pas juste la semaine réelle en cours). Toujours
+    // calculé sur les 7 jours de `datesStr`, même sur mobile où
+    // `indicesAffiches` ne montre qu'un seul jour à la fois.
+    const totalSemaineAffichee = datesStr.reduce((s, d) => s + this._minutesJourDonne(d), 0);
+
     // Total travaillé par jour, affiché en pied de planning (03/09/2026) —
     // même logique que les cartes "Temps de travail" (toute présence
     // enregistrée compte), et compte le créneau en cours en direct s'il
@@ -1291,6 +1382,9 @@ window.Modules.temps = {
         </div>
         <button type="button" class="semaine-nav-btn" data-semaine-nav="1" title="Semaine suivante">›</button>
         ${this._semaineOffset !== 0 ? `<button type="button" class="btn-lien-discret semaine-nav-today" data-semaine-nav="0">Aujourd'hui</button>` : ''}
+        <div class="semaine-nav-total" style="margin-left:auto; font-size:12.5px; color:#8a8a8a; white-space:nowrap;">
+          Total : <strong style="color:var(--text-primary);">${totalSemaineAffichee > 0 ? this._fmtDuree(totalSemaineAffichee) : '—'}</strong>
+        </div>
       </div>
     `;
     const navJour = `
@@ -1308,9 +1402,10 @@ window.Modules.temps = {
     return `
       <div class="card" style="padding:16px; overflow-x:auto;">
         ${esMobile ? navJour : navSemaine}
+        ${esMobile ? `<div style="text-align:center; font-size:12px; color:#8a8a8a; margin:-8px 0 12px;">Total semaine : <strong style="color:var(--text-primary);">${totalSemaineAffichee > 0 ? this._fmtDuree(totalSemaineAffichee) : '—'}</strong></div>` : ''}
         ${this._semaineOffset !== 0 ? `
           <div class="stat-sub" style="margin:-4px 0 12px; padding:8px 10px; background:rgba(245,166,35,.08); border:1px solid rgba(245,166,35,.25); border-radius:8px; color:#e0b06a;">
-            📅 Semaine affichée : <b>${this._fmtDuree(datesStr.reduce((s, d) => s + this._minutesJourDonne(d), 0))}</b> — un exemple complet (données fictives), présenté comme si c'était la semaine en cours. Les compteurs en haut de page reflètent cette même semaine. Clique <b>"Aujourd'hui"</b> pour voir la vraie date du jour.
+            📅 Semaine affichée : <b>${this._fmtDuree(totalSemaineAffichee)}</b> — un exemple complet (données fictives), présenté comme si c'était la semaine en cours. Les compteurs en haut de page reflètent cette même semaine. Clique <b>"Aujourd'hui"</b> pour voir la vraie date du jour.
           </div>
         ` : ''}
         <div class="semaine-legende">
@@ -1355,6 +1450,9 @@ window.Modules.temps = {
   _bindEvents(container) {
     const addManuelBtn = container.querySelector('#add-temps-manuel-btn');
     if (addManuelBtn) addManuelBtn.addEventListener('click', () => this._ouvrirCreneauForm(null));
+
+    const historiqueMoisBtn = container.querySelector('#ouvrir-historique-mois-btn');
+    if (historiqueMoisBtn) historiqueMoisBtn.addEventListener('click', () => this._ouvrirHistoriqueMois());
 
     const addChronoBtn = container.querySelector('#add-temps-chrono-btn');
     if (addChronoBtn) addChronoBtn.addEventListener('click', () => {
