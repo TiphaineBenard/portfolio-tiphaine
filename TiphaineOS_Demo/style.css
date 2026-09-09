@@ -553,6 +553,18 @@ tr:hover td{ background:var(--bg-panel-2); }
 .theme-clair .prospect-action-client{ color:#2d7a4d; border-color:rgba(45,122,77,.4); }
 .theme-clair .prospect-action-client:hover{ background:rgba(45,122,77,.14); }
 
+/* Boutons de la barre de relance sur les cartes Prospects (09/09/2026) —
+   "Relancé" / "En cours" / "Suivre à nouveau", petits liens discrets qui
+   héritent la couleur du texte qui les entoure (orange = alerte, bleu =
+   en cours), pas un style de bouton plein qui alourdirait la carte. */
+.prospect-relance-btn{
+  background:transparent; border:1px solid currentColor; border-radius:6px;
+  color:inherit; font-size:10.5px; font-weight:600; padding:3px 7px;
+  cursor:pointer; font-family:inherit; opacity:.85; transition:opacity .15s, background .15s;
+  white-space:nowrap;
+}
+.prospect-relance-btn:hover{ opacity:1; background:rgba(255,255,255,.08); }
+
 /* Catalogue (Tarifs) — bandes de titre par groupe catégorie/type
    (04/09/2026, voir modules/catalogue.js `_htmlLignesGroupees`) : rend
    la distinction Site/Application et Forfait/Abonnement visible d'un

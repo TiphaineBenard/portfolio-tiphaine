@@ -91,13 +91,30 @@ window.Modules.prospects = {
   // mêmes actions, un seul endroit à maintenir).
   _htmlCarteProspect(p, col) {
     const relancer = this._aRelancer(p);
+    // Barre de relance (09/09/2026, retour de Tiphaine : "il ne faut pas
+    // que je sois obligée de cliquer sur la carte") — boutons directement
+    // visibles sur la carte, pas besoin d'ouvrir la fiche.
+    const barreRelance = p.enCours ? `
+      <div style="margin-top:6px; display:flex; align-items:center; justify-content:space-between; gap:6px; font-size:11px; background:rgba(120,170,235,.12); border:1px solid rgba(120,170,235,.3); border-radius:7px; padding:4px 8px;">
+        <span style="color:#78aaeb; font-weight:600;">💬 En cours</span>
+        <button type="button" class="prospect-relance-btn" data-desactiver-encours="${p.id}" title="Réactiver le suivi de relance">Suivre à nouveau</button>
+      </div>
+    ` : relancer ? `
+      <div style="margin-top:6px; display:flex; align-items:center; justify-content:space-between; gap:6px; font-size:11px; background:rgba(224,169,75,.12); border:1px solid rgba(224,169,75,.35); border-radius:7px; padding:4px 8px;">
+        <span style="color:#e0a94b; font-weight:600;">🔔 À relancer</span>
+        <div style="display:flex; gap:4px;">
+          <button type="button" class="prospect-relance-btn" data-relancer="${p.id}" title="Redémarrer le décompte à aujourd'hui">Relancé</button>
+          <button type="button" class="prospect-relance-btn" data-marquer-encours="${p.id}" title="Discussion en cours, ne pas alerter">En cours</button>
+        </div>
+      </div>
+    ` : '';
     return `
       <div class="kanban-card" data-open="${p.id}" style="position:relative;">
         <button class="card-delete-btn" data-delete="${p.id}" title="Supprimer">✕</button>
         <div class="kanban-card-title">${p.entreprise}</div>
         <div class="kanban-card-sub">${p.contact} · ${p.valeur.toLocaleString('fr-FR')} €</div>
         ${p.moyenContact ? `<div style="margin-top:3px; font-size:11px; color:var(--text-muted);">${this._iconMoyen(p.moyenContact)} Contacté par ${p.moyenContact.toLowerCase()}${p.dateContact ? ` · ${this._fmtDepuis(p.dateContact)}` : ''}</div>` : ''}
-        ${relancer ? `<div style="margin-top:3px; font-size:11px; color:#e0a94b; font-weight:600;">🔔 À relancer</div>` : ''}
+        ${barreRelance}
         <div style="display:flex; gap:6px; margin-top:8px;">
           ${col !== 'Gagné' ? `<button class="prospect-action-avancer" data-advance="${p.id}">Avancer →</button>` : '<span style="flex:1;"></span>'}
           ${p.convertiEnClient
@@ -172,7 +189,17 @@ window.Modules.prospects = {
   // mais sans nouvelle est signalé "à relancer" (09/09/2026, demande de
   // Tiphaine : savoir depuis quand ça date pour ne pas laisser un
   // prospect filer sans retour).
-  _SEUIL_RELANCE_JOURS: 7,
+  // 14 jours (pas 7, retour de Tiphaine 09/09/2026 : "7 jours c'est peu
+  // pour laisser le temps") — laisse le temps à une réponse normale
+  // sans relancer trop tôt.
+  _SEUIL_RELANCE_JOURS: 14,
+
+  // Date du jour au format "YYYY-MM-DD" (fuseau local) — utilisée par le
+  // bouton "Relancé" pour redémarrer le décompte à aujourd'hui.
+  _dateLocaleAuj() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  },
 
   // "Aujourd'hui" / "Hier" / "il y a N jours" à partir d'une date
   // "YYYY-MM-DD" — même format que les autres modules (temps.js).
@@ -193,7 +220,7 @@ window.Modules.prospects = {
   // contact, qu'il n'est ni gagné ni froid, et qu'il n'a pas bougé
   // depuis plus de `_SEUIL_RELANCE_JOURS` jours.
   _aRelancer(p) {
-    if (!p.dateContact || p.perdu || p.col === 'Gagné') return false;
+    if (!p.dateContact || p.perdu || p.col === 'Gagné' || p.enCours) return false;
     const jours = this._joursDepuis(p.dateContact);
     return jours != null && jours >= this._SEUIL_RELANCE_JOURS;
   },
@@ -509,6 +536,43 @@ window.Modules.prospects = {
         const p = this._data.find(x => x.id === id);
         if (p) p.perdu = true;
         // TODO Firebase : window.db.collection('prospects').doc(id).update({ perdu:true })
+        this.render(this._root);
+      });
+    });
+
+    // Barre de relance directement sur la carte (09/09/2026) — 3 actions
+    // rapides sans ouvrir la fiche, voir `_htmlCarteProspect`.
+    zone.querySelectorAll('[data-relancer]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = Number(btn.dataset.relancer);
+        const p = this._data.find(x => x.id === id);
+        if (!p) return;
+        p.dateContact = this._dateLocaleAuj();
+        p.enCours = false;
+        // TODO Firebase : window.db.collection('prospects').doc(id).update({ dateContact: p.dateContact, enCours:false })
+        this.render(this._root);
+      });
+    });
+    zone.querySelectorAll('[data-marquer-encours]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = Number(btn.dataset.marquerEncours);
+        const p = this._data.find(x => x.id === id);
+        if (!p) return;
+        p.enCours = true;
+        // TODO Firebase : window.db.collection('prospects').doc(id).update({ enCours:true })
+        this.render(this._root);
+      });
+    });
+    zone.querySelectorAll('[data-desactiver-encours]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = Number(btn.dataset.desactiverEncours);
+        const p = this._data.find(x => x.id === id);
+        if (!p) return;
+        p.enCours = false;
+        // TODO Firebase : window.db.collection('prospects').doc(id).update({ enCours:false })
         this.render(this._root);
       });
     });
