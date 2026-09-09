@@ -401,6 +401,13 @@ body.has-custom-cursor *{ cursor:none !important; }
   color:#e0637d;
   text-shadow:0 2px 8px rgba(0,0,0,0.6); /* pas d'encadré propre — juste une ombre pour rester lisible sur le fond direct */
 }
+/* Le lien "Mentions légales" est dans .portfolio-footer, qui a
+   pointer-events:none pour laisser les clics traverser vers la scène 3D
+   (voir plus bas) — sans ce pointer-events:auto ciblé, le lien reste
+   visible mais totalement incliquable (retour de Tiphaine 09/09/2026). */
+.site-credit a{
+  pointer-events:auto;
+}
 
 @media(max-width:860px){
   .hero{ width:92%;top:6%;left:50%;transform:translateX(-50%) }
