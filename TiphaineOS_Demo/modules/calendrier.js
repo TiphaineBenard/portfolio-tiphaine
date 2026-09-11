@@ -147,7 +147,11 @@ window.Modules.calendrier = {
       // stricte que nécessaire : pour le CA d'août, le rappel de clôture
       // tombe le 31/08 (fin du mois même, pas fin septembre) — jamais en
       // retard par rapport à la vraie échéance, quitte à se rappeler tôt.
-      const periodeUrssaf = `${an}-${this._pad(moi + 1)}`;
+      // Période déclarée = mois PRÉCÉDENT le mois affiché, échéance =
+      // dernier jour du mois affiché (11/09/2026, correction de Tiphaine —
+      // voir TiphaineOS/modules/calendrier.js pour le détail).
+      const moisPrecedentUrssaf = new Date(an, moi - 1, 1);
+      const periodeUrssaf = `${moisPrecedentUrssaf.getFullYear()}-${this._pad(moisPrecedentUrssaf.getMonth() + 1)}`;
       const ouvertureUrssaf = new Date(an, moi, 1);
       const fermetureUrssaf = new Date(an, moi + 1, 0);
       const uValidee = !!(state[periodeUrssaf] && state[periodeUrssaf].urssaf);
@@ -391,9 +395,9 @@ window.Modules.calendrier = {
     const state = dashboard._getDeclState();
     const an = mois.getFullYear(), moi = mois.getMonth();
 
-    // URSSAF calé sur M0 (voir plus haut, `_evenements`) — même période
-    // que le mois affiché lui-même, pas le mois précédent.
-    const periodeUrssaf = `${an}-${this._pad(moi + 1)}`;
+    // URSSAF — période = le mois précédent le mois affiché (11/09/2026).
+    const moisPrecedentUrssafCard = new Date(an, moi - 1, 1);
+    const periodeUrssaf = `${moisPrecedentUrssafCard.getFullYear()}-${this._pad(moisPrecedentUrssafCard.getMonth() + 1)}`;
     const uValidee = !!(state[periodeUrssaf] && state[periodeUrssaf].urssaf);
 
     // Seule la fenêtre France Travail qui SE FERME ce mois-ci (ouverte le

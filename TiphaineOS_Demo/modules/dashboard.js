@@ -63,16 +63,14 @@ window.Modules.dashboard = {
     // TODO Firebase : window.db.collection('declarations').doc(`${periode}_${kind}`).set({ periode, kind, validee: val, valideLe: new Date() })
   },
 
-  // URSSAF : rappel calé sur M0 (05/09/2026, choix explicite de Tiphaine
-  // après comparaison avec son vrai calendrier URSSAF — voir DEV_NOTES et
-  // modules/calendrier.js) — période à déclarer = le mois EN COURS,
-  // échéance = dernier jour de ce même mois. Volontairement plus strict
-  // que la vraie échéance URSSAF (qui ouvre en général le mois suivant) :
-  // le but est de se rappeler de tout boucler avant la fin du mois,
-  // jamais en retard, quitte à s'y prendre tôt.
+  // URSSAF : période à déclarer = le mois PRÉCÉDENT (M-1), échéance =
+  // dernier jour du mois en cours (M0) — la vraie règle URSSAF (11/09/2026,
+  // correction de Tiphaine — voir TiphaineOS/modules/dashboard.js pour le
+  // détail).
   _infosUrssaf() {
     const auj = new Date();
-    const periode = `${auj.getFullYear()}-${String(auj.getMonth() + 1).padStart(2, '0')}`;
+    const moisPrecedent = new Date(auj.getFullYear(), auj.getMonth() - 1, 1);
+    const periode = `${moisPrecedent.getFullYear()}-${String(moisPrecedent.getMonth() + 1).padStart(2, '0')}`;
     const dateLimite = new Date(auj.getFullYear(), auj.getMonth() + 1, 0); // dernier jour du mois en cours
     const joursRestants = Math.ceil((dateLimite - new Date(auj.getFullYear(), auj.getMonth(), auj.getDate())) / 86400000);
     return { periode, dateLimite, joursRestants };
