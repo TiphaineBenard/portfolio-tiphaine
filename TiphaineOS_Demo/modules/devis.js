@@ -777,11 +777,64 @@ window.Modules.devis = {
     const blocs = this._parserCgv(texteBrut);
     if (!blocs.length) return;
 
+    // 3 colonnes (11/09/2026, retour de Tiphaine : tenir en 2 pages sans
+    // police illisible).
     const ML = 14, MR = 196;
-    const GOUTTIERE = 8;
-    const largeurColonne = (MR - ML - GOUTTIERE) / 2;
-    const colX = [ML, ML + largeurColonne + GOUTTIERE];
-    const HAUT = 30, BAS = 281;
+    const GOUTTIERE = 6;
+    const NB_COLONNES = 3;
+    const largeurColonne = (MR - ML - GOUTTIERE * (NB_COLONNES - 1)) / NB_COLONNES;
+    const colX = Array.from({ length: NB_COLONNES }, (_, i) => ML + i * (largeurColonne + GOUTTIERE));
+    const HAUT = 33, BAS = 284;
+    const capaciteColonne = BAS - HAUT;
+
+    // Grisé (titres 105, paragraphes sur un gris clair dédié 150,
+    // indépendant du `gris` global utilisé ailleurs dans le PDF).
+    const grisTitre = [105, 105, 105];
+    const grisTexteCgv = [150, 150, 150];
+
+    // Colonnes équilibrées par dichotomie (11/09/2026, retour de Tiphaine :
+    // "j'aime pas que les colonnes soient de longueurs inégales") — une
+    // simple moyenne ne marche pas avec des blocs de tailles inégales, on
+    // simule l'algorithme glouton pour trouver la plus petite cible qui
+    // tient quand même dans le nombre de colonnes nécessaires (voir
+    // TiphaineOS/modules/devis.js pour le détail du raisonnement).
+    let compteurSection = 0;
+    let hauteurTotale = 0;
+    const mesures = blocs.map((bloc) => {
+      if (bloc.type === 'titre') {
+        compteurSection += 1;
+        const numero2 = `${this._versRomain(compteurSection)}.`;
+        const texteTitre = bloc.texte.replace(/^\d+\.\s*/, '').toUpperCase();
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(6.2);
+        const lignesTitre = doc.splitTextToSize(texteTitre, largeurColonne);
+        const hauteur = 2.8 + lignesTitre.length * 2.6 + 1.4;
+        hauteurTotale += hauteur;
+        return { type: 'titre', numero: numero2, lignesTitre, hauteur };
+      }
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(6);
+      const lignes = doc.splitTextToSize(bloc.texte, largeurColonne);
+      const hauteur = lignes.length * 2.4 + 1.6;
+      hauteurTotale += hauteur;
+      return { type: 'texte', lignes, hauteur };
+    });
+    const totalColonnesNecessaires = Math.max(1, Math.ceil(hauteurTotale / capaciteColonne));
+    const colonnesUtiliseesAvecCible = (cible) => {
+      let col = 0, yy = HAUT;
+      mesures.forEach((m) => {
+        const depassePhysique = yy + m.hauteur > BAS;
+        const depasseCible = yy > HAUT && yy + m.hauteur > HAUT + cible;
+        if (depassePhysique || depasseCible) { col += 1; yy = HAUT; }
+        yy += m.hauteur;
+      });
+      return col + 1;
+    };
+    let lo = hauteurTotale / totalColonnesNecessaires;
+    let hi = capaciteColonne;
+    for (let i = 0; i < 24; i++) {
+      const mid = (lo + hi) / 2;
+      if (colonnesUtiliseesAvecCible(mid) <= totalColonnesNecessaires) hi = mid; else lo = mid;
+    }
+    const cibleParColonne = hi;
 
     let colonne = 0;
     let y = HAUT;
@@ -809,46 +862,52 @@ window.Modules.devis = {
       doc.text(ligne, 105, 291, { align: 'center' });
     };
 
+    // Séparateurs verticaux fins entre colonnes (11/09/2026).
+    const dessinerSeparateurs = () => {
+      doc.setDrawColor(215, 215, 215); doc.setLineWidth(0.15);
+      for (let i = 1; i < NB_COLONNES; i++) {
+        const xSep = ML + i * (largeurColonne + GOUTTIERE) - GOUTTIERE / 2;
+        doc.line(xSep, HAUT - 3, xSep, BAS);
+      }
+      doc.setLineWidth(0.2);
+    };
+
     const nouvellePage = (premierePageCgv) => {
       doc.addPage();
       doc.setFillColor(...noir);
       doc.rect(0, 0, 6, 297, 'F');
       dessinerEntete(premierePageCgv);
       dessinerPiedDePage();
+      dessinerSeparateurs();
       colonne = 0;
       y = HAUT;
     };
 
-    // Réserve l'espace nécessaire dans la colonne/page courante ; passe à
-    // la colonne suivante, ou à une nouvelle page si les deux colonnes sont
-    // pleines.
     const assurerEspace = (hauteurNecessaire) => {
-      if (y + hauteurNecessaire > BAS) {
-        if (colonne === 0) { colonne = 1; y = HAUT; }
+      const depassePhysique = y + hauteurNecessaire > BAS;
+      const depasseCible = y > HAUT && y + hauteurNecessaire > HAUT + cibleParColonne;
+      if (depassePhysique || depasseCible) {
+        if (colonne < NB_COLONNES - 1) { colonne += 1; y = HAUT; }
         else { nouvellePage(false); }
       }
     };
 
     nouvellePage(true);
 
-    let compteurSection = 0;
-    blocs.forEach((bloc) => {
-      if (bloc.type === 'titre') {
-        compteurSection += 1;
-        const texteTitre = bloc.texte.replace(/^\d+\.\s*/, '');
-        const titreAffiche = `${this._versRomain(compteurSection)} – ${texteTitre.toUpperCase()}`;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...noir);
-        const lignesTitre = doc.splitTextToSize(titreAffiche, largeurColonne);
-        assurerEspace(lignesTitre.length * 3.1 + 3.5);
-        doc.text(lignesTitre, colX[colonne], y);
-        y += lignesTitre.length * 3.1 + 1.5;
+    mesures.forEach((m) => {
+      if (m.type === 'titre') {
+        assurerEspace(m.hauteur);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(6.2); doc.setTextColor(...noir);
+        doc.text(m.numero, colX[colonne], y);
+        y += 2.8;
+        doc.setTextColor(...grisTitre);
+        doc.text(m.lignesTitre, colX[colonne], y);
+        y += m.lignesTitre.length * 2.6 + 1.4;
       } else {
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(6.8); doc.setTextColor(...gris);
-        const lignesParagraphe = doc.splitTextToSize(bloc.texte, largeurColonne);
-        const hauteur = lignesParagraphe.length * 2.9;
-        assurerEspace(hauteur + 2.5);
-        doc.text(lignesParagraphe, colX[colonne], y);
-        y += hauteur + 2;
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(6); doc.setTextColor(...grisTexteCgv);
+        assurerEspace(m.hauteur);
+        doc.text(m.lignes, colX[colonne], y);
+        y += m.hauteur;
       }
     });
   },
