@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Institut Belle Peau — Réservation en ligne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --creme:#FBF5EE;
+    --creme-2:#F5EAE0;
+    --blanc:#FFFFFF;
+    --terracotta:#C97B63;
+    --terracotta-dark:#B0654E;
+    --rose:#F0DCD3;
+    --sauge:#8FA98B;
+    --sauge-fonce:#4C6B49;
+    --rouge:#C0392B;
+    --texte:#3A2E2A;
+    --texte-clair:#8A7A72;
+    --ombre:0 4px 18px rgba(58,46,42,0.08);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html, body{height:100%;}
+  body{
+    font-family:'Nunito', sans-serif; background:var(--creme); color:var(--texte);
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  h1,h2,h3,.brand{font-family:'Quicksand', sans-serif;}
+
+  header{
+    background:var(--blanc); padding:18px 28px; text-align:center;
+    border-bottom:1px solid var(--creme-2); flex-shrink:0;
+  }
+  .brand{display:flex; align-items:center; justify-content:center; gap:10px;}
+  .brand-icon{
+    width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg, var(--terracotta), var(--rose));
+    display:flex; align-items:center; justify-content:center; color:white; font-size:18px; flex-shrink:0;
+  }
+  .brand-text{font-weight:700; font-size:19px; color:var(--texte);}
+  .brand-sub{font-size:12px; color:var(--texte-clair); font-weight:600; margin-top:3px;}
+  .infos-institut{font-size:11.5px; color:var(--texte-clair); margin-top:7px; display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;}
+  .infos-institut .point{color:var(--creme-2);}
+
+  main{
+    margin:0 auto; padding:28px 20px 60px; flex:1 1 auto; overflow-y:auto; min-height:0; width:100%;
+    max-width:760px; transition:max-width .2s ease;
+  }
+  main.large{max-width:1100px;}
+  .etape{display:none; animation:apparait .25s ease;}
+  .etape.actif{display:block;}
+  @keyframes apparait{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)}}
+
+  .fil-conteneur{margin-bottom:26px; max-width:760px; margin-left:auto; margin-right:auto;}
+  .fil{display:flex; align-items:center; gap:0; flex-wrap:wrap;}
+  .fil .etape-fil{display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:var(--texte-clair); transition:.15s;}
+  .fil .num{
+    width:24px; height:24px; border-radius:50%; background:var(--creme-2); color:var(--texte-clair);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; flex-shrink:0; transition:.15s;
+  }
+  .fil .etape-fil.actif .num{background:var(--terracotta); color:white; box-shadow:0 0 0 4px rgba(201,123,99,0.18); transform:scale(1.08);}
+  .fil .etape-fil.actif{color:var(--texte); font-weight:800;}
+  .fil .etape-fil.fait .num{background:var(--sauge-fonce); color:white;}
+  .fil .sep{flex:1; min-width:16px; height:1px; background:var(--creme-2); margin:0 8px;}
+  .fil .libelle{display:none;}
+  @media (min-width:460px){ .fil .libelle{display:inline;} }
+
+  h2.titre-etape{font-size:20px; margin-bottom:4px;}
+  p.sous-titre{color:var(--texte-clair); font-size:13.5px; margin-bottom:22px;}
+
+  .btn{
+    font-family:'Quicksand', sans-serif; background:var(--terracotta); color:white; border:none;
+    padding:12px 22px; border-radius:24px; font-weight:700; font-size:14.5px; cursor:pointer; transition:.15s; box-shadow:var(--ombre);
+  }
+  .btn:hover{background:var(--terracotta-dark);}
+  .btn-fantome{background:var(--blanc); color:var(--terracotta); border:1.5px solid var(--terracotta); box-shadow:none;}
+  .btn-fantome:hover{background:var(--rose);}
+  .btn-retour{background:none; border:none; color:var(--texte-clair); font-weight:700; font-size:13px; cursor:pointer; margin-bottom:16px; display:inline-flex; align-items:center; gap:4px;}
+  .btn-retour:hover{color:var(--terracotta-dark);}
+  .btn:disabled{background:#DCD0C7; color:#fff; cursor:not-allowed; box-shadow:none;}
+
+  /* Reconnaissance cliente (déplacée dans l'étape Coordonnées) */
+  .carte-reconnaissance{background:var(--blanc); border-radius:16px; padding:18px 20px; box-shadow:var(--ombre); margin-bottom:8px;}
+  .carte-reconnaissance h4{font-size:14.5px; margin-bottom:6px;}
+  .texte-reco-explication{font-size:12.5px; color:var(--texte-clair); margin-bottom:12px; line-height:1.4;}
+  .ligne-tel{display:flex; gap:8px; flex-wrap:wrap;}
+  .ligne-tel input{flex:1; min-width:160px; padding:10px 14px; border-radius:20px; border:1.5px solid var(--creme-2); font-size:13.5px; font-family:'Nunito',sans-serif;}
+  .ligne-tel input:focus{outline:none; border-color:var(--terracotta);}
+  .ligne-tel button{white-space:nowrap;}
+  .indice-demo{font-size:11px; color:var(--texte-clair); margin-top:8px;}
+
+  .separateur-ou{display:flex; align-items:center; gap:10px; margin:20px 0 14px; color:var(--texte-clair); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;}
+  .separateur-ou::before, .separateur-ou::after{content:''; flex:1; height:1px; background:var(--creme-2);}
+  .texte-nouvelle-cliente{font-weight:700; font-size:13.5px; margin-bottom:14px; color:var(--texte);}
+
+  .banniere-reco{
+    background:linear-gradient(135deg, #EAF1E9, #F5EAE0); border:1px solid #CFE0CD; border-radius:16px;
+    padding:20px 22px; margin:14px 0 8px;
+  }
+  .banniere-reco .salut{font-weight:700; font-size:16px; margin-bottom:10px;}
+  .banniere-reco .ligne{font-size:13.5px; margin-bottom:4px; color:var(--texte);}
+  .banniere-reco .ligne-forfait-match{background:#fff; border:1px solid #CFE0CD; border-radius:10px; padding:8px 12px; margin-top:10px; font-size:12.5px; font-weight:700; color:var(--sauge-fonce);}
+  .barre-progression{background:#D9E6D7; border-radius:8px; height:9px; overflow:hidden; margin:10px 0 12px;}
+  .barre-progression-remplie{background:var(--sauge-fonce); height:100%;}
+
+  /* Catégories */
+  .grille-categories{display:grid; grid-template-columns:repeat(2,1fr); gap:16px;}
+  @media (min-width:700px){
+    main.large .grille-categories{grid-template-columns:repeat(4,1fr);}
+  }
+  .carte-categorie{
+    background:var(--blanc); border-radius:16px; padding:24px 18px; box-shadow:var(--ombre); cursor:pointer;
+    text-align:center; transition:.15s; border:1.5px solid transparent;
+  }
+  .carte-categorie:hover{border-color:var(--terracotta); transform:translateY(-2px);}
+  .carte-categorie .picto{margin-bottom:10px; color:var(--terracotta-dark); display:flex; align-items:center; justify-content:center;}
+  .carte-categorie .picto svg{width:30px; height:30px;}
+  .carte-categorie h3{font-size:14.5px;}
+  .carte-categorie p{font-size:11.5px; color:var(--texte-clair); margin-top:3px;}
+
+  /* Liste prestations */
+  .carte-prestation{
+    background:var(--blanc); border-radius:14px; padding:16px 18px; box-shadow:var(--ombre); margin-bottom:12px;
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+  }
+  .carte-prestation .nom{font-weight:700; font-size:14.5px;}
+  .carte-prestation .details{font-size:12.5px; color:var(--texte-clair); margin-top:3px;}
+  .carte-prestation .acompte{display:inline-block; margin-top:5px; font-size:10.5px; font-weight:700; background:#FBEDE9; color:#A34A34; padding:2px 8px; border-radius:8px;}
+  .carte-prestation .badge-forfait{display:inline-block; margin-top:5px; font-size:10.5px; font-weight:700; background:#EAF1E9; color:var(--sauge-fonce); padding:2px 8px; border-radius:8px;}
+
+  /* Praticiennes */
+  .grille-praticiennes{display:flex; flex-direction:column; gap:10px;}
+  .opt-praticienne{
+    background:var(--blanc); border:1.5px solid var(--creme-2); border-radius:14px; padding:14px 18px; cursor:pointer;
+    display:flex; align-items:center; gap:12px; transition:.15s;
+  }
+  .opt-praticienne:hover{border-color:var(--terracotta);}
+  .opt-praticienne.selectionne{border-color:var(--terracotta); background:var(--rose);}
+  .opt-praticienne .avatar{
+    width:38px; height:38px; border-radius:50%; background:var(--rose); color:var(--terracotta-dark);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'Quicksand',sans-serif; flex-shrink:0;
+  }
+  .opt-praticienne.peu-importe .avatar{background:var(--creme-2); color:var(--texte-clair);}
+  .opt-praticienne .nom{font-weight:700; font-size:14px;}
+  .opt-praticienne .sous{font-size:11.5px; color:var(--texte-clair);}
+
+  /* Navigation par dates */
+  .nav-dates{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:20px;}
+  .chip-date{
+    flex-shrink:0; background:var(--blanc); border:1.5px solid var(--creme-2); border-radius:14px; padding:9px 16px;
+    font-family:'Quicksand',sans-serif; font-weight:700; font-size:12.5px; color:var(--texte-clair); cursor:pointer; transition:.15s;
+  }
+  .chip-date:hover{border-color:var(--terracotta);}
+  .chip-date.actif{background:var(--terracotta); border-color:var(--terracotta); color:white;}
+
+  /* Créneaux */
+  .bloc-jour{margin-bottom:18px;}
+  .bloc-jour h4{font-size:12.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--terracotta-dark); margin-bottom:10px;}
+  .grille-creneaux{display:grid; grid-template-columns:repeat(auto-fill, minmax(90px,1fr)); gap:10px;}
+  main.large .grille-creneaux{grid-template-columns:repeat(auto-fill, minmax(100px,1fr));}
+  .creneau{
+    background:var(--blanc); border:1.5px solid var(--creme-2); border-radius:12px; padding:11px 6px; text-align:center;
+    font-weight:700; font-size:13.5px; cursor:pointer; transition:.15s;
+  }
+  .creneau:hover{border-color:var(--terracotta); color:var(--terracotta-dark);}
+  .aucun-creneau{color:var(--texte-clair); font-size:13.5px; background:var(--blanc); border-radius:14px; padding:18px; text-align:center;}
+
+  /* Formulaire coordonnées */
+  .champ{margin-bottom:16px;}
+  .champ label{display:block; font-size:13px; font-weight:700; margin-bottom:6px;}
+  .champ input{
+    width:100%; padding:11px 14px; border-radius:10px; border:1.5px solid var(--creme-2);
+    font-family:'Nunito',sans-serif; font-size:14px; background:var(--blanc); color:var(--texte);
+  }
+  .champ input:focus{outline:none; border-color:var(--terracotta);}
+  .note-forfait-inclus{background:#EAF1E9; border:1px solid #CFE0CD; color:var(--sauge-fonce); border-radius:10px; padding:10px 14px; font-size:12.5px; font-weight:700; margin-bottom:16px;}
+
+  /* Récapitulatif */
+  .recap{background:var(--blanc); border-radius:16px; padding:20px 22px; box-shadow:var(--ombre); margin-bottom:20px;}
+  .recap .ligne, .carte-recap-finale .ligne{display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:13.5px; padding:7px 0; border-bottom:1px solid var(--creme-2);}
+  .recap .ligne:last-child, .carte-recap-finale .ligne:last-child{border-bottom:none;}
+  .recap .ligne strong, .carte-recap-finale .ligne strong{color:var(--texte); text-align:right;}
+  .recap .ligne span, .carte-recap-finale .ligne span{color:var(--texte-clair); flex-shrink:0;}
+  .note-acompte{background:#FBEDE9; color:#A34A34; border:1px solid #E3B8AA; border-radius:10px; padding:10px 14px; font-size:12.5px; font-weight:600; margin-bottom:16px;}
+
+  /* Confirmation */
+  .confirmation-finale{text-align:center; padding:20px 0;}
+  .confirmation-finale .picto{font-size:46px; margin-bottom:12px;}
+  .confirmation-finale h2{font-size:21px; margin-bottom:8px;}
+  .confirmation-finale p{color:var(--texte-clair); font-size:14px; margin-bottom:22px;}
+  .carte-recap-finale{background:var(--blanc); border-radius:16px; padding:20px 22px; box-shadow:var(--ombre); text-align:left; margin-bottom:22px;}
+
+  footer{text-align:center; padding:14px; font-size:12px; color:var(--texte-clair); flex-shrink:0; border-top:1px solid var(--creme-2); background:var(--creme);}
+  .note-moteur{font-size:11px; color:var(--texte-clair); text-align:center; margin-top:10px; line-height:1.5;}
+
+  @media (max-width:520px){
+    .grille-categories{grid-template-columns:1fr 1fr;}
+    main{padding:22px 14px 50px;}
+  }
+  @media (max-width:380px){
+    .grille-categories{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">✦</div>
+    <div>
+      <div class="brand-text">Institut Belle Peau</div>
+    </div>
+  </div>
+  <div class="brand-sub">Prenez rendez-vous en ligne — 24h/24</div>
+  <div class="infos-institut">
+    <span style="display:inline-flex; align-items:center; gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6.6 7-12a7 7 0 1 0-14 0c0 5.4 7 12 7 12Z"/><circle cx="12" cy="9" r="2.4"/></svg> Nîmes</span>
+    <span class="point">·</span>
+    <span>Lun–Sam, 9h–19h</span>
+  </div>
+</header>
+
+<main id="main-contenu">
+
+  <div class="fil-conteneur" id="fil-conteneur">
+    <div class="fil" id="fil-etapes">
+      <div class="etape-fil" data-groupe="prestation"><span class="num">1</span><span class="libelle">Prestation</span></div>
+      <div class="sep"></div>
+      <div class="etape-fil" data-groupe="praticienne"><span class="num">2</span><span class="libelle">Professionnelle</span></div>
+      <div class="sep"></div>
+      <div class="etape-fil" data-groupe="creneau"><span class="num">3</span><span class="libelle">Créneau</span></div>
+      <div class="sep"></div>
+      <div class="etape-fil" data-groupe="coordonnees"><span class="num">4</span><span class="libelle">Coordonnées</span></div>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 0 : accueil + catégories -->
+  <section class="etape actif" id="etape-accueil">
+    <h2 class="titre-etape">Que souhaitez-vous réserver ?</h2>
+    <p class="sous-titre">La durée, le tarif et la praticienne compétente sont gérés automatiquement.</p>
+    <div class="grille-categories" id="grille-categories"></div>
+  </section>
+
+  <!-- ÉTAPE 1 : liste des prestations -->
+  <section class="etape" id="etape-prestations">
+    <button class="btn-retour" onclick="allerEtape('accueil')">‹ Retour aux catégories</button>
+    <h2 class="titre-etape" id="titre-categorie"></h2>
+    <p class="sous-titre">Choisissez la prestation souhaitée.</p>
+    <div id="liste-prestations"></div>
+  </section>
+
+  <!-- ÉTAPE 2 : choix praticienne -->
+  <section class="etape" id="etape-praticienne">
+    <button class="btn-retour" onclick="allerEtape('prestations')">‹ Retour aux prestations</button>
+    <h2 class="titre-etape" id="titre-prestation-choisie"></h2>
+    <p class="sous-titre">Avec qui souhaitez-vous votre rendez-vous ?</p>
+    <div class="grille-praticiennes" id="grille-praticiennes"></div>
+    <div style="margin-top:20px;">
+      <button class="btn" onclick="validerPraticienne()">Voir les disponibilités</button>
+    </div>
+  </section>
+
+  <!-- ÉTAPE 3 : créneaux -->
+  <section class="etape" id="etape-creneaux">
+    <button class="btn-retour" onclick="allerEtape('praticienne')">‹ Retour</button>
+    <h2 class="titre-etape">Choisissez un créneau</h2>
+    <p class="sous-titre" id="sous-titre-creneaux"></p>
+    <div class="nav-dates" id="nav-dates"></div>
+    <div id="zone-creneaux"></div>
+  </section>
+
+  <!-- ÉTAPE 4 : coordonnées (inclut désormais la reconnaissance cliente) -->
+  <section class="etape" id="etape-coordonnees">
+    <button class="btn-retour" onclick="allerEtape('creneaux')">‹ Retour aux créneaux</button>
+    <h2 class="titre-etape">Vos coordonnées</h2>
+    <p class="sous-titre">Pour confirmer votre rendez-vous et vous envoyer un rappel.</p>
+
+    <div class="carte-reconnaissance" id="carte-reconnaissance">
+      <h4>Déjà cliente chez nous ?</h4>
+      <p class="texte-reco-explication">Entrez votre numéro de téléphone pour retrouver votre dossier et vos éventuels forfaits.</p>
+      <div class="ligne-tel">
+        <input type="text" id="tel-reconnaissance" placeholder="Votre numéro de téléphone">
+        <button class="btn btn-fantome" onclick="tenterReconnaissance()">Me reconnaître</button>
+      </div>
+      <div class="indice-demo">Démo : essayez 06 34 56 78 90</div>
+    </div>
+
+    <div id="banniere-cliente-connue"></div>
+
+    <div class="separateur-ou"><span>ou</span></div>
+    <div class="texte-nouvelle-cliente">Continuer comme nouvelle cliente</div>
+
+    <div class="champ"><label>Prénom</label><input type="text" id="cl-prenom"></div>
+    <div class="champ"><label>Nom</label><input type="text" id="cl-nom"></div>
+    <div class="champ"><label>Téléphone</label><input type="text" id="cl-telephone"></div>
+    <div class="champ"><label>Email</label><input type="text" id="cl-email"></div>
+    <div id="zone-note-forfait-inclus"></div>
+    <button class="btn" onclick="allerRecap()">Continuer</button>
+  </section>
+
+  <!-- ÉTAPE 5 : récapitulatif -->
+  <section class="etape" id="etape-recap">
+    <button class="btn-retour" onclick="allerEtape('coordonnees')">‹ Modifier mes coordonnées</button>
+    <h2 class="titre-etape">Vérifiez votre rendez-vous</h2>
+    <div class="recap" id="zone-recap"></div>
+    <div id="zone-note-acompte"></div>
+    <button class="btn" onclick="validerReservation()">Confirmer le rendez-vous</button>
+  </section>
+
+  <!-- ÉTAPE 6 : confirmation -->
+  <section class="etape" id="etape-confirmation">
+    <div class="confirmation-finale">
+      <div class="picto">✓</div>
+      <h2>C'est réservé !</h2>
+      <p>Un email de confirmation vient d'être envoyé. Un rappel automatique sera envoyé avant votre rendez-vous.</p>
+      <div class="carte-recap-finale" id="zone-recap-finale"></div>
+      <button class="btn btn-fantome" onclick="reinitialiser()">Prendre un autre rendez-vous</button>
+      <div class="note-moteur">Ce rendez-vous apparaît instantanément dans le planning de l'institut, avec la bonne praticienne et la bonne cabine réservées. Statut : « À confirmer » — il sera validé par l'institut.</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>Démo interactive — Page de réservation générée automatiquement à partir du catalogue et du planning de l'institut</footer>
+
+<!-- Couche de données partagée avec index.html (voir beautypro-data.js) -->
+<script src="beautypro-data.js"></script>
+<script>
+  // ---------- Données (chargées depuis la couche partagée beautypro-data.js — même source que le back-office) ----------
+  const cabines = BP_CABINES;
+  const OUVERTURE = BP_OUVERTURE, FERMETURE = BP_FERMETURE;
+  const minVersHeureStr = bpMinVersHeureStr;
+  const formatDuree = bpFormatDuree;
+
+  let { prestations, praticiennes, clientes, rdvs } = bpInitDonnees();
+
+  let etapeActive = 'accueil';
+  let clienteReconnue = null;
+  let selection = { categorie:null, prestationId:null, praticienneId:null, debut:null, dateActive:BP_DATE_REF, offsetActif:0, praticienneAttribuee:null };
+
+  // ---------- Icônes (SVG line-icons, pas d'emoji) ----------
+  const ICONES_SVG = {
+    "Soins visage": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M9 10h.01M15 10h.01"/><path d="M9 15c1 1 5 1 6 0"/></svg>`,
+    "Massages": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16c2-3 2-6 0-9M9 17c2-4 2-8 0-12M14 17c2-4 2-8 0-12M19 16c2-3 2-6 0-9"/></svg>`,
+    "Épilation & Laser": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>`,
+    "Onglerie": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3c-2 3-2 12 0 15 1 1.5 3 2 4 2s3-.5 4-2c2-3 2-12 0-15"/><path d="M8 8c2 1 6 1 8 0"/></svg>`
+  };
+  function iconeCategorie(cat){ return ICONES_SVG[cat] || `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/></svg>`; }
+
+  const GROUPE_PAR_ETAPE = { accueil:'prestation', prestations:'prestation', praticienne:'praticienne', creneaux:'creneau', coordonnees:'coordonnees', recap:'coordonnees', confirmation:null };
+  const ORDRE_GROUPES = ['prestation','praticienne','creneau','coordonnees'];
+
+  function majFilEtapes(nom){
+    const conteneur = document.getElementById('fil-conteneur');
+    const groupeActif = GROUPE_PAR_ETAPE[nom];
+    if(!groupeActif){ conteneur.style.display = 'none'; return; }
+    conteneur.style.display = 'block';
+    const idxActif = ORDRE_GROUPES.indexOf(groupeActif);
+    document.querySelectorAll('.etape-fil').forEach(el=>{
+      const idx = ORDRE_GROUPES.indexOf(el.dataset.groupe);
+      el.classList.toggle('actif', idx===idxActif);
+      el.classList.toggle('fait', idx<idxActif);
+    });
+  }
+
+  // La largeur du parcours est dynamique : large sur l'accueil (catégories en grille),
+  // plus étroite et confortable à lire sur toutes les étapes suivantes.
+  function allerEtape(nom){
+    document.querySelectorAll('.etape').forEach(e=>e.classList.remove('actif'));
+    document.getElementById('etape-'+nom).classList.add('actif');
+    etapeActive = nom;
+    majFilEtapes(nom);
+    document.getElementById('main-contenu').classList.toggle('large', nom === 'accueil');
+    document.querySelector('main').scrollTo ? document.getElementById('main-contenu').scrollTo(0,0) : window.scrollTo(0,0);
+  }
+
+  // ---------- Reconnaissance cliente (étape Coordonnées) ----------
+  // ⚠️ Démo uniquement : la reconnaissance se fait ici par simple correspondance de numéro de téléphone.
+  // PRODUCTION : il faudrait une vérification par SMS ou email avant d'afficher le dossier d'une cliente.
+  function tenterReconnaissance(){
+    const tel = bpNormaliserTel(document.getElementById('tel-reconnaissance').value);
+    const c = clientes.find(cl => bpNormaliserTel(cl.telephone) === tel && tel.length>0);
+    const zone = document.getElementById('banniere-cliente-connue');
+    if(!c){
+      zone.innerHTML = `<div class="indice-demo" style="margin-bottom:16px;">Aucune fiche trouvée avec ce numéro — vous pouvez continuer comme nouvelle cliente ci-dessous, votre fiche sera créée automatiquement.</div>`;
+      clienteReconnue = null;
+      return;
+    }
+    clienteReconnue = c;
+    const { prenom, nom } = bpPrenomNom(c.nom);
+
+    // Préremplissage automatique des coordonnées.
+    document.getElementById('cl-prenom').value = prenom;
+    document.getElementById('cl-nom').value = nom;
+    document.getElementById('cl-telephone').value = c.telephone;
+    document.getElementById('cl-email').value = c.email;
+
+    const forfaitCorrespond = c.forfait && selection.prestationId!==null && c.forfait.prestationId === selection.prestationId;
+
+    if(c.forfait){
+      const pct = Math.round((c.forfait.actuel/c.forfait.total)*100);
+      zone.innerHTML = `
+        <div class="banniere-reco">
+          <div class="salut">Bonjour ${prenom} 👋</div>
+          <div class="ligne">${c.forfait.soin} — <strong>${c.forfait.actuel} séances réalisées sur ${c.forfait.total}</strong></div>
+          <div class="barre-progression"><div class="barre-progression-remplie" style="width:${pct}%"></div></div>
+          <div class="ligne">Dernière séance : ${c.forfait.derniereSeance}</div>
+          <div class="ligne">Prochaine séance recommandée à partir du ${c.forfait.prochaineRecommandee}</div>
+          ${forfaitCorrespond ? `<div class="ligne-forfait-match">Cette réservation sera comptée dans votre forfait.</div>` : ''}
+        </div>`;
+    } else {
+      zone.innerHTML = `<div class="banniere-reco"><div class="salut">Bonjour ${prenom} 👋</div><div class="ligne">Ravis de vous revoir. Vos coordonnées ont été préremplies ci-dessous.</div></div>`;
+    }
+
+    majNoteForfaitInclus(forfaitCorrespond);
+  }
+
+  function majNoteForfaitInclus(forfaitCorrespond){
+    document.getElementById('zone-note-forfait-inclus').innerHTML = forfaitCorrespond
+      ? `<div class="note-forfait-inclus">Cette réservation sera comptée dans votre forfait.</div>` : '';
+  }
+
+  // ---------- Catégories & prestations ----------
+  function trouverPrestation(id){ return prestations.find(p=>p.id===id); }
+
+  function rendreCategories(){
+    const categories = [...new Set(prestations.filter(p=>p.reservableEnLigne).map(p=>p.categorie))];
+    document.getElementById('grille-categories').innerHTML = categories.map(cat=>{
+      const n = prestations.filter(p=>p.categorie===cat && p.reservableEnLigne).length;
+      return `<div class="carte-categorie" onclick="ouvrirCategorie('${cat}')">
+        <div class="picto">${iconeCategorie(cat)}</div>
+        <h3>${cat}</h3>
+        <p>${n} prestation${n>1?'s':''}</p>
+      </div>`;
+    }).join('');
+  }
+
+  function ouvrirCategorie(cat){
+    selection.categorie = cat;
+    document.getElementById('titre-categorie').textContent = cat;
+    document.getElementById('liste-prestations').innerHTML = prestations.filter(p=>p.categorie===cat && p.reservableEnLigne).map(p=>{
+      // Par défaut, une séance à 0€ est présentée comme "Séance de forfait" — on n'affirme
+      // "Inclus dans votre forfait" que plus tard, une fois la cliente reconnue et son forfait vérifié.
+      const prixAffiche = p.prix>0 ? p.prix+' €' : 'Séance de forfait';
+      return `
+      <div class="carte-prestation">
+        <div>
+          <div class="nom">${p.nom}</div>
+          <div class="details">${formatDuree(p.duree)} · ${prixAffiche}</div>
+          ${p.acompte>0 ? `<div class="acompte">Acompte de ${p.acompte} € à la réservation</div>` : ''}
+        </div>
+        <button class="btn" onclick="choisirPrestation(${p.id})">Choisir</button>
+      </div>`;
+    }).join('');
+    allerEtape('prestations');
+  }
+
+  function choisirPrestation(id){
+    selection.prestationId = id;
+    ouvrirEtapePraticienne();
+  }
+
+  // ---------- Praticienne ----------
+  function ouvrirEtapePraticienne(){
+    const p = trouverPrestation(selection.prestationId);
+    document.getElementById('titre-prestation-choisie').textContent = `${p.nom} — ${formatDuree(p.duree)} · ${p.prix>0 ? p.prix+' €' : 'forfait'}`;
+    const competentes = praticiennes.filter(pr=>pr.competences.includes(p.categorie));
+    selection.praticienneId = 'peu-importe';
+    document.getElementById('grille-praticiennes').innerHTML =
+      `<div class="opt-praticienne peu-importe selectionne" data-id="peu-importe" onclick="choisirPraticienne('peu-importe')">
+        <div class="avatar">?</div>
+        <div><div class="nom">Peu importe</div><div class="sous">Premier créneau disponible, toutes praticiennes compétentes</div></div>
+      </div>` +
+      competentes.map(pr=>`
+        <div class="opt-praticienne" data-id="${pr.id}" onclick="choisirPraticienne(${pr.id})">
+          <div class="avatar">${pr.nom[0]}</div>
+          <div><div class="nom">${pr.nom}</div><div class="sous">${pr.competences.join(' · ')}</div></div>
+        </div>`).join('');
+    allerEtape('praticienne');
+  }
+
+  function choisirPraticienne(id){
+    selection.praticienneId = id;
+    document.querySelectorAll('.opt-praticienne').forEach(el=>{
+      el.classList.toggle('selectionne', String(el.dataset.id)===String(id));
+    });
+  }
+
+  function validerPraticienne(){
+    selection.offsetActif = 0;
+    selection.dateActive = BP_DATE_REF;
+    rendreNavDates();
+    calculerEtAfficherCreneaux();
+    allerEtape('creneaux');
+  }
+
+  function rendreNavDates(){
+    document.getElementById('nav-dates').innerHTML = [0,1,2,3,4].map(off=>{
+      const cle = bpDateDepuisOffset(off);
+      return `<button class="chip-date ${selection.offsetActif===off?'actif':''}" onclick="choisirJour(${off})">${bpLabelPuceDate(cle)}</button>`;
+    }).join('');
+  }
+  function choisirJour(off){
+    selection.offsetActif = off;
+    selection.dateActive = bpDateDepuisOffset(off);
+    rendreNavDates();
+    calculerEtAfficherCreneaux();
+  }
+
+  // ---------- Calcul des créneaux réellement disponibles ----------
+  // Une prestation nécessite : sa cabine assignée libre CE JOUR-LÀ + au moins une praticienne
+  // compétente (celle choisie, ou n'importe laquelle si "peu importe") libre sur tout le créneau,
+  // CE MÊME JOUR. On ne compare donc jamais deux jours différents entre eux.
+  // NE PAS modifier le pas de 15 minutes ni la logique de chevauchement : la fiabilité du moteur
+  // de disponibilité prime sur l'esthétique de la liste de créneaux.
+  function cabineLibre(cabine, date, debut, duree){
+    const fin = debut + duree;
+    return !rdvs.some(r => r.date===date && r.cabine===cabine && r.statut!=='Annulé' && !(fin<=r.debut || debut>=r.debut+r.duree));
+  }
+  function praticienneLibre(praticienneId, date, debut, duree){
+    const fin = debut + duree;
+    return !rdvs.some(r => r.date===date && r.praticienneId===praticienneId && r.statut!=='Annulé' && !(fin<=r.debut || debut>=r.debut+r.duree));
+  }
+
+  function calculerCreneauxDisponibles(){
+    const p = trouverPrestation(selection.prestationId);
+    const competentes = praticiennes.filter(pr=>pr.competences.includes(p.categorie));
+    const creneaux = [];
+    for(let m = OUVERTURE; m + p.duree <= FERMETURE; m += 15){
+      if(!cabineLibre(p.cabine, selection.dateActive, m, p.duree)) continue;
+      if(selection.praticienneId === 'peu-importe'){
+        const uneLibre = competentes.some(pr=>praticienneLibre(pr.id, selection.dateActive, m, p.duree));
+        if(uneLibre) creneaux.push(m);
+      } else {
+        if(praticienneLibre(parseInt(selection.praticienneId,10), selection.dateActive, m, p.duree)) creneaux.push(m);
+      }
+    }
+    return creneaux;
+  }
+
+  function calculerEtAfficherCreneaux(){
+    const p = trouverPrestation(selection.prestationId);
+    document.getElementById('sous-titre-creneaux').textContent =
+      `${p.nom} — ${formatDuree(p.duree)} — ${bpDateAffichee(selection.dateActive)}`;
+    const creneaux = calculerCreneauxDisponibles();
+    const zone = document.getElementById('zone-creneaux');
+    if(!creneaux.length){
+      zone.innerHTML = `<div class="aucun-creneau">Aucun créneau disponible ce jour-là avec ces critères. Essayez un autre jour, « Peu importe », ou une autre prestation.</div>`;
+      return;
+    }
+    const matin = creneaux.filter(m=>m<720);
+    const apresmidi = creneaux.filter(m=>m>=720);
+    let html = '';
+    if(matin.length) html += `<div class="bloc-jour"><h4>Matin</h4><div class="grille-creneaux">${matin.map(m=>`<div class="creneau" onclick="choisirCreneau(${m})">${minVersHeureStr(m)}</div>`).join('')}</div></div>`;
+    if(apresmidi.length) html += `<div class="bloc-jour"><h4>Après-midi</h4><div class="grille-creneaux">${apresmidi.map(m=>`<div class="creneau" onclick="choisirCreneau(${m})">${minVersHeureStr(m)}</div>`).join('')}</div></div>`;
+    zone.innerHTML = html;
+  }
+
+  function choisirCreneau(m){
+    selection.debut = m;
+    if(selection.praticienneId === 'peu-importe'){
+      const p = trouverPrestation(selection.prestationId);
+      const competentes = praticiennes.filter(pr=>pr.competences.includes(p.categorie));
+      const libre = competentes.find(pr=>praticienneLibre(pr.id, selection.dateActive, m, p.duree));
+      selection.praticienneAttribuee = libre ? libre.id : competentes[0].id;
+    } else {
+      selection.praticienneAttribuee = parseInt(selection.praticienneId,10);
+    }
+
+    // Réinitialise le bloc de reconnaissance à chaque nouveau passage sur Coordonnées
+    // (le créneau/prestation a pu changer depuis la dernière reconnaissance).
+    if(clienteReconnue){
+      const forfaitCorrespond = clienteReconnue.forfait && clienteReconnue.forfait.prestationId === selection.prestationId;
+      majNoteForfaitInclus(forfaitCorrespond);
+    } else {
+      document.getElementById('zone-note-forfait-inclus').innerHTML = '';
+    }
+    allerEtape('coordonnees');
+  }
+
+  // ---------- Coordonnées & récapitulatif ----------
+  function allerRecap(){
+    const prenom = document.getElementById('cl-prenom').value.trim();
+    const nom = document.getElementById('cl-nom').value.trim();
+    const telephone = document.getElementById('cl-telephone').value.trim();
+    if(!prenom || !nom || !telephone){
+      alert('Merci de renseigner au moins votre prénom, votre nom et votre téléphone.');
+      return;
+    }
+    const p = trouverPrestation(selection.prestationId);
+    const pratic = praticiennes.find(pr=>pr.id===selection.praticienneAttribuee);
+    document.getElementById('zone-recap').innerHTML = `
+      <div class="ligne"><span>Prestation</span><strong>${p.nom}</strong></div>
+      <div class="ligne"><span>Date</span><strong>${bpDateAffichee(selection.dateActive)}</strong></div>
+      <div class="ligne"><span>Heure</span><strong>${minVersHeureStr(selection.debut)} — ${minVersHeureStr(selection.debut+p.duree)}</strong></div>
+      <div class="ligne"><span>Praticienne</span><strong>${pratic.nom}</strong></div>
+      <div class="ligne"><span>Tarif</span><strong>${p.prix>0 ? p.prix+' €' : 'Séance de forfait'}</strong></div>
+      <div class="ligne"><span>Cliente</span><strong>${prenom} ${nom}</strong></div>
+    `;
+    const forfaitCorrespond = clienteReconnue && clienteReconnue.forfait && clienteReconnue.forfait.prestationId === selection.prestationId;
+    document.getElementById('zone-note-acompte').innerHTML =
+      (p.acompte>0 ? `<div class="note-acompte">Un acompte de ${p.acompte} € sera demandé pour confirmer ce rendez-vous.</div>` : '') +
+      (forfaitCorrespond ? `<div class="note-forfait-inclus">Cette réservation sera comptée dans votre forfait.</div>` : '');
+    allerEtape('recap');
+  }
+
+  function validerReservation(){
+    const p = trouverPrestation(selection.prestationId);
+    const pratic = praticiennes.find(pr=>pr.id===selection.praticienneAttribuee);
+    const prenom = document.getElementById('cl-prenom').value.trim();
+    const nom = document.getElementById('cl-nom').value.trim();
+    const telephone = document.getElementById('cl-telephone').value.trim();
+    const email = document.getElementById('cl-email').value.trim();
+    const forfaitCorrespond = clienteReconnue && clienteReconnue.forfait && clienteReconnue.forfait.prestationId === selection.prestationId;
+
+    // ⚠️ Démo uniquement : le rendez-vous est écrit directement dans le localStorage partagé.
+    // PRODUCTION : une fonction serveur devrait revalider la disponibilité réelle avant d'écrire
+    // le rendez-vous — jamais une écriture libre déclenchée par le navigateur du client.
+    const nouveauRdv = {
+      id: bpProchainId(rdvs),
+      date: selection.dateActive,
+      prestationId: p.id,
+      cliente: `${prenom} ${nom}`.trim(),
+      clienteId: clienteReconnue ? clienteReconnue.id : null,
+      debut: selection.debut,
+      duree: p.duree,
+      prix: p.prix,
+      cabine: p.cabine,
+      praticienneId: pratic.id,
+      statut: "À confirmer", // une réservation en ligne doit être validée par l'institut, contrairement à un RDV saisi en interne
+      paye: false,
+      forfait: forfaitCorrespond ? { actuel: clienteReconnue.forfait.actuel, total: clienteReconnue.forfait.total } : null
+    };
+    rdvs.push(nouveauRdv);
+    bpSauvegarderRdvs(rdvs);
+
+    document.getElementById('zone-recap-finale').innerHTML = `
+      <div class="ligne"><span>Prestation</span><strong>${p.nom}</strong></div>
+      <div class="ligne"><span>Quand</span><strong>${bpDateAffichee(selection.dateActive)}, ${minVersHeureStr(selection.debut)}</strong></div>
+      <div class="ligne"><span>Avec</span><strong>${pratic.nom}</strong></div>
+      <div class="ligne"><span>Cliente</span><strong>${prenom} ${nom}</strong></div>
+      <div class="ligne"><span>Statut</span><strong>À confirmer</strong></div>
+    `;
+    allerEtape('confirmation');
+  }
+
+  function reinitialiser(){
+    selection = { categorie:null, prestationId:null, praticienneId:null, debut:null, dateActive:BP_DATE_REF, offsetActif:0, praticienneAttribuee:null };
+    document.getElementById('tel-reconnaissance').value = '';
+    document.getElementById('banniere-cliente-connue').innerHTML = '';
+    document.getElementById('zone-note-forfait-inclus').innerHTML = '';
+    ['cl-prenom','cl-nom','cl-telephone','cl-email'].forEach(id=>document.getElementById(id).value = '');
+    clienteReconnue = null;
+    // On relit les données à jour (une modification a pu être faite côté back-office entre-temps).
+    rechargerDonneesPartagees();
+    allerEtape('accueil');
+  }
+
+  // ---------- Rechargement suite à une modification faite dans l'autre onglet (index.html) ----------
+  function rechargerDonneesPartagees(){
+    const d = bpLireTout();
+    prestations = d.prestations;
+    praticiennes = d.praticiennes;
+    clientes = d.clientes;
+    rdvs = d.rdvs;
+    rendreCategories();
+    if(etapeActive === 'creneaux'){ calculerEtAfficherCreneaux(); }
+  }
+  bpEcouterChangements(rechargerDonneesPartagees);
+
+  // ---------- Init ----------
+  rendreCategories();
+  majFilEtapes('accueil');
+  document.getElementById('main-contenu').classList.add('large');
+</script>
+
+</body>
+</html>

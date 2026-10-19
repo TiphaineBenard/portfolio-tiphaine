@@ -1,0 +1,82 @@
+// ============================================================
+// RÈGLES DE SÉCURITÉ FIRESTORE
+// À copier dans : Console Firebase > Firestore Database > Règles
+// ============================================================
+//
+// Principe : les SALARIÉS n'ont pas de compte Firebase Auth (mode invité côté app),
+// donc l'écriture des commandes doit rester ouverte en création, mais on protège
+// la modification/suppression et toutes les zones sensibles (produits, paramètres,
+// utilisateurs, audit) aux comptes authentifiés avec le bon rôle.
+//
+// ⚠️ Le rôle est lu depuis /utilisateurs/{uid}. Un utilisateur Manager/Admin DOIT
+// avoir un document correspondant dans cette collection (créé automatiquement
+// au premier login via creerProfilUtilisateur, à défaut créez-le manuellement
+// dans la console avec les champs { nom: "...", role: "manager" | "admin" }).
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function estConnecte() {
+      return request.auth != null;
+    }
+
+    function role() {
+      return get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.role;
+    }
+
+    function estManager() {
+      return estConnecte() && (role() == 'manager' || role() == 'admin');
+    }
+
+    function estAdmin() {
+      return estConnecte() && role() == 'admin';
+    }
+
+    // ---- COMMANDES ----
+    // Création : ouverte à tous (salariés sans compte inclus) mais champs contrôlés.
+    // Modification de statut/édition : manager ou admin.
+    // Suppression : manager ou admin uniquement.
+    match /commandes/{commandeId} {
+      allow create: if request.resource.data.numero is string
+                     && request.resource.data.client is string
+                     && request.resource.data.magasinId is string;
+      allow read: if true;
+      allow update: if estManager();
+      allow delete: if estManager();
+    }
+
+    // ---- COMPTEUR DE NUMÉROTATION ----
+    match /compteurs/{compteurId} {
+      allow read, write: if true; // nécessaire pour que les salariés sans compte génèrent un numéro
+    }
+
+    // ---- PRODUITS / CATALOGUE ----
+    match /produits/{produitId} {
+      allow read: if true;
+      allow write: if estAdmin();
+    }
+
+    // ---- PARAMÈTRES ENTREPRISE (magasins, périodes...) ----
+    match /parametres/{document} {
+      allow read: if true;
+      allow write: if estAdmin();
+    }
+
+    // ---- UTILISATEURS (profils rôle) ----
+    match /utilisateurs/{uid} {
+      allow read: if estConnecte();
+      allow create: if estConnecte() && request.auth.uid == uid;
+      allow update: if estAdmin();
+      allow delete: if estAdmin();
+    }
+
+    // ---- JOURNAL D'AUDIT : écriture libre (traçabilité), aucune modif/suppression ----
+    match /audit_log/{logId} {
+      allow read: if estManager();
+      allow create: if true;
+      allow update, delete: if false; // immuable, y compris pour l'admin
+    }
+  }
+}

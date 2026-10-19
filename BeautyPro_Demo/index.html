@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BeautyPro — Démo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --creme:#FBF5EE;
+    --creme-2:#F5EAE0;
+    --blanc:#FFFFFF;
+    --terracotta:#C97B63;
+    --terracotta-dark:#B0654E;
+    --rose:#F0DCD3;
+    --sauge:#8FA98B;
+    --sauge-fonce:#4C6B49;
+    --rouge:#C0392B;
+    --rouge-fonce:#A5301F;
+    --texte:#3A2E2A;
+    --texte-clair:#786459;
+    --ombre:0 4px 18px rgba(58,46,42,0.08);
+    --rayon:14px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html, body{height:100%;}
+  body{
+    font-family:'Nunito', sans-serif; background:var(--creme); color:var(--texte);
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  h1,h2,h3,.brand{font-family:'Quicksand', sans-serif;}
+  .vide{color:var(--texte-clair); font-size:13px; padding:4px 0;}
+
+  /* Écran de connexion */
+  #app-pro{display:none; flex-direction:column; height:100%;}
+  #ecran-connexion{
+    position:fixed; inset:0; background:linear-gradient(135deg, var(--creme), var(--rose)); z-index:200;
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .carte-connexion{background:var(--blanc); border-radius:20px; padding:34px 32px; box-shadow:var(--ombre); width:100%; max-width:380px;}
+  .titre-connexion{font-size:17px; text-align:center; margin-top:14px; font-weight:700;}
+  .sous-connexion{color:var(--texte-clair); font-size:13px; text-align:center; margin:6px 0 22px;}
+  .erreur-connexion{display:none; background:#FBEDE9; color:var(--rouge); border:1px solid #E3B8AA; border-radius:10px; padding:9px 12px; font-size:12.5px; font-weight:600; margin-bottom:14px;}
+  .erreur-connexion.visible{display:block;}
+  .separateur-connexion{display:flex; align-items:center; gap:10px; margin:16px 0; color:var(--texte-clair); font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.03em;}
+  .separateur-connexion::before, .separateur-connexion::after{content:''; flex:1; height:1px; background:var(--creme-2);}
+
+  header{
+    background:var(--blanc); padding:16px 28px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--creme-2); flex-shrink:0;
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-icon{
+    width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg, var(--terracotta), var(--rose));
+    display:flex; align-items:center; justify-content:center; color:white; font-size:18px; flex-shrink:0;
+  }
+  .brand-text{font-weight:700; font-size:19px; color:var(--texte);}
+  .brand-sub{font-size:11px; color:var(--texte-clair); font-weight:600; letter-spacing:.03em;}
+
+  .barre-nav{display:flex; align-items:center; justify-content:space-between; gap:16px; flex:1; min-width:0;}
+  nav{display:flex; gap:4px; align-items:center;}
+  nav button{
+    font-family:'Quicksand', sans-serif; background:none; border:none; cursor:pointer;
+    padding:8px 14px; border-radius:20px; font-size:13.5px; font-weight:600; color:var(--texte-clair); transition:.15s;
+  }
+  nav button:hover{background:var(--creme-2); color:var(--texte);}
+  nav button.actif{background:var(--terracotta); color:white;}
+  .nav-secondaire{display:flex; align-items:center; gap:8px; flex-shrink:0;}
+  .nav-secondaire .lien-secondaire{color:var(--terracotta-dark); font-weight:700; font-size:12.5px; text-decoration:none; padding:8px 14px; border-radius:20px; white-space:nowrap; transition:.15s; background:none; border:none; cursor:pointer; font-family:'Quicksand',sans-serif;}
+  .nav-secondaire .lien-secondaire:hover{background:var(--rose);}
+  .btn-icone{
+    background:none; border:1.5px solid var(--creme-2); width:34px; height:34px; border-radius:50%; cursor:pointer;
+    font-size:14px; display:flex; align-items:center; justify-content:center; color:var(--texte-clair); transition:.15s; flex-shrink:0;
+  }
+  .btn-icone:hover{background:var(--creme-2); color:var(--texte);}
+
+  main{width:100%; padding:22px clamp(20px, 3vw, 48px) 36px; flex:1 1 auto; overflow-y:auto; min-height:0;}
+  .zone-contenu{max-width:1440px; margin:0 auto;}
+  .ecran{display:none;}
+  .ecran.actif{display:block; animation:apparait .25s ease;}
+  @keyframes apparait{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)}}
+
+  .entete-ecran{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px;}
+  .entete-ecran h2{font-size:20px; font-weight:700;}
+  .entete-ecran p{color:var(--texte-clair); font-size:13px; margin-top:2px;}
+
+  .btn{
+    font-family:'Quicksand', sans-serif; background:var(--terracotta); color:white; border:none;
+    padding:11px 20px; border-radius:24px; font-weight:700; font-size:14px; cursor:pointer; transition:.15s; box-shadow:var(--ombre);
+  }
+  .btn:hover{background:var(--terracotta-dark);}
+  .btn-danger{background:var(--rouge);}
+  .btn-danger:hover{background:var(--rouge-fonce);}
+  .btn-fantome{background:var(--blanc); color:var(--terracotta); border:1.5px solid var(--terracotta); box-shadow:none;}
+  .btn-fantome:hover{background:var(--rose);}
+  .btn:disabled{background:#DCD0C7; color:#fff; cursor:not-allowed; box-shadow:none;}
+
+  /* KPI bar */
+  .kpi-barre{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px;}
+  .kpi{background:var(--blanc); border-radius:var(--rayon); padding:12px 16px; box-shadow:var(--ombre); border-left:4px solid var(--terracotta);}
+  .kpi.alerte-kpi{border-left-color:var(--rouge);}
+  .kpi-label{font-size:10.5px; color:var(--texte-clair); font-weight:700; text-transform:uppercase; letter-spacing:.04em;}
+  .kpi-valeur{font-family:'Quicksand',sans-serif; font-size:20px; font-weight:700; margin-top:2px; color:var(--texte);}
+  .kpi-valeur.alerte-txt{color:var(--rouge);}
+  .kpi-sous{font-size:10.5px; color:var(--texte-clair); margin-top:1px;}
+
+  /* Prochains RDV (Dashboard) */
+  .carte-prochains-rdv{background:var(--blanc); border-radius:var(--rayon); padding:14px 18px; box-shadow:var(--ombre); margin-bottom:14px;}
+  .carte-prochains-rdv h3{font-size:13px; margin-bottom:6px; color:var(--terracotta-dark);}
+  .ligne-prochain-rdv{display:grid; grid-template-columns:52px 1fr auto; gap:12px; align-items:center; padding:8px 0; border-bottom:1px solid var(--creme-2); font-size:13px; cursor:pointer; transition:.12s;}
+  .ligne-prochain-rdv:last-child{border-bottom:none;}
+  .ligne-prochain-rdv:hover{background:var(--creme);}
+  .ligne-prochain-rdv .heure{font-weight:700; color:var(--terracotta-dark); font-family:'Quicksand',sans-serif; font-size:13px;}
+  .ligne-prochain-rdv .infos{min-width:0;}
+  .ligne-prochain-rdv .infos .cliente{font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .ligne-prochain-rdv .infos .details{font-size:11.5px; color:var(--texte-clair); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .lien-voir-planning{background:none; border:none; color:var(--terracotta-dark); font-weight:700; font-size:12.5px; cursor:pointer; padding:8px 0 2px; text-align:left; font-family:'Quicksand',sans-serif;}
+  .lien-voir-planning:hover{text-decoration:underline;}
+
+  /* Planning */
+  .jour-nav{display:flex; align-items:center; gap:14px; margin-bottom:16px;}
+  .jour-nav button{
+    background:var(--blanc); border:1px solid var(--creme-2); border-radius:50%;
+    width:34px; height:34px; cursor:pointer; font-size:16px; color:var(--terracotta);
+  }
+  .jour-nav button:hover{background:var(--creme-2);}
+  .jour-label{font-weight:700; font-size:15px; text-transform:capitalize;}
+
+  .grille-planning{
+    background:var(--blanc); border-radius:16px; box-shadow:var(--ombre);
+    display:grid; grid-template-columns:70px repeat(3, 1fr); overflow:hidden;
+  }
+  .gp-entete{background:var(--creme-2); padding:10px 8px; font-family:'Quicksand',sans-serif; font-weight:700; font-size:12.5px; text-align:center; color:var(--terracotta-dark); border-bottom:1px solid #ECDFD3;}
+  .colonne-gutter{position:relative; background:var(--creme-2);}
+  .gp-heure-label{position:absolute; left:0; right:0; transform:translateY(-8px); font-size:11px; font-weight:700; color:var(--texte-clair); text-align:center;}
+  .colonne-cabine{position:relative; border-left:1px solid var(--creme-2); background:var(--blanc); cursor:pointer;}
+  .gp-ligne{position:absolute; left:0; right:0; border-top:1px solid var(--creme-2); pointer-events:none;}
+  .gp-bloc{
+    position:absolute; left:4px; right:4px; background:var(--rose); border-radius:8px; border-left:3px solid var(--terracotta);
+    padding:4px 7px; overflow:hidden; transition:.15s; box-shadow:0 1px 4px rgba(58,46,42,0.08); cursor:pointer;
+    display:flex; flex-direction:column; justify-content:center; gap:1px; line-height:1.15;
+  }
+  .gp-bloc:hover{filter:brightness(0.97); z-index:5;}
+  .gp-bloc.forfait{background:#EAF1E9; border-left-color:var(--sauge-fonce);}
+  .gp-cliente{font-weight:700; font-size:11.5px; color:var(--texte); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .gp-soin{font-size:10px; color:var(--texte-clair); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .gp-badge{display:inline-block; margin-top:1px; font-size:9px; font-weight:700; padding:0px 6px; line-height:14px; border-radius:7px; background:var(--terracotta); color:white; white-space:nowrap;}
+  .gp-badge.forfait-badge{background:var(--sauge-fonce);}
+  .astuce-planning{font-size:12px; color:var(--texte-clair); margin-top:10px; text-align:center;}
+
+  /* Formulaire RDV (drawer) */
+  .champ{margin-bottom:18px;}
+  .champ label{display:block; font-size:13px; font-weight:700; margin-bottom:6px; color:var(--texte);}
+  .champ select, .champ input{
+    width:100%; padding:11px 14px; border-radius:10px; border:1.5px solid var(--creme-2);
+    font-family:'Nunito',sans-serif; font-size:14px; background:var(--creme); color:var(--texte);
+  }
+  .champ select:focus, .champ input:focus{outline:none; border-color:var(--terracotta);}
+  .champ-case label{display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer;}
+  .champ-case input[type="checkbox"]{width:auto;}
+  .badge-en-ligne{display:inline-block; font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:7px; background:#EAF1E9; color:var(--sauge-fonce); margin-left:6px;}
+  .badge-sur-appel{display:inline-block; font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:7px; background:var(--creme-2); color:var(--texte-clair); margin-left:6px;}
+  .duree-info{font-size:12.5px; color:var(--texte-clair); margin-top:6px;}
+  .confirmation{
+    display:none; background:#EEF3EC; border:1px solid var(--sauge); color:var(--sauge-fonce);
+    padding:14px 16px; border-radius:12px; font-size:13.5px; font-weight:600; margin-top:16px;
+  }
+  .confirmation.visible{display:block;}
+
+  /* Prestations & Tarifs */
+  .barre-outils-prestations{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:10px;}
+  .barre-outils-prestations input[type="text"]{
+    flex:1; min-width:220px; padding:10px 14px; border-radius:20px; border:1.5px solid var(--creme-2);
+    font-family:'Nunito',sans-serif; font-size:13.5px; background:var(--blanc); color:var(--texte);
+  }
+  .barre-outils-prestations input[type="text"]:focus{outline:none; border-color:var(--terracotta);}
+  .barre-outils-prestations select{
+    padding:9px 12px; border-radius:20px; border:1.5px solid var(--creme-2); background:var(--blanc);
+    font-family:'Quicksand',sans-serif; font-size:12.5px; font-weight:700; color:var(--texte-clair); cursor:pointer;
+  }
+  .synthese-prestations{color:var(--texte-clair); font-size:12px; margin-bottom:14px;}
+  .synthese-prestations strong{color:var(--texte);}
+  #grille-prestations{display:grid; grid-template-columns:repeat(auto-fit, minmax(460px,1fr)); gap:14px; align-items:start;}
+  .carte-categorie{background:var(--blanc); border-radius:var(--rayon); padding:16px 20px; box-shadow:var(--ombre); margin-bottom:0;}
+  .carte-categorie h3{font-size:14px; margin-bottom:8px; color:var(--terracotta-dark);}
+  .presta-entete-ligne, .presta-ligne{display:grid; grid-template-columns:2.2fr 1fr 1fr 1.6fr 0.9fr; gap:10px; padding:9px 0; font-size:13.5px; align-items:center;}
+  .presta-entete-ligne{color:var(--texte-clair); font-size:10.5px; text-transform:uppercase; font-weight:700; letter-spacing:.03em; border-bottom:1px solid var(--creme-2); padding-bottom:8px;}
+  .presta-ligne{border-bottom:1px solid var(--creme-2);}
+  .presta-ligne:last-child{border-bottom:none;}
+  .presta-nom{font-weight:600;}
+  .presta-cabine{color:var(--texte-clair); font-size:12.5px;}
+  .presta-actions{display:flex; gap:6px; justify-content:flex-end;}
+  .icone-action{background:var(--creme); border:none; width:28px; height:28px; border-radius:8px; cursor:pointer; font-size:13px; color:var(--texte-clair); transition:.15s;}
+  .icone-action:hover{background:var(--rose); color:var(--terracotta-dark);}
+  .icone-action.suppr:hover{background:#FBEDE9; color:var(--rouge);}
+
+  /* À faire aujourd'hui */
+  .carte-taches{background:var(--blanc); border-radius:var(--rayon); padding:14px 18px; box-shadow:var(--ombre); margin-bottom:14px;}
+  .carte-taches h3{font-size:13px; margin-bottom:6px; color:var(--terracotta-dark);}
+  .item-tache{display:flex; align-items:flex-start; gap:9px; padding:7px 0; border-bottom:1px solid var(--creme-2); font-size:13px;}
+  .item-tache:last-child{border-bottom:none;}
+  .item-tache .picto{flex-shrink:0; font-size:14px;}
+  .item-tache .txt strong{font-weight:700;}
+  .item-tache .lien-tache{background:none; border:none; color:var(--terracotta-dark); font-weight:700; font-size:12px; cursor:pointer; text-decoration:underline; margin-left:auto; flex-shrink:0;}
+  .voir-toutes-taches{background:none; border:none; color:var(--terracotta-dark); font-weight:700; font-size:12.5px; cursor:pointer; padding:8px 0 2px; text-align:left; font-family:'Quicksand',sans-serif;}
+  .voir-toutes-taches:hover{text-decoration:underline;}
+
+  /* Statuts RDV */
+  .statut-badge{display:inline-block; font-size:9.5px; font-weight:700; padding:1px 7px; border-radius:7px; color:white; white-space:nowrap;}
+  .select-statut{width:auto; display:inline-block; padding:8px 10px; font-size:13px;}
+
+  /* Clientes */
+  .barre-outils-clientes{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:16px;}
+  .barre-outils-clientes input{
+    flex:1; min-width:220px; padding:10px 14px; border-radius:20px; border:1.5px solid var(--creme-2);
+    font-family:'Nunito',sans-serif; font-size:13.5px; background:var(--blanc); color:var(--texte);
+  }
+  .barre-outils-clientes input:focus{outline:none; border-color:var(--terracotta);}
+  .filtres-clientes{display:flex; gap:6px; flex-wrap:wrap;}
+  .filtres-clientes button{
+    font-family:'Quicksand',sans-serif; background:var(--blanc); border:1.5px solid var(--creme-2); cursor:pointer;
+    padding:7px 14px; border-radius:18px; font-size:12.5px; font-weight:700; color:var(--texte-clair); transition:.15s;
+  }
+  .filtres-clientes button.actif{background:var(--terracotta); border-color:var(--terracotta); color:white;}
+
+  /* Liste clientes (tableau) */
+  .table-clientes{background:var(--blanc); border-radius:var(--rayon); box-shadow:var(--ombre); overflow:hidden;}
+  .ligne-cliente-entete, .ligne-cliente{
+    display:grid; grid-template-columns:2fr 1.7fr 1.3fr 1.5fr 1.7fr 0.4fr; gap:14px; align-items:center; padding:12px 20px;
+  }
+  .ligne-cliente-entete{background:var(--creme-2); font-size:10px; text-transform:uppercase; font-weight:700; letter-spacing:.03em; color:var(--texte-clair);}
+  .ligne-cliente{border-bottom:1px solid var(--creme-2); cursor:pointer; transition:.12s; font-size:13px;}
+  .ligne-cliente:last-child{border-bottom:none;}
+  .ligne-cliente:hover{background:var(--creme);}
+  .lc-cliente{display:flex; align-items:center; gap:10px; font-weight:700; min-width:0;}
+  .lc-cliente span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .lc-cliente .avatar{width:32px; height:32px; font-size:12.5px; margin-bottom:0; flex-shrink:0;}
+  .lc-secondaire{color:var(--texte-clair);}
+  .lc-alerte{color:#A34A34; font-weight:600; font-size:12px;}
+  .lc-forfait{font-size:12px;}
+  .lc-chevron{color:var(--texte-clair); text-align:right; font-size:17px;}
+
+  .avatar{
+    width:42px; height:42px; border-radius:50%; background:var(--rose); color:var(--terracotta-dark);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'Quicksand',sans-serif; margin-bottom:10px; font-size:16px;
+  }
+  .puce-alerte{position:absolute; top:16px; right:16px; width:9px; height:9px; border-radius:50%; background:var(--rouge);}
+  .carte-mini-forfait{background:#EAF1E9; color:var(--sauge-fonce); font-size:11.5px; font-weight:700; padding:4px 9px; border-radius:8px; display:inline-block; margin-top:6px;}
+  .carte-mini-alerte{background:#FBEDE9; color:#A34A34; font-size:11.5px; font-weight:700; padding:4px 9px; border-radius:8px; display:inline-block; margin-top:6px;}
+  .mini-barre{background:#D9E6D7; border-radius:6px; height:6px; overflow:hidden; margin-top:4px;}
+  .mini-barre-remplie{background:var(--sauge-fonce); height:100%;}
+
+  /* Équipe */
+  .grille-equipe{display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:14px;}
+  .carte-equipe{background:var(--blanc); border-radius:var(--rayon); padding:20px; box-shadow:var(--ombre);}
+  .carte-equipe .avatar{width:48px; height:48px; font-size:18px;}
+  .carte-equipe h3{font-size:15px; margin-bottom:2px;}
+  .carte-equipe .sous{font-size:12px; color:var(--texte-clair); margin-bottom:10px;}
+  .badges-competences{display:flex; flex-wrap:wrap; gap:6px;}
+  .badge-competence{background:var(--creme-2); color:var(--texte-clair); font-size:11px; font-weight:700; padding:3px 9px; border-radius:8px;}
+
+  .depuis{color:var(--texte-clair); font-size:13px; margin-bottom:18px;}
+  .fiche-section{margin-bottom:18px;}
+  .fiche-section h4{font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--terracotta-dark); margin-bottom:8px; font-family:'Quicksand',sans-serif;}
+  .historique-item{display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--creme-2); font-size:13.5px;}
+  .alerte{background:#FBEDE9; border:1px solid #E3B8AA; color:#A34A34; padding:10px 14px; border-radius:10px; font-size:13px; font-weight:600;}
+  .note{font-size:13.5px; color:var(--texte); line-height:1.5;}
+  .fiche-grille2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .fiche-champ-tech{background:var(--creme); border-radius:10px; padding:10px 12px;}
+  .fiche-champ-tech .lbl{font-size:10.5px; text-transform:uppercase; color:var(--texte-clair); font-weight:700; letter-spacing:.03em;}
+  .fiche-champ-tech .val{font-size:13.5px; margin-top:2px;}
+
+  .carte-forfait{background:#EAF1E9; border:1px solid #CFE0CD; border-radius:14px; padding:16px 18px;}
+  .forfait-titre{font-weight:700; font-size:14px; margin-bottom:8px;}
+  .barre-progression{background:#D9E6D7; border-radius:8px; height:10px; overflow:hidden; margin-bottom:6px;}
+  .barre-progression-remplie{background:var(--sauge-fonce); height:100%; transition:width .3s ease;}
+  .forfait-details{display:flex; justify-content:space-between; font-size:12px; color:var(--sauge-fonce); font-weight:600;}
+
+  .photos-avant-apres{display:flex; gap:10px;}
+  .photo-placeholder{
+    flex:1; aspect-ratio:1; background:var(--creme); border:1.5px dashed #E3D6CB; border-radius:12px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--texte-clair); font-size:12px; gap:6px;
+  }
+
+  /* Drawers */
+  .backdrop{position:fixed; inset:0; background:rgba(58,46,42,0.35); opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:99;}
+  .backdrop.visible{opacity:1; pointer-events:auto;}
+  .drawer{
+    position:fixed; top:0; right:0; height:100vh; width:440px; max-width:92vw; background:var(--blanc);
+    box-shadow:-10px 0 34px rgba(58,46,42,0.16); transform:translateX(100%); transition:transform .25s ease; z-index:100;
+    overflow-y:auto; overflow-x:hidden; padding:26px 28px;
+  }
+  .drawer.ouvert{transform:translateX(0);}
+  .drawer-entete{display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:6px;}
+  .drawer-entete h2{font-size:19px;}
+  .drawer-entete p{color:var(--texte-clair); font-size:13px; margin-top:2px;}
+  .drawer-fermer{background:var(--creme-2); border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:15px; color:var(--texte); flex-shrink:0;}
+  .drawer-corps{margin-top:22px;}
+
+  /* Modales centrées */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(58,46,42,0.45); z-index:110; display:flex; align-items:center; justify-content:center;
+    padding:24px; opacity:0; pointer-events:none; transition:opacity .2s ease;
+  }
+  .modal-overlay.visible{opacity:1; pointer-events:auto;}
+  .modal-boite{max-height:90vh; overflow-y:auto; overflow-x:hidden; width:100%; max-width:480px; position:relative; border-radius:18px;}
+  .modal-fermer{
+    position:absolute; top:10px; right:10px; background:rgba(255,255,255,0.9); border:none; width:30px; height:30px;
+    border-radius:50%; cursor:pointer; font-size:14px; box-shadow:var(--ombre); z-index:2;
+  }
+  .carte-form{background:var(--blanc); border-radius:18px; padding:28px;}
+
+  .apercu-email{width:100%;}
+  .enveloppe{background:var(--blanc); border-radius:18px; overflow:hidden;}
+  .email-entete{background:linear-gradient(135deg, var(--terracotta), #D99B87); padding:26px; text-align:center; color:white;}
+  .email-entete .brand-icon{margin:0 auto 10px; background:rgba(255,255,255,0.25);}
+  .email-entete h3{font-size:18px;}
+  .email-corps{padding:24px;}
+  .email-corps p{font-size:14px; line-height:1.6; margin-bottom:12px;}
+  .email-carte-rdv{background:var(--creme); border-radius:12px; padding:16px; margin:16px 0;}
+  .email-carte-rdv div{font-size:13.5px; margin-bottom:4px;}
+  .email-carte-rdv strong{color:var(--terracotta-dark);}
+  .email-note{font-size:11.5px; color:var(--texte-clair); text-align:center; margin-top:10px; padding:0 16px 16px;}
+
+  footer{text-align:center; padding:14px; font-size:12px; color:var(--texte-clair); flex-shrink:0; border-top:1px solid var(--creme-2); background:var(--creme);}
+
+  @media (max-width:900px){
+    .barre-nav{flex-wrap:wrap; gap:8px;}
+    nav{flex-wrap:wrap;}
+  }
+  @media (max-width:760px){
+    .kpi-barre{grid-template-columns:repeat(2,1fr);}
+    #grille-prestations{grid-template-columns:1fr;}
+    .grille-planning{grid-template-columns:50px repeat(3, minmax(90px,1fr)); overflow-x:auto;}
+    .presta-entete-ligne, .presta-ligne{grid-template-columns:1.6fr 0.8fr 0.8fr 1.2fr 0.7fr; font-size:12px;}
+    .ligne-cliente-entete{display:none;}
+    .ligne-cliente{grid-template-columns:1fr; gap:4px; padding:14px 16px;}
+    .lc-chevron{display:none;}
+    .lc-dernier-soin::before{content:'Dernier soin : ';}
+    .lc-prochain-rdv::before{content:'Prochain RDV : ';}
+    main{padding:16px 12px 36px;}
+    .drawer{width:100%;}
+    header{padding:12px 16px;}
+    .nav-secondaire .lien-secondaire span{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- Écran de connexion professionnel — protège l'accès au back-office (planning, clientes, CA, tarifs) -->
+<div id="ecran-connexion">
+  <div class="carte-connexion">
+    <div class="brand" style="justify-content:center; margin-bottom:6px;">
+      <div class="brand-icon">✦</div>
+      <div style="text-align:left;">
+        <div class="brand-text">BeautyPro</div>
+        <div class="brand-sub">Espace professionnel</div>
+      </div>
+    </div>
+    <h2 class="titre-connexion">Connectez-vous à votre espace professionnel</h2>
+    <p class="sous-connexion">Gérez votre planning, vos clientes et vos prestations.</p>
+    <div class="champ">
+      <label>Email professionnel</label>
+      <input type="text" id="co-email" placeholder="institut@exemple.fr">
+    </div>
+    <div class="champ">
+      <label>Mot de passe</label>
+      <input type="password" id="co-mdp" placeholder="••••••••">
+    </div>
+    <div class="erreur-connexion" id="erreur-connexion">Email ou mot de passe incorrect.</div>
+    <button class="btn" style="width:100%;" onclick="essayerConnexion()">Se connecter</button>
+    <div class="separateur-connexion">ou</div>
+    <button class="btn btn-fantome" style="width:100%;" onclick="decouvrirDemo()">Découvrir la démo</button>
+  </div>
+</div>
+
+<div id="app-pro">
+<header>
+  <div class="brand">
+    <div class="brand-icon">✦</div>
+    <div>
+      <div class="brand-text">BeautyPro</div>
+      <div class="brand-sub">Institut de beauté — démo</div>
+    </div>
+  </div>
+  <div class="barre-nav">
+    <nav>
+      <button class="actif" data-ecran="dashboard">Tableau de bord</button>
+      <button data-ecran="planning">Planning</button>
+      <button data-ecran="clientes">Clientes</button>
+      <button data-ecran="prestations">Prestations</button>
+      <button data-ecran="equipe">Équipe</button>
+    </nav>
+    <div class="nav-secondaire">
+      <a class="lien-secondaire" href="reservation.html" target="_blank"><span>Aperçu </span>réservation ↗</a>
+      <button class="btn-icone" title="Paramètres de l'institut" onclick="ouvrirModalParametres()">⚙</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="zone-contenu">
+
+  <!-- TABLEAU DE BORD -->
+  <section class="ecran actif" id="ecran-dashboard">
+    <div class="entete-ecran">
+      <div>
+        <h2>Tableau de bord</h2>
+        <p>Vue du salon en un coup d'œil : activité, chiffre d'affaires et actions prioritaires.</p>
+      </div>
+    </div>
+
+    <div class="kpi-barre" id="kpi-barre"></div>
+
+    <div class="carte-taches" id="carte-taches"></div>
+
+    <div class="carte-prochains-rdv" id="prochains-rdv"></div>
+    <button class="lien-voir-planning" onclick="allerA('planning')">Voir le planning complet →</button>
+  </section>
+
+  <!-- PLANNING -->
+  <section class="ecran" id="ecran-planning">
+    <div class="entete-ecran">
+      <div>
+        <h2>Planning</h2>
+        <p>Organisation de la journée par cabine.</p>
+      </div>
+      <button class="btn" onclick="ouvrirDrawerRdv()">+ Nouveau rendez-vous</button>
+    </div>
+
+    <div class="jour-nav">
+      <button onclick="changerJourPlanning(-1)">‹</button>
+      <span class="jour-label" id="planning-jour-label"></span>
+      <button onclick="changerJourPlanning(1)">›</button>
+    </div>
+
+    <div class="grille-planning" id="grille-planning"></div>
+    <div class="astuce-planning">Cliquez sur un rendez-vous pour le modifier ou l'annuler, ou sur une case vide pour en créer un nouveau.</div>
+  </section>
+
+  <!-- PRESTATIONS & TARIFS -->
+  <section class="ecran" id="ecran-prestations">
+    <div class="entete-ecran">
+      <div>
+        <h2>Prestations</h2>
+        <p>Le catalogue qui alimente automatiquement la durée, le prix et la cabine dans le formulaire de rendez-vous.</p>
+      </div>
+      <button class="btn" onclick="ouvrirDrawerPrestation()">+ Nouvelle prestation</button>
+    </div>
+    <div class="barre-outils-prestations">
+      <input type="text" id="recherche-prestation" placeholder="Rechercher une prestation…" oninput="filtrerPrestationsRecherche(this.value)">
+      <select id="filtre-presta-categorie" onchange="filtrerPrestationsCategorie(this.value)">
+        <option value="toutes">Toutes les catégories</option>
+      </select>
+      <select id="filtre-presta-reservable" onchange="filtrerPrestationsReservable(this.value)">
+        <option value="toutes">Toutes les prestations</option>
+        <option value="oui">Réservables en ligne</option>
+        <option value="non">Sur appel uniquement</option>
+      </select>
+    </div>
+    <div class="synthese-prestations" id="synthese-prestations"></div>
+    <div id="grille-prestations"></div>
+  </section>
+
+  <!-- CLIENTES -->
+  <section class="ecran" id="ecran-clientes">
+    <div class="entete-ecran">
+      <div>
+        <h2>Fiches clientes</h2>
+        <p>Cliquez sur une cliente pour ouvrir sa fiche complète.</p>
+      </div>
+      <button class="btn" onclick="ouvrirDrawerCliente()">+ Nouvelle cliente</button>
+    </div>
+    <div class="barre-outils-clientes">
+      <input type="text" id="recherche-cliente" placeholder="Rechercher une cliente…" oninput="filtrerClientes(this.value)">
+      <div class="filtres-clientes" id="filtres-clientes"></div>
+    </div>
+    <div id="grille-clientes"></div>
+  </section>
+
+  <!-- ÉQUIPE -->
+  <section class="ecran" id="ecran-equipe">
+    <div class="entete-ecran">
+      <div>
+        <h2>Équipe</h2>
+        <p>Les praticiennes de l'institut et leurs compétences — utilisées automatiquement pour proposer les bons créneaux.</p>
+      </div>
+    </div>
+    <div class="grille-equipe" id="grille-equipe"></div>
+  </section>
+
+</div>
+</main>
+
+<footer>Démo interactive — Tiphaine Bénard · tiphainebenard.fr</footer>
+
+<div class="backdrop" id="backdrop" onclick="fermerTout()"></div>
+
+<!-- Drawer nouveau RDV / modification -->
+<div class="drawer" id="drawer-rdv">
+  <div class="drawer-entete">
+    <div>
+      <h2 id="drawer-rdv-titre">Nouveau rendez-vous</h2>
+      <p>La durée, le prix et la cabine viennent du catalogue Prestations & Tarifs.</p>
+    </div>
+    <button class="drawer-fermer" onclick="fermerTout()">✕</button>
+  </div>
+  <div class="drawer-corps">
+    <div class="champ">
+      <label>Cliente</label>
+      <input type="text" id="rdv-cliente" placeholder="Nom de la cliente" value="Inès Ouedraogo">
+    </div>
+    <div class="champ">
+      <label>Prestation</label>
+      <select id="rdv-soin" onchange="majInfosRdv()"></select>
+    </div>
+    <div class="champ">
+      <label>Date</label>
+      <input type="text" id="rdv-date-affichee" value="" disabled>
+    </div>
+    <div class="champ">
+      <label>Heure de début</label>
+      <select id="rdv-creneau" onchange="majInfosRdv()"></select>
+    </div>
+    <div class="champ">
+      <label>Praticienne</label>
+      <select id="rdv-praticienne" onchange="majInfosRdv()"></select>
+      <div class="duree-info" id="duree-info"></div>
+    </div>
+    <div class="champ">
+      <label>Statut</label>
+      <select id="rdv-statut"></select>
+    </div>
+    <button class="btn" onclick="confirmerRdv()">Confirmer le rendez-vous</button>
+    <div class="confirmation" id="confirmation-rdv">✓ Rendez-vous enregistré. Un rappel email sera envoyé 24h avant.</div>
+  </div>
+</div>
+
+<!-- Drawer nouvelle prestation / modification -->
+<div class="drawer" id="drawer-prestation">
+  <div class="drawer-entete">
+    <div>
+      <h2 id="drawer-prestation-titre">Nouvelle prestation</h2>
+      <p>Disponible immédiatement dans le formulaire de rendez-vous.</p>
+    </div>
+    <button class="drawer-fermer" onclick="fermerTout()">✕</button>
+  </div>
+  <div class="drawer-corps">
+    <div class="champ">
+      <label>Nom de la prestation</label>
+      <input type="text" id="presta-nom" placeholder="Ex. Soin hydratant">
+    </div>
+    <div class="champ">
+      <label>Catégorie</label>
+      <input type="text" id="presta-categorie" placeholder="Ex. Soins visage" list="liste-categories">
+      <datalist id="liste-categories"></datalist>
+    </div>
+    <div class="champ">
+      <label>Durée (minutes)</label>
+      <input type="number" id="presta-duree" min="5" step="5" value="30">
+    </div>
+    <div class="champ">
+      <label>Tarif (€, 0 si séance de forfait)</label>
+      <input type="number" id="presta-prix" min="0" step="5" value="40">
+    </div>
+    <div class="champ">
+      <label>Cabine assignée</label>
+      <select id="presta-cabine"></select>
+    </div>
+    <div class="champ champ-case">
+      <label><input type="checkbox" id="presta-reservable" checked> Réservable en ligne par les clientes</label>
+    </div>
+    <div class="champ" id="champ-acompte">
+      <label>Acompte demandé en ligne (€, 0 = aucun)</label>
+      <input type="number" id="presta-acompte" min="0" step="5" value="0">
+    </div>
+    <button class="btn" onclick="confirmerPrestation()">Enregistrer</button>
+  </div>
+</div>
+
+<!-- Drawer nouvelle cliente -->
+<div class="drawer" id="drawer-nouvelle-cliente">
+  <div class="drawer-entete">
+    <div><h2>Nouvelle cliente</h2></div>
+    <button class="drawer-fermer" onclick="fermerTout()">✕</button>
+  </div>
+  <div class="drawer-corps">
+    <div class="champ">
+      <label>Nom complet</label>
+      <input type="text" id="nc-nom" placeholder="Ex. Chloé Dubois">
+    </div>
+    <div class="champ">
+      <label>Téléphone</label>
+      <input type="text" id="nc-telephone" placeholder="06 00 00 00 00">
+    </div>
+    <div class="champ">
+      <label>Email</label>
+      <input type="text" id="nc-email" placeholder="email@exemple.fr">
+    </div>
+    <div class="champ">
+      <label>Note / allergie / contre-indication (optionnel)</label>
+      <input type="text" id="nc-note" placeholder="Ex. Allergie connue à…">
+    </div>
+    <button class="btn" onclick="confirmerNouvelleCliente()">Enregistrer la fiche</button>
+  </div>
+</div>
+
+<!-- Drawer fiche cliente -->
+<div class="drawer" id="drawer-cliente">
+  <div class="drawer-entete">
+    <div><h2>Fiche cliente</h2></div>
+    <button class="drawer-fermer" onclick="fermerTout()">✕</button>
+  </div>
+  <div class="drawer-corps" id="detail-cliente-corps"></div>
+</div>
+
+<!-- Modale détail RDV -->
+<div class="modal-overlay" id="modal-rdv-detail">
+  <div class="modal-boite">
+    <button class="modal-fermer" onclick="fermerTout()">✕</button>
+    <div class="carte-form" id="detail-rdv-corps"></div>
+  </div>
+</div>
+
+<!-- Modale rappel email -->
+<div class="modal-overlay" id="modal-email">
+  <div class="modal-boite">
+    <button class="modal-fermer" onclick="fermerTout()">✕</button>
+    <div class="apercu-email">
+      <div class="enveloppe">
+        <div class="email-entete">
+          <div class="brand-icon">✦</div>
+          <h3>Institut [Nom de l'institut]</h3>
+        </div>
+        <div class="email-corps">
+          <p>Bonjour,</p>
+          <p>Petit rappel : vous avez rendez-vous à l'institut.</p>
+        </div>
+        <div class="email-note">Envoyé automatiquement 24h avant chaque RDV — aucune action de votre part. (Rappel par SMS disponible en option.)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modale paramètres (démo) -->
+<div class="modal-overlay" id="modal-parametres">
+  <div class="modal-boite">
+    <button class="modal-fermer" onclick="fermerTout()">✕</button>
+    <div class="carte-form">
+      <h2 style="font-size:18px; margin-bottom:6px;">Paramètres de l'institut</h2>
+      <p style="color:var(--texte-clair); font-size:13px; margin-bottom:22px;">Horaires, cabines, branding, moyens de paiement — à venir dans une prochaine version.</p>
+      <div style="border-top:1px solid var(--creme-2); padding-top:18px;">
+        <p style="font-size:11.5px; color:var(--texte-clair); margin-bottom:10px; text-transform:uppercase; letter-spacing:.03em; font-weight:700;">Outils de démonstration</p>
+        <button class="btn btn-fantome" onclick="reinitialiserDemoConfirm()">Réinitialiser les données de démonstration</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /#app-pro -->
+
+<!-- Couche de données partagée avec reservation.html (voir beautypro-data.js) -->
+<script src="beautypro-data.js"></script>
+<script>
+  // ---------- Connexion professionnelle (démo) ----------
+  // ⚠️ Ceci est une protection d'écran côté navigateur, utile pour une démo commerciale.
+  // Ce n'est PAS une vraie sécurité : ce fichier est statique, sans base de données ni serveur derrière.
+  // Sur la vraie application, l'accès serait vérifié par Firebase Authentication + des règles Firestore
+  // qui refusent la lecture des données (clientes, planning, CA) à quiconque n'est pas identifié comme
+  // membre de CET institut précis — pas seulement une case cochée en JavaScript.
+  const IDENTIFIANTS_DEMO = { email:"demo@institut-bellepeau.fr", motDePasse:"demo1234" };
+
+  function essayerConnexion(){
+    const email = document.getElementById('co-email').value.trim().toLowerCase();
+    const mdp = document.getElementById('co-mdp').value;
+    const ok = email === IDENTIFIANTS_DEMO.email && mdp === IDENTIFIANTS_DEMO.motDePasse;
+    if(ok){
+      document.getElementById('ecran-connexion').style.display = 'none';
+      document.getElementById('app-pro').style.display = 'flex';
+    } else {
+      document.getElementById('erreur-connexion').classList.add('visible');
+    }
+  }
+  document.getElementById('co-mdp').addEventListener('keydown', e=>{ if(e.key==='Enter') essayerConnexion(); });
+
+  function decouvrirDemo(){
+    document.getElementById('co-email').value = IDENTIFIANTS_DEMO.email;
+    document.getElementById('co-mdp').value = IDENTIFIANTS_DEMO.motDePasse;
+    essayerConnexion();
+  }
+
+  // ---------- Données (chargées depuis la couche partagée beautypro-data.js) ----------
+  const cabines = BP_CABINES;
+  const OUVERTURE = BP_OUVERTURE;
+  const FERMETURE = BP_FERMETURE;
+  const STATUTS = BP_STATUTS;
+  const STATUT_COULEUR = BP_STATUT_COULEUR;
+  const PX_PAR_MIN = 1.7;
+  const HAUTEUR_TOTALE = (FERMETURE - OUVERTURE) * PX_PAR_MIN;
+  const formatDuree = bpFormatDuree;
+  const minVersHeureStr = bpMinVersHeureStr;
+
+  let { prestations, praticiennes, clientes, rdvs } = bpInitDonnees();
+  let prochainPrestationId = bpProchainId(prestations);
+  let prochainId = bpProchainId(rdvs);
+
+  function trouverPrestation(id){ return prestations.find(p=>p.id===id); }
+  function trouverPraticienne(id){ return praticiennes.find(p=>p.id===id); }
+
+  // datePlanningActive : le jour actuellement affiché dans l'écran Planning (navigable ‹ ›).
+  // Le Dashboard, lui, correspond toujours à BP_DATE_REF ("aujourd'hui" pour cette démo).
+  let datePlanningActive = BP_DATE_REF;
+  let dateEnEdition = BP_DATE_REF; // date du RDV en cours de création/modification dans le drawer
+
+  let edition = null; // id du RDV en cours de modification, ou null
+  let editionPrestationId = null; // id de la prestation en cours de modification, ou null
+  let filtreCliente = "toutes";
+  let rechercheCliente = "";
+
+  function soinAffiche(rdv){
+    const p = trouverPrestation(rdv.prestationId);
+    if(!p) return '(prestation supprimée du catalogue)';
+    return p.nom + (rdv.forfait ? ` — séance ${rdv.forfait.actuel}/${rdv.forfait.total}` : '');
+  }
+
+  function allerA(nom){
+    document.querySelectorAll('.ecran').forEach(e=>e.classList.remove('actif'));
+    document.getElementById('ecran-'+nom).classList.add('actif');
+    document.querySelectorAll('nav button[data-ecran]').forEach(b=>b.classList.remove('actif'));
+    document.querySelectorAll('nav button[data-ecran="'+nom+'"]').forEach(b=>b.classList.add('actif'));
+    document.querySelector('main').scrollTo({top:0, behavior:'instant'});
+  }
+  document.querySelectorAll('nav button[data-ecran]').forEach(b=>{
+    b.addEventListener('click', ()=>allerA(b.dataset.ecran));
+  });
+
+  function fermerTout(){
+    document.getElementById('backdrop').classList.remove('visible');
+    document.getElementById('drawer-rdv').classList.remove('ouvert');
+    document.getElementById('drawer-cliente').classList.remove('ouvert');
+    document.getElementById('drawer-prestation').classList.remove('ouvert');
+    document.getElementById('drawer-nouvelle-cliente').classList.remove('ouvert');
+    document.getElementById('modal-email').classList.remove('visible');
+    document.getElementById('modal-rdv-detail').classList.remove('visible');
+    document.getElementById('modal-parametres').classList.remove('visible');
+  }
+
+  function ouvrirModalParametres(){
+    document.getElementById('backdrop').classList.add('visible');
+    document.getElementById('modal-parametres').classList.add('visible');
+  }
+
+  function reinitialiserDemoConfirm(){
+    if(confirm("Réinitialiser toutes les modifications et restaurer les données initiales ?")){
+      bpReinitialiserDemo();
+      location.reload();
+    }
+  }
+
+  // ---------- Formulaire RDV ----------
+  function peuplerSelectsFormulaire(){
+    const selectSoin = document.getElementById('rdv-soin');
+    const valeurAvant = selectSoin.value;
+    let cat = null, html = '';
+    prestations.forEach(p=>{
+      if(p.categorie !== cat){ if(cat) html += '</optgroup>'; html += `<optgroup label="${p.categorie}">`; cat = p.categorie; }
+      html += `<option value="${p.id}">${p.nom} (${formatDuree(p.duree)} — ${p.prix>0? p.prix+' €':'forfait'})</option>`;
+    });
+    html += '</optgroup>';
+    selectSoin.innerHTML = html;
+    if(prestations.some(p=>String(p.id)===valeurAvant)) selectSoin.value = valeurAvant;
+
+    const selectHeure = document.getElementById('rdv-creneau');
+    if(!selectHeure.options.length){
+      let hHtml = '';
+      for(let m = OUVERTURE; m <= FERMETURE-15; m += 15){
+        hHtml += `<option value="${m}">${minVersHeureStr(m)}</option>`;
+      }
+      selectHeure.innerHTML = hHtml;
+    }
+
+    if(!document.getElementById('rdv-statut').options.length){
+      document.getElementById('rdv-statut').innerHTML = STATUTS.map(s=>`<option value="${s}">${s}</option>`).join('');
+    }
+
+    const selectCabine = document.getElementById('presta-cabine');
+    selectCabine.innerHTML = cabines.map((c,i)=>`<option value="${i}">${c}</option>`).join('');
+  }
+
+  // Une praticienne est indisponible si elle est déjà sur un autre soin qui chevauche ce créneau CE JOUR-LÀ — même dans une autre cabine.
+  function chevauchePraticienne(praticienneId, date, debut, duree, ignorerId){
+    const fin = debut + duree;
+    return rdvs.some(r => r.date===date && r.praticienneId===praticienneId && r.id!==ignorerId && r.statut!=='Annulé' && !(fin<=r.debut || debut>=r.debut+r.duree));
+  }
+  function chevauche(cabine, date, debut, duree, ignorerId){
+    const fin = debut + duree;
+    return rdvs.some(r => r.date===date && r.cabine===cabine && r.id!==ignorerId && r.statut!=='Annulé' && !(fin<=r.debut || debut>=r.debut+r.duree));
+  }
+
+  function peuplerPraticiennesPourPrestation(){
+    const p = trouverPrestation(parseInt(document.getElementById('rdv-soin').value,10));
+    const selectPratic = document.getElementById('rdv-praticienne');
+    const valeurAvant = selectPratic.value;
+    const debut = parseInt(document.getElementById('rdv-creneau').value,10);
+    if(!p) return;
+    const competentes = praticiennes.filter(pr=>pr.competences.includes(p.categorie));
+    selectPratic.innerHTML = competentes.map(pr=>{
+      const occupee = chevauchePraticienne(pr.id, dateEnEdition, debut, p.duree, edition);
+      return `<option value="${pr.id}" ${occupee?'disabled':''}>${pr.nom}${occupee?' — occupée à cette heure':''}</option>`;
+    }).join('');
+    if(competentes.some(pr=>String(pr.id)===valeurAvant) && !chevauchePraticienne(parseInt(valeurAvant,10), dateEnEdition, debut, p.duree, edition)){
+      selectPratic.value = valeurAvant;
+    } else {
+      const premiereLibre = competentes.find(pr=>!chevauchePraticienne(pr.id, dateEnEdition, debut, p.duree, edition));
+      if(premiereLibre) selectPratic.value = premiereLibre.id;
+    }
+  }
+
+  function majInfosRdv(){
+    const p = trouverPrestation(parseInt(document.getElementById('rdv-soin').value,10));
+    if(!p) return;
+    peuplerPraticiennesPourPrestation();
+    const debut = parseInt(document.getElementById('rdv-creneau').value,10);
+    const fin = debut + p.duree;
+    document.getElementById('duree-info').textContent =
+      `${formatDuree(p.duree)} — ${cabines[p.cabine]} — ${p.prix>0 ? p.prix+' €' : 'séance de forfait'} — se termine à ${minVersHeureStr(fin)}`;
+  }
+
+  function ouvrirDrawerRdv(heureMin, cabineIdx){
+    edition = null;
+    dateEnEdition = datePlanningActive;
+    document.getElementById('drawer-rdv-titre').textContent = 'Nouveau rendez-vous';
+    document.getElementById('rdv-cliente').value = '';
+    document.getElementById('rdv-date-affichee').value = bpDateAffichee(dateEnEdition);
+    document.getElementById('backdrop').classList.add('visible');
+    document.getElementById('drawer-rdv').classList.add('ouvert');
+    if(cabineIdx !== undefined){
+      const premiereCorrespondante = prestations.find(p=>p.cabine===cabineIdx);
+      if(premiereCorrespondante) document.getElementById('rdv-soin').value = premiereCorrespondante.id;
+    }
+    if(heureMin !== undefined){ document.getElementById('rdv-creneau').value = heureMin; }
+    document.getElementById('rdv-statut').value = 'À confirmer';
+    majInfosRdv();
+  }
+
+  function confirmerRdv(){
+    const cliente = document.getElementById('rdv-cliente').value || 'Nouvelle cliente';
+    const prestationId = parseInt(document.getElementById('rdv-soin').value,10);
+    const p = trouverPrestation(prestationId);
+    const debut = parseInt(document.getElementById('rdv-creneau').value,10);
+    const praticienneId = parseInt(document.getElementById('rdv-praticienne').value,10);
+    const statut = document.getElementById('rdv-statut').value;
+
+    if(debut + p.duree > FERMETURE){
+      alert("Ce rendez-vous dépasserait l'heure de fermeture (19h00). Choisissez un créneau plus tôt.");
+      return;
+    }
+    if(chevauche(p.cabine, dateEnEdition, debut, p.duree, edition)){
+      alert("Ce créneau chevauche un rendez-vous déjà présent sur cette cabine. Choisissez une autre heure.");
+      return;
+    }
+    if(isNaN(praticienneId)){
+      alert("Aucune praticienne compétente n'est disponible sur ce créneau. Choisissez une autre heure.");
+      return;
+    }
+    if(chevauchePraticienne(praticienneId, dateEnEdition, debut, p.duree, edition)){
+      alert("Cette praticienne est déjà sur un autre soin à cette heure (même dans une autre cabine). Choisissez une autre praticienne ou un autre créneau.");
+      return;
+    }
+
+    const clientePreexistante = clientes.find(c=>c.nom===cliente);
+
+    if(edition){
+      const idx = rdvs.findIndex(r=>r.id===edition);
+      const forfaitExistant = rdvs[idx].forfait;
+      const payeExistant = rdvs[idx].paye;
+      const clienteIdExistant = rdvs[idx].clienteId;
+      rdvs[idx] = { id:edition, date:dateEnEdition, prestationId, cliente, clienteId:clienteIdExistant||null, debut, duree:p.duree, prix:p.prix, cabine:p.cabine, praticienneId, statut, paye:payeExistant, forfait:forfaitExistant };
+    } else {
+      rdvs.push({ id:prochainId++, date:dateEnEdition, prestationId, cliente, clienteId:clientePreexistante?clientePreexistante.id:null, debut, duree:p.duree, prix:p.prix, cabine:p.cabine, praticienneId, statut, paye:false, forfait:null });
+    }
+    edition = null;
+    bpSauvegarderRdvs(rdvs);
+
+    rafraichirTout();
+
+    const conf = document.getElementById('confirmation-rdv');
+    conf.classList.add('visible');
+    setTimeout(()=>{
+      fermerTout();
+      conf.classList.remove('visible');
+      allerA('planning');
+    }, 1200);
+  }
+
+  // ---------- Détail / modification / suppression RDV ----------
+  function ouvrirDetailRdv(id){
+    const rdv = rdvs.find(r=>r.id===id);
+    if(!rdv) return;
+    const p = trouverPrestation(rdv.prestationId);
+    const pratic = trouverPraticienne(rdv.praticienneId);
+    const zone = document.getElementById('detail-rdv-corps');
+    zone.innerHTML = `
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+        <h2 style="margin-bottom:2px;">${rdv.cliente}</h2>
+        <span class="statut-badge" style="background:${STATUT_COULEUR[rdv.statut]||'#8A7A72'};">${rdv.statut}</span>
+      </div>
+      <p style="color:var(--texte-clair); font-size:13px; margin-bottom:20px;">${bpDateAfficheeCourte(rdv.date)} — ${cabines[rdv.cabine]} — ${minVersHeureStr(rdv.debut)} → ${minVersHeureStr(rdv.debut+rdv.duree)}${pratic ? ' — avec '+pratic.nom : ''}</p>
+      <div class="fiche-champ-tech" style="margin-bottom:12px;">
+        <div class="lbl">Prestation</div><div class="val">${soinAffiche(rdv)}</div>
+      </div>
+      ${rdv.forfait ? `<div class="carte-mini-forfait" style="margin-bottom:12px;">Forfait en cours : ${rdv.forfait.actuel}/${rdv.forfait.total} séances</div>` : ''}
+      <div class="fiche-champ-tech" style="margin-bottom:14px;">
+        <div class="lbl">Durée / Tarif</div><div class="val">${formatDuree(rdv.duree)} — ${rdv.prix>0? rdv.prix+' €':'inclus dans le forfait'}${rdv.prix>0 ? (rdv.paye ? ' · encaissé ✓' : ' · non encaissé') : ''}</div>
+      </div>
+      <div class="champ" style="margin-bottom:16px;">
+        <label>Changer le statut</label>
+        <select class="select-statut" style="width:100%;" onchange="changerStatutRdv(${id}, this.value)">
+          ${STATUTS.map(s=>`<option value="${s}" ${s===rdv.statut?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-fantome" onclick="modifierRdv(${id})">Modifier</button>
+        ${(rdv.prix>0 && !rdv.paye) ? `<button class="btn" onclick="marquerEncaisse(${id})">Marquer encaissée</button>` : ''}
+        ${rdv.forfait && rdv.forfait.actuel < rdv.forfait.total ? `<button class="btn" onclick="validerSeanceForfaitRdv(${id})">Valider la séance (${rdv.forfait.actuel+1}/${rdv.forfait.total})</button>` : ''}
+        <button class="btn btn-fantome" onclick="ouvrirModalEmail(${id})">Envoyer un rappel</button>
+        <button class="btn btn-danger" onclick="supprimerRdv(${id})">Annuler le RDV</button>
+      </div>
+    `;
+    document.getElementById('backdrop').classList.add('visible');
+    document.getElementById('modal-rdv-detail').classList.add('visible');
+  }
+
+  function changerStatutRdv(id, statut){
+    const rdv = rdvs.find(r=>r.id===id);
+    if(!rdv) return;
+    rdv.statut = statut;
+    bpSauvegarderRdvs(rdvs);
+    rafraichirTout();
+    ouvrirDetailRdv(id);
+  }
+
+  function marquerEncaisse(id){
+    const rdv = rdvs.find(r=>r.id===id);
+    if(!rdv) return;
+    rdv.paye = true;
+    bpSauvegarderRdvs(rdvs);
+    ouvrirDetailRdv(id);
+  }
+
+  function validerSeanceForfaitRdv(id){
+    const rdv = rdvs.find(r=>r.id===id);
+    if(!rdv || !rdv.forfait) return;
+    if(rdv.forfait.actuel < rdv.forfait.total) rdv.forfait.actuel++;
+    const c = clientes.find(c=>c.nom===rdv.cliente);
+    if(c && c.forfait) c.forfait.actuel = rdv.forfait.actuel;
+    rdv.statut = 'Terminé';
+    bpSauvegarderRdvs(rdvs);
+    bpSauvegarderClientes(clientes);
+    rafraichirTout();
+    ouvrirDetailRdv(id);
+  }
+
+  function supprimerRdv(id){
+    const rdv = rdvs.find(r=>r.id===id);
+    if(rdv) rdv.statut = 'Annulé';
+    bpSauvegarderRdvs(rdvs);
+    rafraichirTout();
+    fermerTout();
+  }
+
+  function modifierRdv(id){
+    const rdv = rdvs.find(r=>r.id===id);
+    edition = id;
+    dateEnEdition = rdv.date;
+    fermerTout();
+    document.getElementById('drawer-rdv-titre').textContent = 'Modifier le rendez-vous';
+    document.getElementById('rdv-cliente').value = rdv.cliente;
+    document.getElementById('rdv-date-affichee').value = bpDateAffichee(dateEnEdition);
+    document.getElementById('rdv-soin').value = rdv.prestationId;
+    document.getElementById('rdv-creneau').value = rdv.debut;
+    document.getElementById('rdv-statut').value = rdv.statut;
+    majInfosRdv();
+    document.getElementById('rdv-praticienne').value = rdv.praticienneId;
+    document.getElementById('backdrop').classList.add('visible');
+    document.getElementById('drawer-rdv').classList.add('ouvert');
+  }
+
+  function ouvrirModalEmail(rdvId){
+    let rdv = rdvId!==undefined ? rdvs.find(r=>r.id===rdvId) : null;
+    if(!rdv){
+      // Pas de RDV précisé : on prend le prochain rendez-vous non annulé d'aujourd'hui.
+      rdv = rdvs.filter(r=>r.date===BP_DATE_REF && r.statut!=='Annulé').sort((a,b)=>a.debut-b.debut)[0];
+    }
+    const zone = document.querySelector('#modal-email .email-corps');
+    if(rdv){
+      const p = trouverPrestation(rdv.prestationId);
+      const prenom = rdv.cliente.split(' ')[0];
+      zone.innerHTML = `
+        <p>Bonjour ${prenom},</p>
+        <p>Petit rappel : vous avez rendez-vous à l'institut.</p>
+        <div class="email-carte-rdv">
+          <div><strong>Soin :</strong> ${p ? p.nom : soinAffiche(rdv)}</div>
+          <div><strong>Date :</strong> ${bpDateAffichee(rdv.date)}</div>
+          <div><strong>Heure :</strong> ${minVersHeureStr(rdv.debut)}</div>
+          <div><strong>Durée :</strong> environ ${formatDuree(rdv.duree)}</div>
+        </div>
+        <p>À bientôt !</p>
+      `;
+    } else {
+      zone.innerHTML = `<p>Bonjour,</p><p>Petit rappel : vous avez rendez-vous à l'institut.</p><p>À bientôt !</p>`;
+    }
+    document.getElementById('backdrop').classList.add('visible');
+    document.getElementById('modal-email').classList.add('visible');
+  }
+
+  // ---------- KPI (toujours calculés pour BP_DATE_REF = "aujourd'hui" du Dashboard) ----------
+  function calculerKpis(){
+    const actifs = rdvs.filter(r=>r.date===BP_DATE_REF && r.statut!=='Annulé');
+    const occupees = actifs.length;
+    const minutesOccupees = actifs.reduce((s,r)=>s+r.duree,0);
+    const capaciteTotale = (FERMETURE-OUVERTURE) * cabines.length;
+    const tauxOcc = Math.round((minutesOccupees/capaciteTotale)*100);
+    const ca = actifs.reduce((s,r)=>s+r.prix,0);
+    const alertesClientes = clientes.filter(c=>c.alerte).length;
+    const forfaitsBientotFinis = clientes.filter(c=>c.forfait && (c.forfait.total - c.forfait.actuel) <= 2).length;
+    const nbAlertes = alertesClientes + forfaitsBientotFinis;
+    return { occupees, tauxOcc, ca, nbAlertes, forfaitsBientotFinis, alertesClientes };
+  }
+
+  // ---------- À faire aujourd'hui (Dashboard = BP_DATE_REF) ----------
+  function calculerTaches(){
+    const taches = [];
+    clientes.forEach(c=>{
+      if(c.forfait && (c.forfait.total - c.forfait.actuel) <= 2 && c.forfait.actuel < c.forfait.total){
+        taches.push({ picto:'💶', html:`<strong>${c.nom}</strong> — forfait bientôt terminé : ${c.forfait.total - c.forfait.actuel} séance(s) restante(s)`, action:()=>{ allerA('clientes'); const i=clientes.indexOf(c); afficherFiche(i); } });
+      }
+    });
+    rdvs.filter(r=>r.date===BP_DATE_REF && r.statut!=='Annulé').forEach(r=>{
+      const c = clientes.find(c=>c.nom===r.cliente);
+      if(c && c.alerte){
+        taches.push({ picto:'⚠', html:`<strong>${c.nom}</strong> — ${c.alerte} avant son soin de ${minVersHeureStr(r.debut)}`, action:()=>ouvrirDetailRdv(r.id) });
+      }
+    });
+    clientes.forEach(c=>{
+      if(!c.prochainRdv){
+        taches.push({ picto:'📞', html:`<strong>${c.nom}</strong> — aucun rendez-vous depuis plusieurs semaines, à relancer`, action:()=>{ allerA('clientes'); const i=clientes.indexOf(c); afficherFiche(i); } });
+      }
+    });
+    // Créneaux libres du jour de référence (>=45 min consécutives), par cabine
+    cabines.forEach((c, ci)=>{
+      const rdvsCabine = rdvs.filter(r=>r.date===BP_DATE_REF && r.cabine===ci && r.statut!=='Annulé').sort((a,b)=>a.debut-b.debut);
+      let curseur = OUVERTURE;
+      rdvsCabine.forEach(r=>{
+        if(r.debut - curseur >= 45){
+          taches.push({ picto:'📅', html:`Créneau libre en <strong>${c}</strong> : ${minVersHeureStr(curseur)}–${minVersHeureStr(r.debut)}`, action:()=>{ datePlanningActive = BP_DATE_REF; allerA('planning'); rafraichirPlanning(); ouvrirDrawerRdv(curseur, ci); } });
+        }
+        curseur = Math.max(curseur, r.debut + r.duree);
+      });
+      if(FERMETURE - curseur >= 45){
+        taches.push({ picto:'📅', html:`Créneau libre en <strong>${c}</strong> : ${minVersHeureStr(curseur)}–${minVersHeureStr(FERMETURE)}`, action:()=>{ datePlanningActive = BP_DATE_REF; allerA('planning'); rafraichirPlanning(); ouvrirDrawerRdv(curseur, ci); } });
+      }
+    });
+    return taches;
+  }
+
+  let dernieresTaches = [];
+  let tachesToutesAffichees = false;
+  function rendreTaches(){
+    dernieresTaches = calculerTaches();
+    afficherTaches();
+  }
+  function basculerToutesTaches(){
+    tachesToutesAffichees = !tachesToutesAffichees;
+    afficherTaches();
+  }
+  function afficherTaches(){
+    const zone = document.getElementById('carte-taches');
+    if(!dernieresTaches.length){
+      zone.innerHTML = `<h3>À faire aujourd'hui</h3><div class="vide">Rien à signaler — tout est sous contrôle.</div>`;
+      return;
+    }
+    const nb = dernieresTaches.length;
+    const visibles = tachesToutesAffichees ? dernieresTaches : dernieresTaches.slice(0,3);
+    const lignes = visibles.map((t,i)=>`
+      <div class="item-tache">
+        <span class="picto">${t.picto}</span>
+        <span class="txt">${t.html}</span>
+        <button class="lien-tache" onclick="dernieresTaches[${i}].action()">Voir</button>
+      </div>`).join('');
+    const bascule = nb > 3
+      ? `<button class="voir-toutes-taches" onclick="basculerToutesTaches()">${tachesToutesAffichees ? 'Réduire' : 'Voir toutes les actions ('+nb+')'}</button>`
+      : '';
+    zone.innerHTML = `<h3>À faire aujourd'hui</h3>${lignes}${bascule}`;
+  }
+
+  function rendreKpis(){
+    const k = calculerKpis();
+    document.getElementById('kpi-barre').innerHTML = `
+      <div class="kpi">
+        <div class="kpi-label">RDV aujourd'hui</div>
+        <div class="kpi-valeur">${k.occupees}</div>
+        <div class="kpi-sous">sur la journée (9h–19h), 3 cabines</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Taux d'occupation</div>
+        <div class="kpi-valeur">${k.tauxOcc}%</div>
+        <div class="kpi-sous">calculé sur la durée réelle des soins</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">CA prévu du jour</div>
+        <div class="kpi-valeur">${k.ca} €</div>
+        <div class="kpi-sous">séances de forfait déjà réglées non comptées</div>
+      </div>
+      <div class="kpi ${k.nbAlertes>0?'alerte-kpi':''}">
+        <div class="kpi-label">Alertes</div>
+        <div class="kpi-valeur ${k.nbAlertes>0?'alerte-txt':''}">${k.nbAlertes}</div>
+        <div class="kpi-sous">${k.forfaitsBientotFinis} forfait(s) bientôt terminé(s), ${k.alertesClientes} contre-indication(s)</div>
+      </div>
+    `;
+  }
+
+  // ---------- Prochains rendez-vous (Dashboard = BP_DATE_REF) ----------
+  function rendreProchainsRdv(){
+    const zone = document.getElementById('prochains-rdv');
+    const duJour = rdvs.filter(r=>r.date===BP_DATE_REF && r.statut!=='Annulé').sort((a,b)=>a.debut-b.debut).slice(0,4);
+    if(!duJour.length){
+      zone.innerHTML = `<h3>Prochains rendez-vous</h3><div class="vide">Aucun rendez-vous aujourd'hui.</div>`;
+      return;
+    }
+    zone.innerHTML = `<h3>Prochains rendez-vous</h3>` + duJour.map(r=>{
+      const pratic = trouverPraticienne(r.praticienneId);
+      return `<div class="ligne-prochain-rdv" onclick="ouvrirDetailRdv(${r.id})">
+        <div class="heure">${minVersHeureStr(r.debut)}</div>
+        <div class="infos">
+          <div class="cliente">${r.cliente}</div>
+          <div class="details">${soinAffiche(r)}${pratic ? ' · '+pratic.nom : ''}</div>
+        </div>
+        <span class="statut-badge" style="background:${STATUT_COULEUR[r.statut]||'#8A7A72'};">${r.statut}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // ---------- Planning (grille temporelle proportionnelle, navigable par jour) ----------
+  function changerJourPlanning(delta){
+    datePlanningActive = bpAjouterJours(datePlanningActive, delta);
+    rafraichirPlanning();
+  }
+  function rafraichirPlanning(){
+    document.getElementById('planning-jour-label').textContent = bpDateAfficheeCourte(datePlanningActive);
+    construireGrillePlanning();
+  }
+
+  function construireGrillePlanning(){
+    const conteneur = document.getElementById('grille-planning');
+    let html = '<div class="gp-entete"></div>' + cabines.map(c=>`<div class="gp-entete">${c}</div>`).join('');
+
+    let gutter = `<div class="colonne-gutter" style="height:${HAUTEUR_TOTALE}px;">`;
+    for(let h = OUVERTURE/60; h <= FERMETURE/60; h++){
+      const top = (h*60 - OUVERTURE) * PX_PAR_MIN;
+      gutter += `<div class="gp-heure-label" style="top:${top}px;">${h}h</div>`;
+    }
+    gutter += '</div>';
+    html += gutter;
+
+    const rdvsJour = rdvs.filter(r=>r.date===datePlanningActive);
+
+    cabines.forEach((c, ci)=>{
+      const rdvsCabine = rdvsJour.filter(r=>r.cabine===ci && r.statut!=='Annulé');
+      let col = `<div class="colonne-cabine" style="height:${HAUTEUR_TOTALE}px;" data-cabine="${ci}">`;
+
+      for(let h = OUVERTURE/60; h <= FERMETURE/60; h++){
+        const top = (h*60 - OUVERTURE) * PX_PAR_MIN;
+        const dansUnBloc = rdvsCabine.some(r=>{
+          const t = (r.debut - OUVERTURE) * PX_PAR_MIN;
+          const b = t + Math.max(r.duree * PX_PAR_MIN - 3, 26);
+          return top > t + 3 && top < b - 3;
+        });
+        if(!dansUnBloc){ col += `<div class="gp-ligne" style="top:${top}px;"></div>`; }
+      }
+
+      rdvsCabine.forEach(r=>{
+        const top = (r.debut - OUVERTURE) * PX_PAR_MIN;
+        const hauteur = Math.max(r.duree * PX_PAR_MIN - 3, 26);
+        const estForfait = !!r.forfait;
+        const pratic = trouverPraticienne(r.praticienneId);
+        col += `<div class="gp-bloc ${estForfait?'forfait':''}" style="top:${top}px; height:${hauteur}px;" onclick="event.stopPropagation(); ouvrirDetailRdv(${r.id});">
+          <div class="gp-cliente">${r.cliente}</div>
+          <div class="gp-soin">${soinAffiche(r)}${pratic ? ' · '+pratic.nom : ''}</div>
+          <span class="gp-badge ${estForfait?'forfait-badge':''}" style="background:${STATUT_COULEUR[r.statut]||'var(--terracotta)'};">${r.statut}</span>
+        </div>`;
+      });
+      col += '</div>';
+      html += col;
+    });
+
+    conteneur.innerHTML = html;
+
+    document.querySelectorAll('.colonne-cabine').forEach(col=>{
+      col.addEventListener('click', function(e){
+        const rect = col.getBoundingClientRect();
+        const y = e.clientY - rect.top;
+        let minute = Math.round((y / PX_PAR_MIN) / 15) * 15 + OUVERTURE;
+        minute = Math.min(Math.max(minute, OUVERTURE), FERMETURE-15);
+        ouvrirDrawerRdv(minute, parseInt(col.dataset.cabine,10));
+      });
+    });
+  }
+
+  // ---------- Prestations & Tarifs ----------
+  let recherchePrestation = "";
+  let filtreCategoriePresta = "toutes";
+  let filtreReservablePresta = "toutes";
+
+  function filtrerPrestationsRecherche(v){ recherchePrestation = v.toLowerCase(); rendrePrestations(); }
+  function filtrerPrestationsCategorie(v){ filtreCategoriePresta = v; rendrePrestations(); }
+  function filtrerPrestationsReservable(v){ filtreReservablePresta = v; rendrePrestations(); }
+
+  function peuplerFiltreCategoriesPrestations(){
+    const select = document.getElementById('filtre-presta-categorie');
+    const valeurAvant = select.value;
+    const categories = [...new Set(prestations.map(p=>p.categorie))];
+    select.innerHTML = `<option value="toutes">Toutes les catégories</option>` + categories.map(c=>`<option value="${c}">${c}</option>`).join('');
+    if(categories.includes(valeurAvant)) select.value = valeurAvant;
+  }
+
+  function rendrePrestations(){
+    peuplerFiltreCategoriesPrestations();
+
+    document.getElementById('synthese-prestations').innerHTML =
+      `<strong>${prestations.length}</strong> prestation${prestations.length>1?'s':''} · <strong>${prestations.filter(p=>p.reservableEnLigne).length}</strong> réservable${prestations.filter(p=>p.reservableEnLigne).length>1?'s':''} en ligne · <strong>${prestations.filter(p=>p.acompte>0).length}</strong> avec acompte`;
+
+    const visibles = prestations
+      .filter(p=>filtreCategoriePresta==='toutes' || p.categorie===filtreCategoriePresta)
+      .filter(p=>filtreReservablePresta==='toutes' || (filtreReservablePresta==='oui' ? p.reservableEnLigne : !p.reservableEnLigne))
+      .filter(p=>!recherchePrestation || p.nom.toLowerCase().includes(recherchePrestation));
+
+    if(!visibles.length){
+      document.getElementById('grille-prestations').innerHTML = `<p style="color:var(--texte-clair); font-size:13.5px;">Aucune prestation ne correspond à ces critères.</p>`;
+      return;
+    }
+
+    const categories = [...new Set(visibles.map(p=>p.categorie))];
+    document.getElementById('grille-prestations').innerHTML = categories.map(cat=>{
+      const lignes = visibles.filter(p=>p.categorie===cat).map(p=>`
+        <div class="presta-ligne">
+          <div class="presta-nom">${p.nom}${p.reservableEnLigne ? '<span class="badge-en-ligne">En ligne'+(p.acompte>0?' · '+p.acompte+' € acompte':'')+'</span>' : '<span class="badge-sur-appel">Sur appel</span>'}</div>
+          <div>${formatDuree(p.duree)}</div>
+          <div>${p.prix>0 ? p.prix+' €' : 'Forfait'}</div>
+          <div class="presta-cabine">${cabines[p.cabine]}</div>
+          <div class="presta-actions">
+            <button class="icone-action" title="Modifier" onclick="ouvrirDrawerPrestation(${p.id})">✎</button>
+            <button class="icone-action suppr" title="Supprimer" onclick="supprimerPrestation(${p.id})">🗑</button>
+          </div>
+        </div>`).join('');
+      return `<div class="carte-categorie">
+        <h3>${cat}</h3>
+        <div class="presta-entete-ligne"><span>Prestation</span><span>Durée</span><span>Tarif</span><span>Cabine assignée</span><span></span></div>
+        ${lignes}
+      </div>`;
+    }).join('');
+  }
+
+  function ouvrirDrawerPrestation(id){
+    editionPrestationId = (id !== undefined) ? id : null;
+    document.getElementById('drawer-prestation-titre').textContent = editionPrestationId!==null ? 'Modifier la prestation' : 'Nouvelle prestation';
+    document.getElementById('liste-categories').innerHTML =
+      [...new Set(prestations.map(p=>p.categorie))].map(c=>`<option value="${c}">`).join('');
+
+    if(editionPrestationId !== null){
+      const p = trouverPrestation(editionPrestationId);
+      document.getElementById('presta-nom').value = p.nom;
+      document.getElementById('presta-categorie').value = p.categorie;
+      document.getElementById('presta-duree').value = p.duree;
+      document.getElementById('presta-prix').value = p.prix;
+      document.getElementById('presta-cabine').value = p.cabine;
+      document.getElementById('presta-reservable').checked = !!p.reservableEnLigne;
+      document.getElementById('presta-acompte').value = p.acompte || 0;
+    } else {
+      document.getElementById('presta-nom').value = '';
+      document.getElementById('presta-categorie').value = '';
+      document.getElementById('presta-duree').value = 30;
+      document.getElementById('presta-prix').value = 40;
+      document.getElementById('presta-cabine').value = 0;
+      document.getElementById('presta-reservable').checked = true;
+      document.getElementById('presta-acompte').value = 0;
+    }
+    document.getElementById('backdrop').classList.add('visible');
+    document.getElementById('drawer-prestation').classList.add('ouvert');
+  }
+
+  function confirmerPrestation(){
+    const nom = document.getElementById('presta-nom').value.trim();
+    const categorie = document.getElementById('presta-categorie').value.trim() || 'Autres';
+    const duree = parseInt(document.getElementById('presta-duree').value,10) || 30;
+    const prix = parseInt(document.getElementById('presta-prix').value,10) || 0;
+    const cabine = parseInt(document.getElementById('presta-cabine').value,10);
+    const reservableEnLigne = document.getElementById('presta-reservable').checked;
+    const acompte = parseInt(document.getElementById('presta-acompte').value,10) || 0;
+
+    if(!nom){ alert('Merci de donner un nom à la prestation.'); return; }
+
+    if(editionPrestationId !== null){
+      const p = trouverPrestation(editionPrestationId);
+      p.nom = nom; p.categorie = categorie; p.duree = duree; p.prix = prix; p.cabine = cabine;
+      p.reservableEnLigne = reservableEnLigne; p.acompte = acompte;
+    } else {
+      prestations.push({ id:prochainPrestationId++, categorie, nom, duree, prix, cabine, reservableEnLigne, acompte });
+    }
+    editionPrestationId = null;
+    bpSauvegarderPrestations(prestations);
+
+    rafraichirTout();
+    fermerTout();
+  }
+
+  function supprimerPrestation(id){
+    const p = trouverPrestation(id);
+    if(!p) return;
+    if(!confirm(`Supprimer la prestation "${p.nom}" du catalogue ?`)) return;
+    prestations = prestations.filter(x=>x.id!==id);
+    bpSauvegarderPrestations(prestations);
+    rafraichirTout();
+  }
+
+  // ---------- Clientes ----------
+  function decompterSeance(i){
+    const c = clientes[i];
+    if(c.forfait && c.forfait.actuel < c.forfait.total){ c.forfait.actuel++; }
+    bpSauvegarderClientes(clientes);
+    afficherFiche(i);
+    rendreClientes();
+    rendreKpis();
+  }
+
+  const FILTRES = [
+    { id:'toutes', label:'Toutes', test:c=>true },
+    { id:'forfait', label:'Forfait en cours', test:c=>!!c.forfait },
+    { id:'alertes', label:'Alertes', test:c=>!!c.alerte },
+    { id:'avenir', label:'RDV à venir', test:c=>!!c.prochainRdv }
+  ];
+
+  function rendreFiltresClientes(){
+    document.getElementById('filtres-clientes').innerHTML = FILTRES.map(f=>
+      `<button class="${filtreCliente===f.id?'actif':''}" onclick="appliquerFiltreCliente('${f.id}')">${f.label}</button>`
+    ).join('');
+  }
+  function appliquerFiltreCliente(id){
+    filtreCliente = id;
+    rendreFiltresClientes();
+    rendreClientes();
+  }
+  function filtrerClientes(valeur){
+    rechercheCliente = valeur.toLowerCase();
+    rendreClientes();
+  }
+
+  function rendreClientes(){
+    const zone = document.getElementById('grille-clientes');
+    const filtre = FILTRES.find(f=>f.id===filtreCliente) || FILTRES[0];
+    const visibles = clientes
+      .map((c,i)=>({c,i}))
+      .filter(({c})=>filtre.test(c))
+      .filter(({c})=>!rechercheCliente || c.nom.toLowerCase().includes(rechercheCliente));
+
+    if(!visibles.length){
+      zone.innerHTML = `<p style="color:var(--texte-clair); font-size:13.5px;">Aucune cliente ne correspond à cette recherche.</p>`;
+      return;
+    }
+
+    const lignes = visibles.map(({c,i})=>{
+      const initiales = c.nom.split(' ').map(m=>m[0]).join('');
+      const dernierSoin = c.historique.length ? `${c.historique[0].soin} · ${c.historique[0].date}` : 'Aucun soin enregistré';
+      const prochRdv = c.prochainRdv || '—';
+      let forfaitHtml = '—';
+      if(c.forfait){
+        const pct = Math.round((c.forfait.actuel/c.forfait.total)*100);
+        forfaitHtml = `<div class="lc-forfait">${c.forfait.soin.split('—')[0].trim()} · ${c.forfait.actuel}/${c.forfait.total}</div><div class="mini-barre"><div class="mini-barre-remplie" style="width:${pct}%"></div></div>`;
+      }
+      const alerteHtml = c.alerte ? `<span class="lc-alerte">⚠ ${c.alerte.length>32?c.alerte.slice(0,32)+'…':c.alerte}</span>` : '—';
+      return `<div class="ligne-cliente" onclick="afficherFiche(${i})">
+        <div class="lc-cliente"><div class="avatar">${initiales}</div><span>${c.nom}</span></div>
+        <div class="lc-secondaire lc-dernier-soin">${dernierSoin}</div>
+        <div class="lc-secondaire lc-prochain-rdv">${prochRdv}</div>
+        <div>${forfaitHtml}</div>
+        <div>${alerteHtml}</div>
+        <div class="lc-chevron">›</div>
+      </div>`;
+    }).join('');
+
+    zone.innerHTML = `<div class="table-clientes">
+      <div class="ligne-cliente-entete"><span>Cliente</span><span>Dernier soin</span><span>Prochain RDV</span><span>Forfait</span><span>Alerte</span><span></span></div>
+      ${lignes}
+    </div>`;
+  }
+
+  // ---------- Équipe ----------
+  // Source unique : les mêmes praticiennes que celles utilisées par le moteur de RDV et par reservation.html.
+  function rendreEquipe(){
+    document.getElementById('grille-equipe').innerHTML = praticiennes.map(pr=>{
+      const rdvJour = rdvs.filter(r=>r.date===BP_DATE_REF && r.praticienneId===pr.id && r.statut!=='Annulé').length;
+      return `<div class="carte-equipe">
+        <div class="avatar">${pr.nom[0]}</div>
+        <h3>${pr.nom}</h3>
+        <div class="sous">${rdvJour} rendez-vous aujourd'hui</div>
+        <div class="badges-competences">${pr.competences.map(c=>`<span class="badge-competence">${c}</span>`).join('')}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function ouvrirDrawerCliente(){
+    document.getElementById('nc-nom').value = '';
+    document.getElementById('nc-telephone').value = '';
+    document.getElementById('nc-email').value = '';
+    document.getElementById('nc-note').value = '';
+    document.getElementById('backdrop').classList.add('visible');
+    document.getElementById('drawer-nouvelle-cliente').classList.add('ouvert');
+  }
+
+  function confirmerNouvelleCliente(){
+    const nom = document.getElementById('nc-nom').value.trim();
+    if(!nom){ alert('Merci de renseigner le nom de la cliente.'); return; }
+    clientes.push({
+      id: bpProchainId(clientes),
+      nom,
+      depuis:"cliente depuis aujourd'hui",
+      telephone: document.getElementById('nc-telephone').value.trim() || '—',
+      email: document.getElementById('nc-email').value.trim() || '—',
+      caCumule:0,
+      forfait:null, zonesTraitees:"—", dernierProduit:"—",
+      historique:[],
+      alerte: document.getElementById('nc-note').value.trim() || null,
+      note:"", photos:false, prochainRdv:null
+    });
+    bpSauvegarderClientes(clientes);
+    rendreClientes();
+    fermerTout();
+    allerA('clientes');
+  }
+
+  function afficherFiche(i){
+    const c = clientes[i];
+    const zone = document.getElementById('detail-cliente-corps');
+    zone.innerHTML = `
+      <h3 style="font-size:20px; margin-bottom:4px;">${c.nom}</h3>
+      <div class="depuis">${c.depuis}</div>
+
+      <div class="fiche-section">
+        <div class="fiche-grille2">
+          <div class="fiche-champ-tech"><div class="lbl">Téléphone</div><div class="val">${c.telephone||'—'}</div></div>
+          <div class="fiche-champ-tech"><div class="lbl">Email</div><div class="val">${c.email||'—'}</div></div>
+          <div class="fiche-champ-tech"><div class="lbl">CA cumulé</div><div class="val">${c.caCumule||0} €</div></div>
+          <div class="fiche-champ-tech"><div class="lbl">Prochain RDV</div><div class="val">${c.prochainRdv||'Aucun'}</div></div>
+        </div>
+      </div>
+
+      ${c.forfait ? `
+      <div class="fiche-section">
+        <h4>Forfait en cours</h4>
+        <div class="carte-forfait">
+          <div class="forfait-titre">${c.forfait.soin}</div>
+          <div class="barre-progression"><div class="barre-progression-remplie" style="width:${(c.forfait.actuel/c.forfait.total)*100}%"></div></div>
+          <div class="forfait-details">
+            <span>${c.forfait.actuel} / ${c.forfait.total} séances effectuées</span>
+            <span>${c.forfait.resteAPayer > 0 ? c.forfait.resteAPayer + ' € restant à payer' : 'Payé intégralement'}</span>
+          </div>
+          <div class="forfait-details" style="margin-top:4px;"><span>Date limite d'utilisation</span><span>${c.forfait.dateLimite}</span></div>
+          <button class="btn" style="margin-top:14px; width:100%;" onclick="decompterSeance(${i})" ${c.forfait.actuel>=c.forfait.total?'disabled':''}>
+            ${c.forfait.actuel>=c.forfait.total ? 'Forfait terminé' : 'Valider la séance suivante ('+(c.forfait.actuel+1)+'/'+c.forfait.total+')'}
+          </button>
+        </div>
+      </div>` : ''}
+
+      ${c.alerte ? `<div class="fiche-section"><h4>À savoir</h4><div class="alerte">⚠ ${c.alerte}</div></div>` : ''}
+
+      <div class="fiche-section">
+        <h4>Fiche technique</h4>
+        <div class="fiche-grille2">
+          <div class="fiche-champ-tech"><div class="lbl">Zones traitées</div><div class="val">${c.zonesTraitees}</div></div>
+          <div class="fiche-champ-tech"><div class="lbl">Dernière séance — produits/réglages</div><div class="val">${c.dernierProduit}</div></div>
+        </div>
+      </div>
+
+      ${c.photos ? `
+      <div class="fiche-section">
+        <h4>Suivi photo</h4>
+        <div class="photos-avant-apres">
+          <div class="photo-placeholder"><span>📷</span><span>Avant — J0</span></div>
+          <div class="photo-placeholder"><span>📷</span><span>Après — dernière séance</span></div>
+        </div>
+      </div>` : ''}
+
+      <div class="fiche-section">
+        <h4>Historique des soins</h4>
+        ${c.historique.map(h=>`<div class="historique-item"><span>${h.date}</span><span>${h.soin}</span></div>`).join('')}
+      </div>
+      ${c.note ? `<div class="fiche-section"><h4>Notes techniques de l'esthéticienne</h4><div class="note">${c.note}</div></div>` : ''}
+    `;
+    document.getElementById('backdrop').classList.add('visible');
+    document.getElementById('drawer-cliente').classList.add('ouvert');
+  }
+
+  // ---------- Rafraîchissement global ----------
+  // Regroupe tous les rendus dépendant des données partagées — utilisé après chaque
+  // modification locale et après rechargement suite à un changement fait dans reservation.html.
+  function rafraichirTout(){
+    rendreKpis();
+    rendreTaches();
+    rendreProchainsRdv();
+    rafraichirPlanning();
+    rendrePrestations();
+    rendreClientes();
+    rendreEquipe();
+    peuplerSelectsFormulaire();
+  }
+
+  // Reprend les données depuis localStorage (modifiées par l'autre onglet) et rafraîchit l'affichage.
+  function rechargerDonneesPartagees(){
+    const d = bpLireTout();
+    prestations = d.prestations;
+    praticiennes = d.praticiennes;
+    clientes = d.clientes;
+    rdvs = d.rdvs;
+    prochainPrestationId = bpProchainId(prestations);
+    prochainId = bpProchainId(rdvs);
+    rafraichirTout();
+  }
+  bpEcouterChangements(rechargerDonneesPartagees);
+
+  // ---------- Init ----------
+  peuplerSelectsFormulaire();
+  rendreKpis();
+  rendreTaches();
+  rendreProchainsRdv();
+  rafraichirPlanning();
+  rendrePrestations();
+  rendreFiltresClientes();
+  rendreClientes();
+  rendreEquipe();
+</script>
+
+</body>
+</html>
